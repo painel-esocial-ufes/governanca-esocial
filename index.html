@@ -29,10 +29,23 @@
 
                 window.syncToFirebase = async function(state, allCompetencias) {
                     try {
-                        const payload = {
-                            state: JSON.parse(JSON.stringify(state)),
-                            allCompetencias: JSON.parse(JSON.stringify(allCompetencias)),
-                            atualizadoEm: new Date().toISOString()
+                        const stateToSave =
+    JSON.parse(JSON.stringify(state));
+
+// 🚫 NÃO sincroniza a navegação da UI
+delete stateToSave.currentPage;
+
+const payload = {
+
+    state: stateToSave,
+
+    allCompetencias:
+        JSON.parse(JSON.stringify(allCompetencias)),
+
+    atualizadoEm:
+        new Date().toISOString()
+
+};
                         };
                         await setDoc(docRef, payload);
                         window._lastRemoteTimestamp = payload.atualizadoEm;
