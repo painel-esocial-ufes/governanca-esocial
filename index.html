@@ -68,7 +68,9 @@
                                 window.allCompetencias = remote.allCompetencias;
                             }
                             window._lastRemoteTimestamp = remote.atualizadoEm;
-                            if (typeof window.renderAll === 'function') window.renderAll();
+                           if (typeof window.navigateTo === 'function') {
+                           window.navigateTo(state.currentPage || 'dashboard', true);
+                            }
                             window._saveToIndexedDB();
                             document.getElementById('syncStatus').textContent = '🔗 Sync Ativo';
                             window.isApplyingRemoteState = false;
@@ -615,7 +617,7 @@
             };
 
             // ==================== NAVEGAÇÃO (PERSISTENTE) ====================
-            function navigateTo(pageName) {
+            function navigateTo(pageName, silent = false) {
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 const page = document.getElementById('page-' + pageName);
@@ -624,7 +626,7 @@
                 if (navItem) navItem.classList.add('active');
                 
                 state.currentPage = pageName;
-                saveAllState();
+                if (!silent) saveAllState();
                 
                 if (pageName === 'dashboard') { updateKPIs(); drawProgressChart(); }
                 if (pageName === 'timeline') renderTimeline();
