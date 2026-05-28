@@ -4,77 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Governança Operacional SIAPE + eSocial | UFES v3.0</title>
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLcIO9xJHUa9IQxR54pBqXgxtcqU5un9w",
-            authDomain: "governanca-esocial-ufes.firebaseapp.com",
-            projectId: "governanca-esocial-ufes",
-            storageBucket: "governanca-esocial-ufes.firebasestorage.app",
-            messagingSenderId: "709758251282",
-            appId: "1:709758251282:web:75aaa7d86841d0945b03cb"
-        };
-
-        // Aguarda o DOM e o script principal estarem prontos
-        window.initFirebase = async function() {
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            window.db = db; // expõe para uso global
-
-            // Referência do documento compartilhado
-            const docRef = doc(db, "governanca", "estadoCompleto");
-
-            // Envia estado para o Firestore (chamado pelo saveAllState)
-            window.syncToFirebase = async function(state, allCompetencias) {
-                try {
-                    const payload = {
-                        state: JSON.parse(JSON.stringify(state)),
-                        allCompetencias: JSON.parse(JSON.stringify(allCompetencias)),
-                        atualizadoEm: new Date().toISOString()
-                    };
-                    await setDoc(docRef, payload);
-                    window._lastRemoteTimestamp = payload.atualizadoEm;
-                    console.log("☁️ Estado enviado ao Firebase");
-                } catch (e) {
-                    console.warn("⚠️ Falha ao enviar para Firebase:", e);
-                }
-            };
-
-            // Escuta mudanças remotas
-            onSnapshot(docRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const remote = snapshot.data();
-                    // Se a mudança veio de outro cliente (timestamp mais recente que o último que enviamos)
-                    if (remote.atualizadoEm && (!window._lastRemoteTimestamp || remote.atualizadoEm > window._lastRemoteTimestamp)) {
-                        console.log("🔄 Atualização remota recebida", remote.atualizadoEm);
-                        // Mescla o estado remoto
-                        if (remote.state) {
-                            window.state = deepMerge(window.DEFAULT_STATE_DEEP, remote.state);
-                        }
-                        if (remote.allCompetencias) {
-                            window.allCompetencias = remote.allCompetencias;
-                        }
-                        // Atualiza interface
-                        if (typeof window.renderAll === 'function') {
-                            window.renderAll();
-                        }
-                        // Atualiza timestamp para evitar re-aplicação
-                        window._lastRemoteTimestamp = remote.atualizadoEm;
-                        // Salva no cache local também
-                        window._saveToIndexedDB();
-                    }
-                }
-            });
-
-            console.log("🔥 Firebase Realtime ativo!");
-        };
-    </script>
-
     <style>
-        /* (todo o CSS permanece exatamente o mesmo do original) */
         :root {
             --bg: #f0f4f9;
             --surface: #ffffff;
@@ -155,11 +85,22 @@
             line-height: 1.5;
             overflow-x: hidden;
         }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text3);
+        }
 
+        /* SIDEBAR */
         .sidebar {
             width: var(--sidebar-w);
             background: linear-gradient(180deg, #0a1e33 0%, #0f2b46 100%);
@@ -167,173 +108,935 @@
             display: flex;
             flex-direction: column;
             position: fixed;
-            top: 0; left: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            bottom: 0;
             z-index: 100;
             transition: transform 0.3s;
-            box-shadow: 2px 0 30px rgba(0,0,0,0.2);
+            box-shadow: 2px 0 30px rgba(0, 0, 0, 0.2);
             overflow-y: auto;
         }
-        .sidebar-header { padding: 20px 16px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
-        .sidebar-header .logo-icon { font-size: 36px; display: block; margin-bottom: 2px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
-        .sidebar-header h3 { font-size: 12px; font-weight: 700; letter-spacing: 1px; opacity: 0.95; text-transform: uppercase; }
-        .sidebar-header .sub { font-size: 9px; opacity: 0.5; letter-spacing: 1.5px; margin-top: 2px; }
-        .sidebar-nav { flex: 1; overflow-y: auto; padding: 6px 0; }
-        .sidebar-nav .nav-section { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); padding: 14px 18px 6px; font-weight: 700; }
+        .sidebar-header {
+            padding: 20px 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .sidebar-header .logo-icon {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        .sidebar-header h3 {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            opacity: 0.95;
+            text-transform: uppercase;
+        }
+        .sidebar-header .sub {
+            font-size: 9px;
+            opacity: 0.5;
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+        }
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 0;
+        }
+        .sidebar-nav .nav-section {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.35);
+            padding: 14px 18px 6px;
+            font-weight: 700;
+        }
         .sidebar-nav .nav-item {
-            display: flex; align-items: center; gap: 10px; padding: 10px 18px; cursor: pointer;
-            font-size: 13px; color: rgba(255,255,255,0.7); transition: all 0.2s;
-            border-left: 3px solid transparent; font-weight: 500; text-decoration: none;
-            margin: 1px 0; border-radius: 0 6px 6px 0; margin-right: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            text-decoration: none;
+            margin: 1px 0;
+            border-radius: 0 6px 6px 0;
+            margin-right: 8px;
         }
-        .sidebar-nav .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; border-left-color: rgba(255,255,255,0.3); }
-        .sidebar-nav .nav-item.active { background: rgba(59,143,212,0.2); color: #fff; border-left-color: #60a5fa; font-weight: 600; }
-        .sidebar-nav .nav-item .nav-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
-        .sidebar-footer { padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 9px; opacity: 0.4; text-align: center; letter-spacing: 0.5px; }
-        .sidebar-footer .version-badge { background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 10px; font-size: 9px; display: inline-block; margin-top: 4px; }
+        .sidebar-nav .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border-left-color: rgba(255, 255, 255, 0.3);
+        }
+        .sidebar-nav .nav-item.active {
+            background: rgba(59, 143, 212, 0.2);
+            color: #fff;
+            border-left-color: #60a5fa;
+            font-weight: 600;
+        }
+        .sidebar-nav .nav-item .nav-icon {
+            font-size: 17px;
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .sidebar-footer {
+            padding: 10px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 9px;
+            opacity: 0.4;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .sidebar-footer .version-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            display: inline-block;
+            margin-top: 4px;
+        }
 
-        .main-content { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; transition: margin 0.3s; max-width: calc(100vw - var(--sidebar-w)); }
+        /* MAIN */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: margin 0.3s;
+            max-width: calc(100vw - var(--sidebar-w));
+        }
+
+        /* TOPBAR */
         .topbar {
-            background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 20px;
-            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-            box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 50; min-height: 56px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            min-height: 56px;
         }
-        .topbar .title-section h1 { font-size: 1rem; font-weight: 700; color: var(--primary-light); letter-spacing: -0.3px; white-space: nowrap; }
-        .topbar .title-section .subtitle { font-size: 0.7rem; color: var(--text3); letter-spacing: 0.2px; }
-        .topbar .info-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .pill { display: inline-flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 20px; font-size: 0.74rem; font-weight: 600; white-space: nowrap; letter-spacing: 0.2px; }
-        .pill-date { background: var(--info-bg); color: var(--accent); border: 1px solid var(--info-light); }
-        .pill-clock { background: var(--surface2); color: var(--text); border: 1px solid var(--border); font-family: var(--font-mono); min-width: 72px; justify-content: center; font-size: 0.8rem; }
-        .pill-phase { font-weight: 700; letter-spacing: 0.3px; animation: pulse-warn 2s infinite; }
-        .phase-critical { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-light); }
-        .phase-high { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
-        .phase-medium { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-light); }
-        .phase-low { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-light); }
-        @keyframes pulse-warn { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.25); } 50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); } }
-        .btn-icon { background: var(--surface2); border: 1px solid var(--border); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--text); flex-shrink: 0; }
-        .btn-icon:hover { background: var(--surface3); border-color: var(--accent-light); transform: scale(1.05); box-shadow: var(--shadow-md); }
-        .hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text); padding: 4px; }
+        .topbar .title-section h1 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+        .topbar .title-section .subtitle {
+            font-size: 0.7rem;
+            color: var(--text3);
+            letter-spacing: 0.2px;
+        }
+        .topbar .info-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 13px;
+            border-radius: 20px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .pill-date {
+            background: var(--info-bg);
+            color: var(--accent);
+            border: 1px solid var(--info-light);
+        }
+        .pill-clock {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-family: var(--font-mono);
+            min-width: 72px;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        .pill-phase {
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            animation: pulse-warn 2s infinite;
+        }
+        .phase-critical {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid var(--danger-light);
+        }
+        .phase-high {
+            background: #fff7ed;
+            color: #ea580c;
+            border: 1px solid #fed7aa;
+        }
+        .phase-medium {
+            background: var(--warning-bg);
+            color: var(--warning);
+            border: 1px solid var(--warning-light);
+        }
+        .phase-low {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid var(--success-light);
+        }
+        @keyframes pulse-warn {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.25);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+            }
+        }
+        .btn-icon {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: var(--text);
+            flex-shrink: 0;
+        }
+        .btn-icon:hover {
+            background: var(--surface3);
+            border-color: var(--accent-light);
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+            padding: 4px;
+        }
 
-        .content-area { flex: 1; padding: 16px 20px; overflow-y: auto; max-width: 100%; }
-        .page { display: none; animation: fadeSlide 0.35s ease; }
-        .page.active { display: block; }
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        /* CONTENT */
+        .content-area {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            max-width: 100%;
+        }
+        .page {
+            display: none;
+            animation: fadeSlide 0.35s ease;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); transition: all 0.25s; margin-bottom: 14px; }
-        .card:hover { box-shadow: var(--shadow-md); }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-        .card-header h3 { font-size: 0.9rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 7px; letter-spacing: -0.2px; }
-        .card-header .badge { font-size: 0.68rem; padding: 4px 10px; border-radius: 12px; font-weight: 600; letter-spacing: 0.3px; }
-        .badge-red { background: var(--danger-bg); color: var(--danger); }
-        .badge-yellow { background: var(--warning-bg); color: var(--warning); }
-        .badge-green { background: var(--success-bg); color: var(--success); }
-        .badge-blue { background: var(--info-bg); color: var(--accent); }
+        /* CARDS */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            transition: all 0.25s;
+            margin-bottom: 14px;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .card-header h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            letter-spacing: -0.2px;
+        }
+        .card-header .badge {
+            font-size: 0.68rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .badge-red {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+        .badge-yellow {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+        .badge-green {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+        .badge-blue {
+            background: var(--info-bg);
+            color: var(--accent);
+        }
 
-        .btn { padding: 7px 15px; border-radius: 20px; border: none; cursor: pointer; font-weight: 600; font-size: 0.76rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; letter-spacing: 0.2px; white-space: nowrap; }
-        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(29,111,189,0.25); }
-        .btn-primary:hover { background: #1a5f9f; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(29,111,189,0.35); }
-        .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
-        .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--info-bg); }
-        .btn-sm { padding: 4px 10px; font-size: 0.68rem; border-radius: 14px; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-success { background: var(--success); color: #fff; }
+        /* BUTTONS */
+        .btn {
+            padding: 7px 15px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.76rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(29, 111, 189, 0.25);
+        }
+        .btn-primary:hover {
+            background: #1a5f9f;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(29, 111, 189, 0.35);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--info-bg);
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.68rem;
+            border-radius: 14px;
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
 
-        .timeline-container { display: flex; gap: 4px; flex-wrap: wrap; padding: 6px 0; }
-        .timeline-period { flex: 1; min-width: 100px; padding: 10px 7px; border-radius: var(--radius); text-align: center; cursor: pointer; font-size: 0.68rem; font-weight: 600; transition: all 0.25s; border: 2px solid transparent; position: relative; color: #fff; letter-spacing: 0.1px; box-shadow: var(--shadow-sm); }
-        .timeline-period:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); z-index: 2; }
-        .timeline-period.tl-red { background: #dc2626; border-color: #b91c1c; }
-        .timeline-period.tl-orange { background: #ea580c; border-color: #c2410c; }
-        .timeline-period.tl-yellow { background: #d97706; border-color: #b45309; }
-        .timeline-period.tl-blue { background: #2563eb; border-color: #1d4ed8; }
-        .timeline-period.tl-green { background: #16a34a; border-color: #15803d; }
-        .timeline-period.tl-azure { background: #0891b2; border-color: #0e7490; }
-        .timeline-period.tl-purple { background: #7c3aed; border-color: #6d28d9; }
-        .timeline-period.today-highlight { box-shadow: 0 0 0 5px rgba(255,255,255,0.5), 0 0 25px rgba(0,0,0,0.35) !important; transform: scale(1.06) !important; z-index: 3 !important; animation: glowPulse 2s infinite; }
-        @keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 5px rgba(255,255,255,0.5), 0 0 25px rgba(0,0,0,0.35); } 50% { box-shadow: 0 0 0 10px rgba(255,255,255,0.15), 0 0 40px rgba(0,0,0,0.5); } }
-        .timeline-period .tl-dates { font-size: 0.62rem; opacity: 0.9; margin-bottom: 1px; }
-        .timeline-period .tl-title { font-size: 0.72rem; font-weight: 700; }
-        .timeline-period .tl-focus { font-size: 0.58rem; opacity: 0.85; margin-top: 2px; font-style: italic; }
-        .timeline-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; font-size: 0.65rem; color: var(--text3); }
-        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .indicator-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; flex-shrink: 0; }
-        .dot-green { background: #16a34a; } .dot-yellow { background: #d97706; } .dot-red { background: #dc2626; } .dot-blue { background: #2563eb; }
+        /* TIMELINE */
+        .timeline-container {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            padding: 6px 0;
+        }
+        .timeline-period {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px 7px;
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s;
+            border: 2px solid transparent;
+            position: relative;
+            color: #fff;
+            letter-spacing: 0.1px;
+            box-shadow: var(--shadow-sm);
+        }
+        .timeline-period:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            z-index: 2;
+        }
+        .timeline-period.tl-red {
+            background: #dc2626;
+            border-color: #b91c1c;
+        }
+        .timeline-period.tl-orange {
+            background: #ea580c;
+            border-color: #c2410c;
+        }
+        .timeline-period.tl-yellow {
+            background: #d97706;
+            border-color: #b45309;
+        }
+        .timeline-period.tl-blue {
+            background: #2563eb;
+            border-color: #1d4ed8;
+        }
+        .timeline-period.tl-green {
+            background: #16a34a;
+            border-color: #15803d;
+        }
+        .timeline-period.tl-azure {
+            background: #0891b2;
+            border-color: #0e7490;
+        }
+        .timeline-period.tl-purple {
+            background: #7c3aed;
+            border-color: #6d28d9;
+        }
+        .timeline-period.today-highlight {
+            box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.5), 0 0 25px rgba(0, 0, 0, 0.35) !important;
+            transform: scale(1.06) !important;
+            z-index: 3 !important;
+            animation: glowPulse 2s infinite;
+        }
+        @keyframes glowPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.5), 0 0 25px rgba(0, 0, 0, 0.35);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15), 0 0 40px rgba(0, 0, 0, 0.5);
+            }
+        }
+        .timeline-period .tl-dates {
+            font-size: 0.62rem;
+            opacity: 0.9;
+            margin-bottom: 1px;
+        }
+        .timeline-period .tl-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .timeline-period .tl-focus {
+            font-size: 0.58rem;
+            opacity: 0.85;
+            margin-top: 2px;
+            font-style: italic;
+        }
+        .timeline-legend {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            font-size: 0.65rem;
+            color: var(--text3);
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .indicator-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+        .dot-green {
+            background: #16a34a;
+        }
+        .dot-yellow {
+            background: #d97706;
+        }
+        .dot-red {
+            background: #dc2626;
+        }
+        .dot-blue {
+            background: #2563eb;
+        }
 
-        .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); max-width: 100%; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.74rem; min-width: 800px; }
-        table th, table td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
-        table th { background: var(--surface3); font-weight: 700; color: var(--text2); position: sticky; top: 0; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.6px; z-index: 1; }
-        table tbody tr:hover { background: var(--surface2); }
-        table input, table select { border: 1px solid transparent; padding: 5px 7px; border-radius: 4px; font-size: 0.72rem; width: 100%; background: transparent; color: var(--text); transition: all 0.2s; min-width: 70px; }
-        table input:focus, table select:focus { border-color: var(--accent); background: var(--surface); outline: none; box-shadow: 0 0 0 2px rgba(29,111,189,0.08); }
-        .status-dot-sm { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; }
+        /* TABLES */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            max-width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.74rem;
+            min-width: 800px;
+        }
+        table th,
+        table td {
+            padding: 9px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+        }
+        table th {
+            background: var(--surface3);
+            font-weight: 700;
+            color: var(--text2);
+            position: sticky;
+            top: 0;
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            z-index: 1;
+        }
+        table tbody tr:hover {
+            background: var(--surface2);
+        }
+        table input,
+        table select {
+            border: 1px solid transparent;
+            padding: 5px 7px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            width: 100%;
+            background: transparent;
+            color: var(--text);
+            transition: all 0.2s;
+            min-width: 70px;
+        }
+        table input:focus,
+        table select:focus {
+            border-color: var(--accent);
+            background: var(--surface);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(29, 111, 189, 0.08);
+        }
+        .status-dot-sm {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
 
-        .chart-container { position: relative; width: 100%; height: 220px; max-width: 100%; }
-        canvas { width: 100%; height: 100%; }
+        /* CHARTS */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            max-width: 100%;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
 
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
-        .kpi-card { text-align: center; padding: 16px 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface); transition: all 0.25s; cursor: default; }
-        .kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-        .kpi-card h2 { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; }
-        .kpi-card small { font-size: 0.68rem; color: var(--text3); letter-spacing: 0.3px; text-transform: uppercase; }
-        .kpi-red h2 { color: var(--danger); } .kpi-yellow h2 { color: var(--warning); } .kpi-green h2 { color: var(--success); } .kpi-blue h2 { color: var(--accent); }
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .kpi-card {
+            text-align: center;
+            padding: 16px 12px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            transition: all 0.25s;
+            cursor: default;
+        }
+        .kpi-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .kpi-card h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .kpi-card small {
+            font-size: 0.68rem;
+            color: var(--text3);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .kpi-red h2 {
+            color: var(--danger);
+        }
+        .kpi-yellow h2 {
+            color: var(--warning);
+        }
+        .kpi-green h2 {
+            color: var(--success);
+        }
+        .kpi-blue h2 {
+            color: var(--accent);
+        }
 
-        .alert-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px 13px; border-radius: var(--radius); margin-bottom: 6px; font-size: 0.76rem; border-left: 4px solid; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        .alert-critical { background: var(--danger-bg); border-color: var(--danger); color: #991b1b; } .dark-mode .alert-critical { color: #fca5a5; }
-        .alert-warning { background: var(--warning-bg); border-color: var(--warning); color: #92400e; } .dark-mode .alert-warning { color: #fcd34d; }
-        .alert-info { background: var(--info-bg); border-color: var(--accent); color: #1e40af; } .dark-mode .alert-info { color: #93c5fd; }
-        .alert-success { background: var(--success-bg); border-color: var(--success); color: #166534; } .dark-mode .alert-success { color: #86efac; }
+        /* ALERTS */
+        .alert-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 10px 13px;
+            border-radius: var(--radius);
+            margin-bottom: 6px;
+            font-size: 0.76rem;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .alert-critical {
+            background: var(--danger-bg);
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+        .dark-mode .alert-critical {
+            color: #fca5a5;
+        }
+        .alert-warning {
+            background: var(--warning-bg);
+            border-color: var(--warning);
+            color: #92400e;
+        }
+        .dark-mode .alert-warning {
+            color: #fcd34d;
+        }
+        .alert-info {
+            background: var(--info-bg);
+            border-color: var(--accent);
+            color: #1e40af;
+        }
+        .dark-mode .alert-info {
+            color: #93c5fd;
+        }
+        .alert-success {
+            background: var(--success-bg);
+            border-color: var(--success);
+            color: #166534;
+        }
+        .dark-mode .alert-success {
+            color: #86efac;
+        }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; backdrop-filter: blur(2px); }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal { background: var(--surface); border-radius: var(--radius-xl); padding: 22px 24px; max-width: 700px; width: 92%; max-height: 82vh; overflow-y: auto; box-shadow: var(--shadow-xl); position: relative; border: 1px solid var(--border); }
-        .modal h3 { margin-bottom: 12px; font-size: 1rem; font-weight: 700; }
-        .modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text3); transition: all 0.2s; }
-        .modal-close:hover { color: var(--danger); transform: scale(1.2); }
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+            backdrop-filter: blur(2px);
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 22px 24px;
+            max-width: 700px;
+            width: 92%;
+            max-height: 82vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            border: 1px solid var(--border);
+        }
+        .modal h3 {
+            margin-bottom: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text3);
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--danger);
+            transform: scale(1.2);
+        }
 
-        .search-box { padding: 7px 13px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 0.76rem; width: 180px; background: var(--surface2); color: var(--text); transition: all 0.3s; }
-        .search-box:focus { border-color: var(--accent); outline: none; width: 220px; box-shadow: 0 0 0 3px rgba(29,111,189,0.06); }
+        /* SEARCH */
+        .search-box {
+            padding: 7px 13px;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.76rem;
+            width: 180px;
+            background: var(--surface2);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        .search-box:focus {
+            border-color: var(--accent);
+            outline: none;
+            width: 220px;
+            box-shadow: 0 0 0 3px rgba(29, 111, 189, 0.06);
+        }
 
-        .comp-selector { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 6px 4px 12px; font-size: 0.78rem; font-weight: 600; }
-        .comp-selector select { border: none; background: transparent; font-weight: 700; font-size: 0.78rem; color: var(--accent); cursor: pointer; outline: none; padding: 3px 6px; font-family: inherit; }
-        .comp-selector select option { background: var(--surface); color: var(--text); }
+        /* COMPETENCIA SELECTOR */
+        .comp-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface2);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 6px 4px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .comp-selector select {
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: var(--accent);
+            cursor: pointer;
+            outline: none;
+            padding: 3px 6px;
+            font-family: inherit;
+        }
+        .comp-selector select option {
+            background: var(--surface);
+            color: var(--text);
+        }
 
-        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
-        .status-item { display: flex; align-items: center; gap: 8px; padding: 10px 13px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2); cursor: pointer; transition: all 0.2s; font-size: 0.76rem; font-weight: 500; }
-        .status-item:hover { border-color: var(--accent); background: var(--info-bg); }
-        .status-item.selected { border-color: var(--accent); background: var(--info-bg); box-shadow: 0 0 0 3px rgba(29,111,189,0.08); }
+        /* STATUS GRID */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 13px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.76rem;
+            font-weight: 500;
+        }
+        .status-item:hover {
+            border-color: var(--accent);
+            background: var(--info-bg);
+        }
+        .status-item.selected {
+            border-color: var(--accent);
+            background: var(--info-bg);
+            box-shadow: 0 0 0 3px rgba(29, 111, 189, 0.08);
+        }
 
+        /* RESPONSIVE */
         @media (max-width: 950px) {
-            .sidebar { transform: translateX(-100%); width: 280px; }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; max-width: 100vw; }
-            .topbar .title-section h1 { font-size: 0.8rem; }
-            .hamburger { display: flex !important; }
-            .timeline-period { min-width: 70px; font-size: 0.6rem; padding: 8px 4px; }
-            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            .status-grid { grid-template-columns: repeat(2, 1fr); }
-            .comp-selector { font-size: 0.7rem; padding: 3px 8px; }
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                max-width: 100vw;
+            }
+            .topbar .title-section h1 {
+                font-size: 0.8rem;
+            }
+            .hamburger {
+                display: flex !important;
+            }
+            .timeline-period {
+                min-width: 70px;
+                font-size: 0.6rem;
+                padding: 8px 4px;
+            }
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .comp-selector {
+                font-size: 0.7rem;
+                padding: 3px 8px;
+            }
         }
         @media (min-width: 951px) {
-            .hamburger { display: none; }
-            .sidebar { transform: translateX(0) !important; }
+            .hamburger {
+                display: none;
+            }
+            .sidebar {
+                transform: translateX(0) !important;
+            }
         }
+
+        /* PRINT */
         @media print {
-            .sidebar, .topbar, .btn, .hamburger, .add-task-row, .modal-overlay, .search-box, button, .comp-selector { display: none !important; }
-            .main-content { margin-left: 0 !important; max-width: 100% !important; }
-            body { background: #fff; font-size: 9px; color: #000; }
-            .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; margin-bottom: 6px; }
-            .page { display: block !important; }
-            table { font-size: 7px; }
-            .timeline-period { border: 1px solid #999 !important; color: #000 !important; background: #f5f5f5 !important; }
+            .sidebar,
+            .topbar,
+            .btn,
+            .hamburger,
+            .add-task-row,
+            .modal-overlay,
+            .search-box,
+            button,
+            .comp-selector {
+                display: none !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                max-width: 100% !important;
+            }
+            body {
+                background: #fff;
+                font-size: 9px;
+                color: #000;
+            }
+            .card {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                break-inside: avoid;
+                margin-bottom: 6px;
+            }
+            .page {
+                display: block !important;
+            }
+            table {
+                font-size: 7px;
+            }
+            .timeline-period {
+                border: 1px solid #999 !important;
+                color: #000 !important;
+                background: #f5f5f5 !important;
+            }
         }
-        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; z-index: 999; animation: fadeSlide 0.3s ease; box-shadow: var(--shadow-lg); letter-spacing: 0.2px; }
-        textarea { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; font-family: var(--font-mono); font-size: 0.72rem; resize: vertical; width: 100%; min-height: 80px; }
-        textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(29,111,189,0.06); }
-        .tag { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; }
-        .tag-red { background: var(--danger-bg); color: var(--danger); } .tag-green { background: var(--success-bg); color: var(--success); } .tag-yellow { background: var(--warning-bg); color: var(--warning); } .tag-blue { background: var(--info-bg); color: var(--accent); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            z-index: 999;
+            animation: fadeSlide 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            letter-spacing: 0.2px;
+        }
+
+        /* Textarea */
+        textarea {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            resize: vertical;
+            width: 100%;
+            min-height: 80px;
+        }
+        textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(29, 111, 189, 0.06);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .tag-red {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+        .tag-green {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+        .tag-yellow {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+        .tag-blue {
+            background: var(--info-bg);
+            color: var(--accent);
+        }
     </style>
 </head>
 <body>
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <span class="logo-icon">🏛️</span>
@@ -360,11 +1063,13 @@
         </nav>
         <div class="sidebar-footer">
             UFES · v3.0 · 2026<br>
-            <span class="version-badge">Firebase Realtime</span>
+            <span class="version-badge">IndexedDB</span>
         </div>
     </aside>
 
+    <!-- MAIN -->
     <div class="main-content" id="mainContent">
+        <!-- TOPBAR -->
         <header class="topbar">
             <div style="display:flex;align-items:center;gap:10px;">
                 <button class="hamburger" id="hamburgerBtn" title="Menu">☰</button>
@@ -384,13 +1089,192 @@
             </div>
         </header>
 
+        <!-- CONTENT -->
         <div class="content-area" id="contentArea">
-            <!-- todas as páginas permanecem exatamente iguais, omitidas aqui por brevidade -->
-            <div class="page active" id="page-dashboard"><div class="kpi-grid" id="kpiGrid"></div><div class="card"><div class="card-header"><h3>📈 Progresso da Competência</h3></div><div class="chart-container"><canvas id="chartProgress"></canvas></div></div><div class="card"><div class="card-header"><h3>🔔 Alertas Inteligentes</h3></div><div id="alertasList"></div></div></div>
-            <!-- ... (todas as outras páginas idênticas ao original) ... -->
+
+            <!-- PAGE: DASHBOARD -->
+            <div class="page active" id="page-dashboard">
+                <div class="kpi-grid" id="kpiGrid"></div>
+                <div class="card">
+                    <div class="card-header"><h3>📈 Progresso da Competência</h3></div>
+                    <div class="chart-container"><canvas id="chartProgress"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>🔔 Alertas Inteligentes</h3></div>
+                    <div id="alertasList"></div>
+                </div>
+            </div>
+
+            <!-- PAGE: TIMELINE -->
+            <div class="page" id="page-timeline">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📅 Linha do Tempo Operacional</h3>
+                        <span class="badge badge-blue" id="currentPhaseBadge">Fase Atual</span>
+                    </div>
+                    <div class="timeline-container" id="timelineContainer"></div>
+                    <div class="timeline-legend">
+                        <span><span class="legend-dot" style="background:#dc2626;"></span> Crítico</span>
+                        <span><span class="legend-dot" style="background:#ea580c;"></span> Alto</span>
+                        <span><span class="legend-dot" style="background:#d97706;"></span> Médio</span>
+                        <span><span class="legend-dot" style="background:#2563eb;"></span> Monitoramento</span>
+                        <span><span class="legend-dot" style="background:#16a34a;"></span> Tranquilo</span>
+                        <span><span class="legend-dot" style="background:#7c3aed;"></span> Preventivo</span>
+                    </div>
+                </div>
+                <div class="card" id="timelineDetail" style="display:none;">
+                    <div class="card-header">
+                        <h3>📋 Detalhes do Período</h3>
+                        <button class="btn btn-sm btn-outline" onclick="document.getElementById('timelineDetail').style.display='none'">✕ Fechar</button>
+                    </div>
+                    <div id="timelineDetailContent"></div>
+                </div>
+            </div>
+
+            <!-- PAGE: EQUIPE -->
+            <div class="page" id="page-equipe">
+                <div class="card-header" style="margin-bottom:10px;"><h3>👥 Quadro de Equipe</h3></div>
+                <div class="team-grid" id="teamGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;"></div>
+            </div>
+
+            <!-- PAGE: REJEICOES -->
+            <div class="page" id="page-rejeicoes">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🚫 Rejeições eSocial</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <input type="text" class="search-box" id="searchRejeicoes" placeholder="🔍 Buscar...">
+                            <select id="filterRejEvento" onchange="renderRejeicoes()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
+                                <option value="">Todos eventos</option>
+                                <option>S-1200</option><option>S-1210</option><option>S-1299</option><option>S-2200</option><option>S-2299</option><option>S-2300</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary" onclick="addRejeicao()">+ Nova</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap"><table id="rejeicoesTable"><thead><tr><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód.Erro</th><th>Status</th><th>Resp.</th><th>Competência</th><th>Obs.</th><th>Ação</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- PAGE: RETIDOS -->
+            <div class="page" id="page-retidos">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🔒 Eventos Retidos</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <input type="text" class="search-box" id="searchRetidos" placeholder="🔍 Buscar...">
+                            <select id="filterRetEvento" onchange="renderRetidos()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
+                                <option value="">Todos eventos</option>
+                                <option>S-1200</option><option>S-1210</option><option>S-1299</option><option>S-2200</option><option>S-2299</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary" onclick="addRetido()">+ Novo</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap"><table id="retidosTable"><thead><tr><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód.Erro</th><th>Status</th><th>Resp.</th><th>Competência</th><th>Obs.</th><th>Ação</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- PAGE: FECHAMENTO -->
+            <div class="page" id="page-fechamento">
+                <div class="card">
+                    <div class="card-header"><h3>📝 Painel de Fechamento eSocial</h3></div>
+                    <div class="status-grid" id="fechamentoGrid"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>📊 Status por Evento</h3></div>
+                    <div class="chart-container"><canvas id="chartFechamento"></canvas></div>
+                </div>
+            </div>
+
+            <!-- PAGE: CALENDARIO -->
+            <div class="page" id="page-calendario">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🗓️ Calendário Operacional</h3>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <button class="btn btn-sm btn-outline" onclick="changeCalMonth(-1)">◀</button>
+                            <strong id="calMonthLabel">Junho 2026</strong>
+                            <button class="btn btn-sm btn-outline" onclick="changeCalMonth(1)">▶</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;"></div>
+                </div>
+                <div class="card" id="calDayDetail" style="display:none;">
+                    <div class="card-header"><h3>📝 Detalhes</h3><button class="btn btn-sm btn-outline" onclick="document.getElementById('calDayDetail').style.display='none'">✕</button></div>
+                    <div id="calDayDetailContent"></div>
+                </div>
+            </div>
+
+            <!-- PAGE: GERENCIAL -->
+            <div class="page" id="page-gerencial">
+                <div class="card">
+                    <div class="card-header"><h3>📈 Painel Executivo</h3></div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;" id="gerencialCards"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>📊 Rejeições por Tipo</h3></div>
+                    <div class="chart-container"><canvas id="chartRejeicoes"></canvas></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                    <button class="btn btn-primary" onclick="exportPDF()">📄 PDF</button>
+                    <button class="btn btn-outline" onclick="exportExcel()">📊 Excel</button>
+                    <button class="btn btn-outline" onclick="exportJSON()">💾 Backup JSON</button>
+                    <button class="btn btn-outline" onclick="importJSONPrompt()">📥 Restaurar</button>
+                </div>
+            </div>
+
+            <!-- PAGE: HISTORICO -->
+            <div class="page" id="page-historico">
+                <div class="card">
+                    <div class="card-header"><h3>📚 Histórico Operacional por Competência</h3></div>
+                    <div class="table-wrap"><table id="historicoTable"><thead><tr><th>Competência</th><th>Rejeições</th><th>Retidos</th><th>Retificações</th><th>Multas DCTFWeb</th><th>S-1299 Reabertos</th><th>Vínculos Reg.</th><th>Admissões</th><th>Desligamentos</th></tr></thead><tbody></tbody></table></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>📈 Evolução Histórica</h3></div>
+                    <div class="chart-container"><canvas id="chartHistorico"></canvas></div>
+                </div>
+            </div>
+
+            <!-- PAGE: ACOES -->
+            <div class="page" id="page-acoes">
+                <div class="card">
+                    <div class="card-header"><h3>🚨 Ações Urgentes</h3><button class="btn btn-sm btn-primary" onclick="addUrgentAction()">+ Nova</button></div>
+                    <div id="acoesUrgentesList"></div>
+                </div>
+            </div>
+
+            <!-- PAGE: GERADOR -->
+            <div class="page" id="page-gerador">
+                <div class="card">
+                    <div class="card-header"><h3>🔧 Gerador de Cronograma Operacional</h3></div>
+                    <div style="display:grid;gap:10px;">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <label>Competência:</label>
+                            <input type="month" id="geradorCompetencia" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);">
+                            <button class="btn btn-primary" onclick="gerarCronograma()">🚀 Gerar Timeline</button>
+                        </div>
+                        <label>Cole os períodos (um por linha):</label>
+                        <textarea id="geradorTexto" placeholder="01/07 a 04/07 | Transmissão S-1210 | eSocial Exclusivo | Crítico&#10;05/07 | Fechamento S-1299 | eSocial Crítico | Crítico&#10;..."></textarea>
+                        <small style="color:var(--text3);">Formato: data(s) | título | foco operacional | criticidade (Crítico/Alto/Médio/Baixo)</small>
+                    </div>
+                </div>
+                <div class="card" id="geradorPreview" style="display:none;">
+                    <div class="card-header"><h3>👁️ Prévia do Cronograma</h3></div>
+                    <div id="geradorPreviewContent"></div>
+                </div>
+            </div>
+
+            <!-- PAGE: IMPORTAR -->
+            <div class="page" id="page-importar">
+                <div class="card">
+                    <div class="card-header"><h3>📥 Importar Cronograma</h3></div>
+                    <textarea id="importarTexto" placeholder="Cole aqui o texto do cronograma...&#10;&#10;Exemplo:&#10;01/07 a 04/07 | Transmissão S-1210 | eSocial Exclusivo | Crítico&#10;05/07 | Fechamento S-1299 | eSocial Crítico | Crítico"></textarea>
+                    <button class="btn btn-primary" style="margin-top:8px;" onclick="importarCronograma()">📥 Importar e Aplicar</button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- MODAL -->
     <div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="closeModal(event)">
         <div class="modal" id="modalBox" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModalDirect()">✕</button>
@@ -400,7 +1284,7 @@
 
     <script>
         (function() {
-            // ==================== INDEXEDDB (cache local) ====================
+            // ==================== INDEXEDDB ====================
             const DB_NAME = 'GovernancaSiapeESocial';
             const DB_VERSION = 3;
             let db = null;
@@ -410,74 +1294,115 @@
                     const request = indexedDB.open(DB_NAME, DB_VERSION);
                     request.onupgradeneeded = function(e) {
                         const db = e.target.result;
-                        if (!db.objectStoreNames.contains('state')) db.createObjectStore('state', { keyPath: 'id' });
+                        if (!db.objectStoreNames.contains('state')) {
+                            db.createObjectStore('state', { keyPath: 'id' });
+                        }
                         if (!db.objectStoreNames.contains('competencias')) {
                             const store = db.createObjectStore('competencias', { keyPath: 'key' });
                             store.createIndex('nome', 'nome', { unique: false });
                         }
                     };
-                    request.onsuccess = function(e) { db = e.target.result; resolve(db); };
-                    request.onerror = (e) => reject(e);
+                    request.onsuccess = function(e) {
+                        db = e.target.result;
+                        resolve(db);
+                    };
+                    request.onerror = function(e) {
+                        console.error('IndexedDB error:', e);
+                        reject(e);
+                    };
                 });
             }
 
-            async function dbPut(storeName, data) {
-                if (!db) return;
+            function dbPut(storeName, data) {
                 return new Promise((resolve, reject) => {
+                    if (!db) { reject('DB not open'); return; }
                     const tx = db.transaction(storeName, 'readwrite');
-                    tx.objectStore(storeName).put(data);
-                    tx.oncomplete = resolve;
+                    const store = tx.objectStore(storeName);
+                    store.put(data);
+                    tx.oncomplete = () => resolve();
                     tx.onerror = (e) => reject(e);
                 });
             }
 
-            async function dbGet(storeName, key) {
-                if (!db) return null;
+            function dbGet(storeName, key) {
                 return new Promise((resolve, reject) => {
+                    if (!db) { reject('DB not open'); return; }
                     const tx = db.transaction(storeName, 'readonly');
-                    const req = tx.objectStore(storeName).get(key);
+                    const store = tx.objectStore(storeName);
+                    const req = store.get(key);
                     req.onsuccess = () => resolve(req.result);
                     req.onerror = (e) => reject(e);
                 });
             }
 
-            async function dbGetAll(storeName) {
-                if (!db) return [];
+            function dbGetAll(storeName) {
                 return new Promise((resolve, reject) => {
+                    if (!db) { reject('DB not open'); return; }
                     const tx = db.transaction(storeName, 'readonly');
-                    const req = tx.objectStore(storeName).getAll();
+                    const store = tx.objectStore(storeName);
+                    const req = store.getAll();
                     req.onsuccess = () => resolve(req.result);
                     req.onerror = (e) => reject(e);
                 });
             }
 
-            // ==================== DADOS INICIAIS ====================
+            function dbDelete(storeName, key) {
+                return new Promise((resolve, reject) => {
+                    if (!db) { reject('DB not open'); return; }
+                    const tx = db.transaction(storeName, 'readwrite');
+                    const store = tx.objectStore(storeName);
+                    store.delete(key);
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = (e) => reject(e);
+                });
+            }
+
+            // ==================== STATE ====================
             const DEFAULT_TIMELINE = [
-                { id: 'p1', start: '2026-06-01', end: '2026-06-04', title: 'Transmissão S-1210', foco: 'eSocial Exclusivo', criticity: 'Crítico', cor: 'tl-red', disponibilidadeSetores: 'Não', impactoESocial: 'Fechamento em andamento', desc: 'Período crítico. Prioridade total eSocial.' },
-                { id: 'p2', start: '2026-06-05', end: '2026-06-05', title: 'Fechamento S-1299', foco: 'eSocial Crítico', criticity: 'Crítico', cor: 'tl-red', disponibilidadeSetores: 'Não', impactoESocial: 'Fechamento em andamento', desc: 'Data limite! Fechamento do evento S-1299.' },
-                { id: 'p3', start: '2026-06-06', end: '2026-06-11', title: 'Pré-homologação', foco: 'CARP/SPD Prioritário', criticity: 'Alto', cor: 'tl-orange', disponibilidadeSetores: 'Parcial', impactoESocial: 'Evitar alterações estruturais', desc: 'Apoio aos setores e saneamento.' },
-                { id: 'p4', start: '2026-06-12', end: '2026-06-15', title: 'Homologação da Folha', foco: 'Homologação da Folha', criticity: 'Médio', cor: 'tl-yellow', disponibilidadeSetores: 'Parcial', impactoESocial: 'Período seguro', desc: 'Pré-cálculo e homologação.' },
-                { id: 'p5', start: '2026-06-16', end: '2026-06-21', title: 'Pós-homologação', foco: 'Monitoramento Crítico', criticity: 'Médio', cor: 'tl-blue', disponibilidadeSetores: 'Sim', impactoESocial: 'Período seguro', desc: 'Monitoramento eSocial e ajustes.' },
-                { id: 'p6', start: '2026-06-22', end: '2026-06-30', title: 'Nova Folha', foco: 'Preventivo Integrado', criticity: 'Baixo', cor: 'tl-green', disponibilidadeSetores: 'Sim', impactoESocial: 'Período seguro', desc: 'Atuação preventiva.' },
+                { id: 'p1', start: '2026-06-01', end: '2026-06-04', title: 'Transmissão S-1210', foco: 'eSocial Exclusivo',
+                    criticity: 'Crítico', cor: 'tl-red', disponibilidadeSetores: 'Não', impactoESocial: 'Fechamento em andamento',
+                    desc: 'Período crítico. Prioridade total eSocial. Evitar retificações.' },
+                { id: 'p2', start: '2026-06-05', end: '2026-06-05', title: 'Fechamento S-1299', foco: 'eSocial Crítico',
+                    criticity: 'Crítico', cor: 'tl-red', disponibilidadeSetores: 'Não',
+                    impactoESocial: 'Fechamento em andamento', desc: 'Data limite! Fechamento do evento S-1299.' },
+                { id: 'p3', start: '2026-06-06', end: '2026-06-11', title: 'Pré-homologação', foco: 'CARP/SPD Prioritário',
+                    criticity: 'Alto', cor: 'tl-orange', disponibilidadeSetores: 'Parcial',
+                    impactoESocial: 'Evitar alterações estruturais', desc: 'Apoio aos setores e saneamento.' },
+                { id: 'p4', start: '2026-06-12', end: '2026-06-15', title: 'Homologação da Folha',
+                    foco: 'Homologação da Folha', criticity: 'Médio', cor: 'tl-yellow', disponibilidadeSetores: 'Parcial',
+                    impactoESocial: 'Período seguro', desc: 'Pré-cálculo e homologação. Foco CARP/SPD.' },
+                { id: 'p5', start: '2026-06-16', end: '2026-06-21', title: 'Pós-homologação',
+                    foco: 'Monitoramento Crítico', criticity: 'Médio', cor: 'tl-blue', disponibilidadeSetores: 'Sim',
+                    impactoESocial: 'Período seguro', desc: 'Monitoramento eSocial e ajustes.' },
+                { id: 'p6', start: '2026-06-22', end: '2026-06-30', title: 'Nova Folha', foco: 'Preventivo Integrado',
+                    criticity: 'Baixo', cor: 'tl-green', disponibilidadeSetores: 'Sim', impactoESocial: 'Período seguro',
+                    desc: 'Atuação preventiva. Planejamento da próxima folha.' },
             ];
 
             const DEFAULT_STATE = {
                 currentCompetencia: '2026-06',
                 timeline: JSON.parse(JSON.stringify(DEFAULT_TIMELINE)),
                 teamTasks: {
-                    roni: [{ text: 'Verificar transmissão S-1210', done: false }, { text: 'Revisar pendências CARP', done: false }],
-                    rafael: [{ text: 'Validar dados SPD', done: false }, { text: 'Conferir retificações', done: false }],
-                    fabianne: [{ text: 'Saneamento de base', done: false }, { text: 'Apoio aos setores', done: false }],
+                    roni: [{ text: 'Verificar transmissão S-1210', done: false }, { text: 'Revisar pendências CARP',
+                        done: false }],
+                    rafael: [{ text: 'Validar dados SPD', done: false }, { text: 'Conferir retificações',
+                    done: false }],
+                    fabianne: [{ text: 'Saneamento de base', done: false }, { text: 'Apoio aos setores',
+                        done: false }],
                 },
                 rejeicoes: [],
                 retidos: [],
                 fechamentoStatus: {
-                    'S-1200': { status: 'ok', obs: '' }, 'S-1210': { status: 'pendente', obs: 'Aguardando transmissão' },
-                    'S-1299': { status: 'nao_fechado', obs: '' }, 'S-2200': { status: 'ok', obs: '' },
-                    'S-2299': { status: 'rejeicoes', obs: '2 rejeições pendentes' }, 'S-2300': { status: 'ok', obs: '' },
+                    'S-1200': { status: 'ok', obs: '' },
+                    'S-1210': { status: 'pendente', obs: 'Aguardando transmissão' },
+                    'S-1299': { status: 'nao_fechado', obs: '' },
+                    'S-2200': { status: 'ok', obs: '' },
+                    'S-2299': { status: 'rejeicoes', obs: '2 rejeições pendentes' },
+                    'S-2300': { status: 'ok', obs: '' },
                 },
                 calendarEvents: {},
-                calMonth: 5, calYear: 2026,
+                calMonth: 5,
+                calYear: 2026,
                 urgentActions: [
                     { text: 'Fechamento S-1299 - prioridade máxima', done: false, priority: 'critical' },
                     { text: 'Evitar retificações no período crítico', done: false, priority: 'warning' },
@@ -486,66 +1411,62 @@
                 historico: {},
             };
 
-            // Estado global
             let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-            let allCompetencias = {};
-            window.allCompetencias = allCompetencias;
+
             window.state = state;
-            window.DEFAULT_STATE_DEEP = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            let allCompetencias = {}; // key -> { timeline, rejeicoes, retidos, historicoEntry, ... }
 
-            // ==================== PERSISTÊNCIA HÍBRIDA ====================
-            async function saveAllState(skipFirebase = false) {
-                // Atualiza cache local
+            // ==================== INIT ====================
+            async function initApp() {
                 try {
-                    if (db) {
-                        await dbPut('state', { id: 'global', data: state });
-                        for (const [key, data] of Object.entries(allCompetencias)) {
-                            await dbPut('competencias', { key, data });
-                        }
+                    await openDB();
+                    // Load global state
+                    const savedState = await dbGet('state', 'global');
+                    if (savedState && savedState.data) {
+                        state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), savedState.data);
                     }
-                } catch (e) { console.warn('IndexedDB save error:', e); }
-
-                // Envia para Firebase (se disponível e não for skip)
-                if (!skipFirebase && window.syncToFirebase) {
-                    window.syncToFirebase(state, allCompetencias);
+                    // Load all competencias
+                    const allComps = await dbGetAll('competencias');
+                    allCompetencias = {};
+                    allComps.forEach(c => { allCompetencias[c.key] = c.data; });
+                    // Ensure current competencia exists
+                    ensureCompetencia(state.currentCompetencia);
+                    // Apply dark mode
+                    if (state.darkMode) document.body.classList.add('dark-mode');
+                    // Render
+                    populateCompetenciaSelect();
+                    renderAll();
+                    setupEventListeners();
+                    // Clock
+                    setInterval(updateClock, 1000);
+                    updateClock();
+                    // Periodic save
+                    setInterval(saveAllState, 15000);
+                    console.log('✅ Governança Operacional SIAPE + eSocial v3.0 iniciado.');
+                    console.log('💾 IndexedDB ativo. Dados salvos automaticamente.');
+                } catch (e) {
+                    console.error('Falha ao iniciar:', e);
+                    // Fallback: tentar LocalStorage
+                    try {
+                        const raw = localStorage.getItem('gov_fallback');
+                        if (raw) state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), JSON.parse(raw));
+                    } catch (e2) {}
+                    renderAll();
+                    setupEventListeners();
+                    setInterval(updateClock, 1000);
+                    updateClock();
+                    console.warn('⚠️ Usando fallback LocalStorage.');
                 }
-                // Feedback visual
-                showToast('💾 Sincronizado');
             }
 
-            // Expõe para o listener do Firebase poder salvar localmente sem disparar upload
-            window._saveToIndexedDB = async function() {
-                try {
-                    if (db) {
-                        await dbPut('state', { id: 'global', data: state });
-                        for (const [key, data] of Object.entries(allCompetencias)) {
-                            await dbPut('competencias', { key, data });
-                        }
-                    }
-                } catch (e) {}
-            };
-
-            function deepMerge(base, override) {
-                const result = JSON.parse(JSON.stringify(base));
-                for (const key in override) {
-                    if (override.hasOwnProperty(key)) {
-                        if (typeof override[key] === 'object' && !Array.isArray(override[key]) && override[key] !== null && base[key] !== undefined && !Array.isArray(base[key])) {
-                            result[key] = deepMerge(base[key], override[key]);
-                        } else {
-                            result[key] = override[key];
-                        }
-                    }
-                }
-                return result;
-            }
-
-            // ==================== COMPETÊNCIA ====================
             function ensureCompetencia(key) {
                 if (!allCompetencias[key]) {
                     allCompetencias[key] = {
                         timeline: JSON.parse(JSON.stringify(DEFAULT_TIMELINE)),
-                        rejeicoes: [], retidos: [],
-                        historicoEntry: { rejeicoes: 0, retidos: 0, retificacoes: 0, multasDCTF: 0, s1299Reabertos: 0, vinculosReg: 0, admissoes: 0, desligamentos: 0 },
+                        rejeicoes: [],
+                        retidos: [],
+                        historicoEntry: { rejeicoes: 0, retidos: 0, retificacoes: 0, multasDCTF: 0, s1299Reabertos: 0,
+                            vinculosReg: 0, admissoes: 0, desligamentos: 0 },
                         fechamentoStatus: JSON.parse(JSON.stringify(DEFAULT_STATE.fechamentoStatus)),
                     };
                 }
@@ -558,6 +1479,37 @@
                 return allCompetencias[key];
             }
 
+            async function saveAllState() {
+                try {
+                    if (!db) return;
+                    await dbPut('state', { id: 'global', data: state });
+                    // Save all competencias
+                    for (const [key, data] of Object.entries(allCompetencias)) {
+                        await dbPut('competencias', { key, data });
+                    }
+                    // Fallback
+                    try { localStorage.setItem('gov_fallback', JSON.stringify(state)); } catch (e) {}
+                } catch (e) {
+                    console.warn('Erro ao salvar:', e);
+                }
+            }
+
+            function deepMerge(base, override) {
+                const result = JSON.parse(JSON.stringify(base));
+                for (const key in override) {
+                    if (override.hasOwnProperty(key)) {
+                        if (typeof override[key] === 'object' && !Array.isArray(override[key]) && override[key] !==
+                            null && base[key] !== undefined && !Array.isArray(base[key])) {
+                            result[key] = deepMerge(base[key], override[key]);
+                        } else {
+                            result[key] = override[key];
+                        }
+                    }
+                }
+                return result;
+            }
+
+            // ==================== COMPETENCIA ====================
             function populateCompetenciaSelect() {
                 const sel = document.getElementById('competenciaSelect');
                 if (!sel) return;
@@ -568,9 +1520,14 @@
                     const nome = `${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(m)-1]}/${y}`;
                     return `<option value="${k}" ${k===state.currentCompetencia?'selected':''}>${nome}</option>`;
                 }).join('');
+                if (!allCompetencias[state.currentCompetencia]) {
+                    ensureCompetencia(state.currentCompetencia);
+                    populateCompetenciaSelect();
+                }
             }
 
             window.changeCompetencia = function(key) {
+                // Save current comp data before switching
                 const compData = getCompData();
                 compData.rejeicoes = [...state.rejeicoes];
                 compData.retidos = [...state.retidos];
@@ -584,15 +1541,23 @@
                 state.rejeicoes = newComp.rejeicoes || [];
                 state.retidos = newComp.retidos || [];
                 state.timeline = newComp.timeline || JSON.parse(JSON.stringify(DEFAULT_TIMELINE));
-                state.fechamentoStatus = newComp.fechamentoStatus || JSON.parse(JSON.stringify(DEFAULT_STATE.fechamentoStatus));
+                state.fechamentoStatus = newComp.fechamentoStatus || JSON.parse(JSON.stringify(DEFAULT_STATE
+                .fechamentoStatus));
                 saveAllState();
                 renderAll();
                 populateCompetenciaSelect();
+                showToast('📆 Competência alterada para ' + formatCompKey(key));
             };
 
-            // ==================== RENDERIZAÇÃO ====================
+            function formatCompKey(key) {
+                const [y, m] = key.split('-');
+                const nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                return nomes[parseInt(m) - 1] + '/' + y;
+            }
+
+            // ==================== RENDER ====================
             function renderAll() {
-                updateKPIs();
+                renderDashboard();
                 renderTimeline();
                 renderTeam();
                 renderRejeicoes();
@@ -603,10 +1568,14 @@
                 renderHistorico();
                 renderUrgentActions();
                 updatePhaseIndicator();
+                updateKPIs();
+            }
+
+            function renderDashboard() {
+                updateKPIs();
                 renderAlerts();
                 drawProgressChart();
             }
-            window.renderAll = renderAll;
 
             function updateKPIs() {
                 const grid = document.getElementById('kpiGrid');
@@ -620,102 +1589,1025 @@
                 const fechOk = Object.values(state.fechamentoStatus).filter(s => s.status === 'ok').length;
                 const fechTotal = Object.keys(state.fechamentoStatus).length;
                 grid.innerHTML = `
-                    <div class="kpi-card kpi-red"><h2>${rejPend}</h2><small>Rejeições Pendentes</small></div>
-                    <div class="kpi-card kpi-yellow"><h2>${retPend}</h2><small>Eventos Retidos</small></div>
-                    <div class="kpi-card kpi-green"><h2>${resolvidos}</h2><small>Resolvidos</small></div>
-                    <div class="kpi-card kpi-blue"><h2>${progresso}%</h2><small>Progresso</small></div>
-                    <div class="kpi-card" style="background:var(--info-bg);"><h2 style="color:var(--accent);">${fechOk}/${fechTotal}</h2><small>Eventos Fechados</small></div>
-                    <div class="kpi-card" style="background:var(--surface2);"><h2 style="color:var(--text);">${compData.historicoEntry?.admissoes||0}</h2><small>Admissões</small></div>
-                `;
+            <div class="kpi-card kpi-red"><h2>${rejPend}</h2><small>Rejeições Pendentes</small></div>
+            <div class="kpi-card kpi-yellow"><h2>${retPend}</h2><small>Eventos Retidos</small></div>
+            <div class="kpi-card kpi-green"><h2>${resolvidos}</h2><small>Resolvidos</small></div>
+            <div class="kpi-card kpi-blue"><h2>${progresso}%</h2><small>Progresso</small></div>
+            <div class="kpi-card" style="background:var(--info-bg);"><h2 style="color:var(--accent);">${fechOk}/${fechTotal}</h2><small>Eventos Fechados</small></div>
+            <div class="kpi-card" style="background:var(--surface2);"><h2 style="color:var(--text);">${compData.historicoEntry?.admissoes||0}</h2><small>Admissões</small></div>
+          `;
             }
 
             function renderAlerts() {
                 const container = document.getElementById('alertasList');
                 if (!container) return;
-                const phase = getCurrentPhase();
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
                 const alerts = [];
-                if (phase && phase.criticity === 'Crítico') alerts.push({ type: 'critical', text: '🚨 Período Crítico! Foco: ' + (phase.foco || 'eSocial') });
-                if (phase && phase.criticity === 'Alto') alerts.push({ type: 'warning', text: '⚠️ Período de Alta criticidade.' });
-                if (phase && phase.disponibilidadeSetores === 'Sim') alerts.push({ type: 'success', text: '✅ Equipe liberada para atuação setorial.' });
-                if (phase && phase.impactoESocial === 'Fechamento em andamento') alerts.push({ type: 'critical', text: '🔴 Fechamento em andamento. NÃO realizar alterações.' });
-                if (alerts.length === 0) alerts.push({ type: 'info', text: 'ℹ️ Monitoramento operacional em andamento.' });
-                container.innerHTML = alerts.map(a => `<div class="alert-item alert-${a.type}"><span>${a.text}</span></div>`).join('');
+                const phase = getCurrentPhase();
+                if (phase && phase.criticity === 'Crítico') {
+                    alerts.push({ type: 'critical',
+                        text: '🚨 Período Crítico! Foco: ' + (phase.foco || 'eSocial') +
+                        '. Evitar retificações e alterações estruturais.' });
+                }
+                if (phase && phase.criticity === 'Alto') {
+                    alerts.push({ type: 'warning', text: '⚠️ Período de Alta criticidade. Atenção redobrada às transmissões.' });
+                }
+                if (phase && phase.disponibilidadeSetores === 'Sim') {
+                    alerts.push({ type: 'success', text: '✅ Equipe liberada para atuação setorial neste período.' });
+                }
+                if (phase && phase.impactoESocial === 'Fechamento em andamento') {
+                    alerts.push({ type: 'critical', text: '🔴 Fechamento em andamento. NÃO realizar alterações estruturais.' });
+                }
+                if (phase && phase.foco === 'Preventivo Integrado') {
+                    alerts.push({ type: 'info', text: '🔵 Período ideal para saneamento preventivo e planejamento.' });
+                }
+                if (alerts.length === 0) {
+                    alerts.push({ type: 'info', text: 'ℹ️ Monitoramento operacional em andamento.' });
+                }
+                container.innerHTML = alerts.map(a => `
+            <div class="alert-item alert-${a.type}"><span>${a.text}</span></div>
+          `).join('');
             }
 
             function getCurrentPhase() {
-                const today = new Date().toISOString().split('T')[0];
-                for (const p of state.timeline) if (today >= p.start && today <= p.end) return p;
-                return state.timeline.length > 0 ? state.timeline[state.timeline.length-1] : null;
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+                for (const p of state.timeline) {
+                    if (todayStr >= p.start && todayStr <= p.end) return p;
+                }
+                if (state.timeline.length > 0 && todayStr < state.timeline[0].start) {
+                    return { ...state.timeline[0], criticity: 'Aproximando', foco: 'Preparação',
+                        disponibilidadeSetores: 'Parcial', impactoESocial: 'Preparar documentação' };
+                }
+                return state.timeline.length > 0 ? state.timeline[state.timeline.length - 1] : null;
             }
 
             function updatePhaseIndicator() {
                 const phase = getCurrentPhase();
                 const indicator = document.getElementById('phaseIndicator');
+                const badge = document.getElementById('currentPhaseBadge');
                 if (indicator && phase) {
-                    const criticityMap = { 'Crítico': 'phase-critical', 'Alto': 'phase-high', 'Médio': 'phase-medium', 'Baixo': 'phase-low' };
-                    const emojiMap = { 'Crítico': '🔴', 'Alto': '🟠', 'Médio': '🟡', 'Baixo': '🟢' };
+                    const criticityMap = { 'Crítico': 'phase-critical', 'Alto': 'phase-high', 'Médio': 'phase-medium',
+                        'Baixo': 'phase-low', 'Aproximando': 'phase-high' };
+                    const emojiMap = { 'Crítico': '🔴', 'Alto': '🟠', 'Médio': '🟡', 'Baixo': '🟢',
+                    'Aproximando': '🟠' };
                     indicator.textContent = (emojiMap[phase.criticity] || '⚪') + ' ' + (phase.criticity || 'Normal');
                     indicator.className = 'pill pill-phase ' + (criticityMap[phase.criticity] || 'phase-medium');
                 }
+                if (badge && phase) badge.textContent = phase.title || 'Fase Atual';
             }
 
             function updateClock() {
+                const now = new Date();
                 const clock = document.getElementById('clockDisplay');
-                if (clock) clock.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                if (clock) clock.textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit',
+                    second: '2-digit' });
             }
 
-            // ... (demais funções: renderTimeline, renderTeam, renderRejeicoes, renderRetidos, renderFechamento, renderCalendar, etc. - idênticas ao original, mas todas chamam saveAllState() ao final de cada alteração)
+            // ==================== TIMELINE ====================
+            function renderTimeline() {
+                const container = document.getElementById('timelineContainer');
+                if (!container) return;
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+                container.innerHTML = state.timeline.map(p => {
+                    const isToday = todayStr >= p.start && todayStr <= p.end;
+                    const startFmt = formatDateBR(p.start);
+                    const endFmt = formatDateBR(p.end);
+                    const dispMap = { 'Sim': '🟢', 'Parcial': '🟡', 'Não': '🔴' };
+                    return `
+              <div class="timeline-period ${p.cor} ${isToday?'today-highlight':''}"
+                   onclick="showTimelineDetail('${p.id}')" title="Clique para detalhes">
+                <div class="tl-dates">${startFmt} → ${endFmt}</div>
+                <div class="tl-title">${p.title}</div>
+                <div class="tl-focus">🎯 ${p.foco||''}</div>
+                <div style="font-size:0.55rem;opacity:0.8;">Setores: ${dispMap[p.disponibilidadeSetores]||'⚪'} ${p.disponibilidadeSetores||'N/D'}</div>
+              </div>`;
+                }).join('');
+            }
 
-            // ==================== INICIALIZAÇÃO ====================
-            async function initApp() {
-                try {
-                    await openDB();
-                    const savedState = await dbGet('state', 'global');
-                    if (savedState && savedState.data) state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), savedState.data);
-                    const allComps = await dbGetAll('competencias');
-                    allComps.forEach(c => { allCompetencias[c.key] = c.data; });
-                    ensureCompetencia(state.currentCompetencia);
-                    if (state.darkMode) document.body.classList.add('dark-mode');
-                    populateCompetenciaSelect();
-                    renderAll();
-                    setupEventListeners();
-                    setInterval(updateClock, 1000);
-                    updateClock();
-                    // Inicializa Firebase após tudo pronto
-                    if (window.initFirebase) await window.initFirebase();
-                    // Força primeira sincronização
-                    setTimeout(() => saveAllState(), 1500);
-                    console.log('✅ Plataforma pronta com sincronização em tempo real.');
-                } catch (e) {
-                    console.warn('Fallback LocalStorage:', e);
-                    renderAll();
-                    setupEventListeners();
-                    setInterval(updateClock, 1000);
-                    updateClock();
+            window.showTimelineDetail = function(periodId) {
+                const p = state.timeline.find(x => x.id === periodId);
+                if (!p) return;
+                const detailDiv = document.getElementById('timelineDetail');
+                const content = document.getElementById('timelineDetailContent');
+                if (!detailDiv || !content) return;
+                const dispMap = { 'Sim': '🟢 SIM', 'Parcial': '🟡 PARCIAL', 'Não': '🔴 NÃO' };
+                content.innerHTML = `
+            <h4>${p.title}</h4>
+            <p><strong>📅 Período:</strong> ${formatDateBR(p.start)} a ${formatDateBR(p.end)}</p>
+            <p><strong>🎯 Foco Operacional:</strong> ${p.foco||'N/D'}</p>
+            <p><strong>⚡ Criticidade:</strong> <span class="tag tag-${p.criticity==='Crítico'?'red':p.criticity==='Alto'?'yellow':p.criticity==='Médio'?'yellow':'green'}">${p.criticity}</span></p>
+            <p><strong>🏢 Disponibilidade para Setores:</strong> ${dispMap[p.disponibilidadeSetores]||'N/D'}</p>
+            <p><strong>📋 Impacto eSocial:</strong> ${p.impactoESocial||'N/D'}</p>
+            <p>${p.desc||''}</p>
+          `;
+                detailDiv.style.display = 'block';
+                detailDiv.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            // ==================== TEAM ====================
+            function renderTeam() {
+                const grid = document.getElementById('teamGrid');
+                if (!grid) return;
+                const members = [
+                    { id: 'roni', name: 'Roni', role: 'CARP', avatarClass: 'av-roni', emoji: '👨‍💼',
+                        color: '#4f46e5' },
+                    { id: 'rafael', name: 'Rafael', role: 'SPD', avatarClass: 'av-rafael', emoji: '👨‍💻',
+                    color: '#059669' },
+                    { id: 'fabianne', name: 'Fabianne', role: 'SPD', avatarClass: 'av-fabianne', emoji: '👩‍💻',
+                        color: '#b45389' },
+                ];
+                grid.innerHTML = members.map(m => {
+                    const tasks = state.teamTasks[m.id] || [];
+                    const doneCount = tasks.filter(t => t.done).length;
+                    const total = tasks.length;
+                    const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+                    return `
+              <div class="card" style="border-top:3px solid ${m.color};">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <div style="width:40px;height:40px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;">${m.emoji}</div>
+                  <div><h4 style="font-size:0.85rem;">${m.name}</h4><small style="color:var(--text3);">${m.role}</small></div>
+                  <div style="margin-left:auto;font-weight:700;font-size:0.85rem;">${pct}%</div>
+                </div>
+                <div style="background:var(--border);border-radius:6px;height:6px;margin:6px 0;overflow:hidden;">
+                  <div style="height:100%;border-radius:6px;width:${pct}%;background:${pct===100?'#16a34a':m.color};transition:width 0.5s;"></div>
+                </div>
+                <ul style="list-style:none;max-height:120px;overflow-y:auto;font-size:0.72rem;">
+                  ${tasks.map((t,i)=>`
+                    <li style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border-light);cursor:pointer;${t.done?'text-decoration:line-through;opacity:0.5;':''}" onclick="toggleTask('${m.id}',${i})">
+                      <input type="checkbox" ${t.done?'checked':''} style="cursor:pointer;width:14px;height:14px;" onclick="event.stopPropagation();toggleTask('${m.id}',${i})">
+                      ${t.text}
+                      <button style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:0.6rem;opacity:0.4;" onclick="event.stopPropagation();deleteTask('${m.id}',${i})">🗑️</button>
+                    </li>
+                  `).join('')}
+                </ul>
+                <div style="display:flex;gap:4px;margin-top:6px;">
+                  <input type="text" placeholder="Nova tarefa..." id="taskInput_${m.id}" style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:14px;font-size:0.7rem;background:var(--surface2);color:var(--text);" onkeydown="if(event.key==='Enter')addTask('${m.id}')">
+                  <button class="btn btn-sm btn-primary" onclick="addTask('${m.id}')">+</button>
+                </div>
+                <input type="text" placeholder="Observações..." style="width:100%;margin-top:4px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.65rem;background:var(--surface2);color:var(--text);" value="${state.teamTasks[m.id+'_obs']||''}" onchange="updateMemberObs('${m.id}',this.value)">
+              </div>`;
+                }).join('');
+            }
+            window.renderTeam = renderTeam;
+
+            window.toggleTask = function(memberId, idx) {
+
+if (state.teamTasks[memberId] && state.teamTasks[memberId][idx]) {
+
+    state.teamTasks[memberId][idx].done =
+        !state.teamTasks[memberId][idx].done;
+
+    saveAllState();
+
+    syncTeamTasksFirebase();
+
+    renderTeam();
+
+}
+
+};
+
+          window.deleteTask = function(memberId, idx) {
+
+if (state.teamTasks[memberId]) {
+
+    state.teamTasks[memberId].splice(idx, 1);
+
+    saveAllState();
+
+    syncTeamTasksFirebase();
+
+    renderTeam();
+
+}
+};
+
+           window.addTask = function(memberId) {
+
+const input =
+    document.getElementById('taskInput_' + memberId);
+
+if (!input || !input.value.trim()) return;
+
+if (!state.teamTasks[memberId])
+    state.teamTasks[memberId] = [];
+
+state.teamTasks[memberId].push({
+    text: input.value.trim(),
+    done: false
+});
+
+input.value = '';
+
+saveAllState();
+
+syncFullStateFirebase();
+
+document.getElementById('view-team').innerHTML =
+    views.team();
+
+renderTeam();
+
+};
+
+           window.updateMemberObs = function(memberId, value) {
+
+state.teamTasks[memberId + '_obs'] = value;
+
+saveAllState();
+
+syncTeamTasksFirebase();
+
+};
+
+
+            // ==================== REJEICOES ====================
+            function renderRejeicoes() {
+                const tbody = document.querySelector('#rejeicoesTable tbody');
+                if (!tbody) return;
+                const searchText = (document.getElementById('searchRejeicoes')?.value || '').toLowerCase();
+                const filtroEvento = document.getElementById('filterRejEvento')?.value || '';
+                let filtered = state.rejeicoes;
+                if (searchText) filtered = filtered.filter(r => (r.cpf + r.nome + r.evento + r.responsavel).toLowerCase()
+                    .includes(searchText));
+                if (filtroEvento) filtered = filtered.filter(r => r.evento === filtroEvento);
+                tbody.innerHTML = filtered.map((r, i) => {
+                    const realIdx = state.rejeicoes.indexOf(r);
+                    return `
+              <tr>
+                <td><input value="${escHtml(r.cpf||'')}" onchange="updateRejeicao(${realIdx},'cpf',this.value)"></td>
+                <td><input value="${escHtml(r.nome||'')}" onchange="updateRejeicao(${realIdx},'nome',this.value)"></td>
+                <td><input value="${escHtml(r.evento||'')}" onchange="updateRejeicao(${realIdx},'evento',this.value)"></td>
+                <td><input value="${escHtml(r.codErro||'')}" onchange="updateRejeicao(${realIdx},'codErro',this.value)"></td>
+                <td><select onchange="updateRejeicao(${realIdx},'status',this.value)">
+                  <option value="pendente" ${r.status==='pendente'?'selected':''}>🔴 Pendente</option>
+                  <option value="andamento" ${r.status==='andamento'?'selected':''}>🟡 Andamento</option>
+                  <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Resolvido</option>
+                </select></td>
+                <td><select onchange="updateRejeicao(${realIdx},'responsavel',this.value)">
+                  <option ${r.responsavel==='Roni'?'selected':''}>Roni</option>
+                  <option ${r.responsavel==='Rafael'?'selected':''}>Rafael</option>
+                  <option ${r.responsavel==='Fabianne'?'selected':''}>Fabianne</option>
+                </select></td>
+                <td><input value="${escHtml(r.competencia||'')}" onchange="updateRejeicao(${realIdx},'competencia',this.value)"></td>
+                <td><input value="${escHtml(r.obs||'')}" onchange="updateRejeicao(${realIdx},'obs',this.value)"></td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteRejeicao(${realIdx})">🗑️</button></td>
+              </tr>`;
+                }).join('');
+            }
+
+            window.updateRejeicao = function(idx, field, value) {
+                if (idx >= 0 && idx < state.rejeicoes.length) {
+                    state.rejeicoes[idx][field] = value;
+                    saveAllState();
+                    updateKPIs();
                 }
+            };
+            window.deleteRejeicao = function(idx) {
+                if (confirm('Remover?')) { state.rejeicoes.splice(idx, 1);
+                    saveAllState();
+                    renderRejeicoes();
+                    updateKPIs(); }
+            };
+            window.addRejeicao = function() {
+                state.rejeicoes.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
+                    responsavel: 'Roni', competencia: state.currentCompetencia, obs: '' });
+                saveAllState();
+                renderRejeicoes();
+                updateKPIs();
+            };
+
+            // ==================== RETIDOS ====================
+            function renderRetidos() {
+                const tbody = document.querySelector('#retidosTable tbody');
+                if (!tbody) return;
+                const searchText = (document.getElementById('searchRetidos')?.value || '').toLowerCase();
+                const filtroEvento = document.getElementById('filterRetEvento')?.value || '';
+                let filtered = state.retidos;
+                if (searchText) filtered = filtered.filter(r => (r.cpf + r.nome + r.evento + r.responsavel).toLowerCase()
+                    .includes(searchText));
+                if (filtroEvento) filtered = filtered.filter(r => r.evento === filtroEvento);
+                tbody.innerHTML = filtered.map((r, i) => {
+                    const realIdx = state.retidos.indexOf(r);
+                    return `
+              <tr>
+                <td><input value="${escHtml(r.cpf||'')}" onchange="updateRetido(${realIdx},'cpf',this.value)"></td>
+                <td><input value="${escHtml(r.nome||'')}" onchange="updateRetido(${realIdx},'nome',this.value)"></td>
+                <td><input value="${escHtml(r.evento||'')}" onchange="updateRetido(${realIdx},'evento',this.value)"></td>
+                <td><input value="${escHtml(r.codErro||'')}" onchange="updateRetido(${realIdx},'codErro',this.value)"></td>
+                <td><select onchange="updateRetido(${realIdx},'status',this.value)">
+                  <option value="pendente" ${r.status==='pendente'?'selected':''}>🔴 Pendente</option>
+                  <option value="andamento" ${r.status==='andamento'?'selected':''}>🟡 Andamento</option>
+                  <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Liberado</option>
+                </select></td>
+                <td><select onchange="updateRetido(${realIdx},'responsavel',this.value)">
+                  <option ${r.responsavel==='Roni'?'selected':''}>Roni</option>
+                  <option ${r.responsavel==='Rafael'?'selected':''}>Rafael</option>
+                  <option ${r.responsavel==='Fabianne'?'selected':''}>Fabianne</option>
+                </select></td>
+                <td><input value="${escHtml(r.competencia||'')}" onchange="updateRetido(${realIdx},'competencia',this.value)"></td>
+                <td><input value="${escHtml(r.obs||'')}" onchange="updateRetido(${realIdx},'obs',this.value)"></td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteRetido(${realIdx})">🗑️</button></td>
+              </tr>`;
+                }).join('');
+            }
+
+            window.updateRetido = function(idx, field, value) {
+                if (idx >= 0 && idx < state.retidos.length) { state.retidos[idx][field] = value;
+                    saveAllState();
+                    updateKPIs(); }
+            };
+            window.deleteRetido = function(idx) {
+                if (confirm('Remover?')) { state.retidos.splice(idx, 1);
+                    saveAllState();
+                    renderRetidos();
+                    updateKPIs(); }
+            };
+            window.addRetido = function() {
+                state.retidos.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
+                    responsavel: 'Roni', competencia: state.currentCompetencia, obs: '' });
+                saveAllState();
+                renderRetidos();
+                updateKPIs();
+            };
+
+            // ==================== FECHAMENTO ====================
+            function renderFechamento() {
+                const grid = document.getElementById('fechamentoGrid');
+                if (!grid) return;
+                const eventos = ['S-1200', 'S-1210', 'S-1299', 'S-2200', 'S-2299', 'S-2300'];
+                const statusMap = { ok: '✅ Transmitido', pendente: '⚠️ Pendências', nao_fechado: '🔴 Não fechado',
+                    rejeicoes: '⚠️ Rejeições' };
+                const statusEmoji = { ok: '🟢', pendente: '🟡', nao_fechado: '🔴', rejeicoes: '🟠' };
+                grid.innerHTML = eventos.map(ev => {
+                    const s = state.fechamentoStatus[ev] || { status: 'pendente', obs: '' };
+                    return `
+              <div class="status-item" onclick="toggleFechamentoStatus('${ev}')" title="Clique para alternar">
+                <span style="font-size:1.2rem;">${statusEmoji[s.status]||'⚪'}</span>
+                <div>
+                  <strong>${ev}</strong>
+                  <div style="font-size:0.65rem;color:var(--text3);">${statusMap[s.status]||s.status}</div>
+                  ${s.obs?`<div style="font-size:0.6rem;opacity:0.7;">📝 ${s.obs}</div>`:''}
+                </div>
+              </div>`;
+                }).join('');
+                drawFechamentoChart();
+            }
+
+            window.toggleFechamentoStatus = function(evento) {
+                const statuses = ['ok', 'pendente', 'nao_fechado', 'rejeicoes'];
+                const current = state.fechamentoStatus[evento]?.status || 'pendente';
+                const nextIdx = (statuses.indexOf(current) + 1) % statuses.length;
+                if (!state.fechamentoStatus[evento]) state.fechamentoStatus[evento] = { status: 'pendente', obs: '' };
+                state.fechamentoStatus[evento].status = statuses[nextIdx];
+                const obs = prompt('Observação (opcional):', state.fechamentoStatus[evento].obs || '');
+                if (obs !== null) state.fechamentoStatus[evento].obs = obs;
+                saveAllState();
+                renderFechamento();
+                updateKPIs();
+            };
+
+            // ==================== CALENDARIO ====================
+            function renderCalendar() {
+                const grid = document.getElementById('calendarGrid');
+                if (!grid) return;
+                const year = state.calYear;
+                const month = state.calMonth;
+                const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto',
+                    'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                ];
+                document.getElementById('calMonthLabel').textContent = `${monthNames[month]} ${year}`;
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const today = new Date();
+                const todayKey =
+                    `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+                let html = '';
+                ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => {
+                    html +=
+                    `<div style="text-align:center;font-weight:700;font-size:0.65rem;color:var(--text3);padding:4px;">${d}</div>`;
+                });
+                for (let i = 0; i < firstDay; i++) html +=
+                    '<div style="aspect-ratio:1;border-radius:6px;opacity:0.2;"></div>';
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateKey =
+                        `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const evData = state.calendarEvents[dateKey] || {};
+                    const isToday = dateKey === todayKey;
+                    let cls = 'cal-day';
+                    if (isToday) cls += ' today';
+                    if (evData.event) cls += ' has-event';
+                    if (evData.done) cls += ' done-day';
+                    const dotHtml = evData.obs ? '<span class="dot-indicator"></span>' : '';
+                    html += `
+              <div class="${cls}" data-date="${dateKey}" onclick="openCalDay('${dateKey}')" style="aspect-ratio:1;border-radius:6px;cursor:pointer;text-align:center;padding:2px;border:1px solid var(--border);background:var(--surface);font-size:0.68rem;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:all 0.2s;${isToday?'border:2px solid var(--accent)!important;font-weight:700;':''}">
+                ${dotHtml}<span>${d}</span>
+              </div>`;
+                }
+                grid.innerHTML = html;
+            }
+
+            window.openCalDay = function(dateKey) {
+                const evData = state.calendarEvents[dateKey] || { event: false, done: false, obs: '' };
+                const detailDiv = document.getElementById('calDayDetail');
+                const content = document.getElementById('calDayDetailContent');
+                if (!detailDiv || !content) return;
+                content.innerHTML = `
+            <h4>📅 ${formatDateBR(dateKey)}</h4>
+            <label style="display:flex;align-items:center;gap:8px;margin:6px 0;"><input type="checkbox" id="calEventCheck" ${evData.event?'checked':''} onchange="updateCalDay('${dateKey}','event',this.checked)"> Marcar evento</label>
+            <label style="display:flex;align-items:center;gap:8px;margin:6px 0;"><input type="checkbox" id="calDoneCheck" ${evData.done?'checked':''} onchange="updateCalDay('${dateKey}','done',this.checked)"> Atividade concluída</label>
+            <label style="display:block;margin:6px 0;"><strong>Obs:</strong><textarea style="width:100%;min-height:50px;" onchange="updateCalDay('${dateKey}','obs',this.value)">${escHtml(evData.obs||'')}</textarea></label>
+            <button class="btn btn-sm btn-outline" onclick="document.getElementById('calDayDetail').style.display='none'">Fechar</button>
+          `;
+                detailDiv.style.display = 'block';
+                detailDiv.scrollIntoView({ behavior: 'smooth' });
+            };
+            window.updateCalDay = function(dateKey, field, value) {
+                if (!state.calendarEvents[dateKey]) state.calendarEvents[dateKey] = { event: false, done: false,
+                obs: '' };
+                state.calendarEvents[dateKey][field] = value;
+                saveAllState();
+                renderCalendar();
+            };
+            window.changeCalMonth = function(delta) {
+                state.calMonth += delta;
+                if (state.calMonth > 11) { state.calMonth = 0;
+                    state.calYear++; }
+                if (state.calMonth < 0) { state.calMonth = 11;
+                    state.calYear--; }
+                saveAllState();
+                renderCalendar();
+            };
+
+            // ==================== GERENCIAL ====================
+            function renderGerencial() {
+                const container = document.getElementById('gerencialCards');
+                if (!container) return;
+                const phase = getCurrentPhase();
+                const pendencias = state.rejeicoes.filter(r => r.status === 'pendente').length;
+                const retidos = state.retidos.filter(r => r.status === 'pendente').length;
+                const fechOk = Object.values(state.fechamentoStatus).filter(s => s.status === 'ok').length;
+                const fechTotal = Object.keys(state.fechamentoStatus).length;
+                const risco = phase?.criticity === 'Crítico' ? '🔴 ALTO' : phase?.criticity === 'Alto' ? '🟠 ELEVADO' :
+                    '🟢 BAIXO';
+                container.innerHTML = `
+            <div class="card"><strong>📆 Competência:</strong> ${formatCompKey(state.currentCompetencia)}</div>
+            <div class="card"><strong>📌 Fase:</strong> ${phase?.title||'N/D'}</div>
+            <div class="card"><strong>⚡ Criticidade:</strong> ${phase?.criticity||'N/D'}</div>
+            <div class="card"><strong>⚠️ Pendências:</strong> ${pendencias} rej + ${retidos} retidos</div>
+            <div class="card"><strong>📋 Fechamento:</strong> ${fechOk}/${fechTotal} eventos ok</div>
+            <div class="card"><strong>🚦 Risco:</strong> ${risco}</div>
+          `;
+                drawRejeicoesChart();
+            }
+
+            // ==================== HISTORICO ====================
+            function renderHistorico() {
+                const tbody = document.querySelector('#historicoTable tbody');
+                if (!tbody) return;
+                const compKeys = Object.keys(allCompetencias).sort();
+                tbody.innerHTML = compKeys.map(key => {
+                    const h = allCompetencias[key]?.historicoEntry || {};
+                    return `
+              <tr>
+                <td><strong>${formatCompKey(key)}</strong></td>
+                <td>${h.rejeicoes||0}</td><td>${h.retidos||0}</td><td>${h.retificacoes||0}</td>
+                <td>R$ ${(h.multasDCTF||0).toFixed(2)}</td><td>${h.s1299Reabertos||0}</td>
+                <td>${h.vinculosReg||0}</td><td>${h.admissoes||0}</td><td>${h.desligamentos||0}</td>
+              </tr>`;
+                }).join('');
+                drawHistoricoChart();
+            }
+
+            function updateHistoricoEntry() {
+                const compData = getCompData();
+                if (!compData.historicoEntry) compData.historicoEntry = { rejeicoes: 0, retidos: 0, retificacoes: 0,
+                    multasDCTF: 0, s1299Reabertos: 0, vinculosReg: 0, admissoes: 0, desligamentos: 0 };
+                compData.historicoEntry.rejeicoes = state.rejeicoes.length;
+                compData.historicoEntry.retidos = state.retidos.length;
+                allCompetencias[state.currentCompetencia] = compData;
+            }
+
+            // ==================== ACOES URGENTES ====================
+            function renderUrgentActions() {
+                const container = document.getElementById('acoesUrgentesList');
+                if (!container) return;
+                container.innerHTML = state.urgentActions.map((a, i) => `
+            <div class="alert-item alert-${a.priority}" style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="${a.done?'text-decoration:line-through;opacity:0.5;':''}">${a.text}</span>
+              <div style="display:flex;gap:4px;">
+                <button class="btn btn-sm ${a.done?'btn-outline':'btn-success'}" onclick="toggleUrgent(${i})">${a.done?'✅':'✔'}</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteUrgent(${i})">🗑️</button>
+              </div>
+            </div>`).join('');
+            }
+            window.toggleUrgent = function(i) { if (state.urgentActions[i]) { state.urgentActions[i].done = !state
+                    .urgentActions[i].done;
+                    saveAllState();
+                    renderUrgentActions(); } };
+            window.deleteUrgent = function(i) { state.urgentActions.splice(i, 1);
+                saveAllState();
+                renderUrgentActions(); };
+            window.addUrgentAction = function() {
+                const text = prompt('Ação urgente:');
+                if (text?.trim()) { state.urgentActions.push({ text: text.trim(), done: false, priority: 'warning' });
+                    saveAllState();
+                    renderUrgentActions(); }
+            };
+
+            // ==================== GERADOR DE CRONOGRAMA ====================
+            window.gerarCronograma = function() {
+                const texto = document.getElementById('geradorTexto')?.value.trim();
+                const competencia = document.getElementById('geradorCompetencia')?.value;
+                if (!texto) { alert('Cole os períodos do cronograma.'); return; }
+                if (!competencia) { alert('Selecione a competência.'); return; }
+                const newTimeline = parseCronogramaTexto(texto, competencia);
+                if (newTimeline.length === 0) { alert('Formato inválido. Verifique.'); return; }
+                state.timeline = newTimeline;
+                state.currentCompetencia = competencia;
+                ensureCompetencia(competencia);
+                allCompetencias[competencia].timeline = newTimeline;
+                saveAllState();
+                populateCompetenciaSelect();
+                renderAll();
+                const preview = document.getElementById('geradorPreview');
+                const previewContent = document.getElementById('geradorPreviewContent');
+                if (preview && previewContent) {
+                    preview.style.display = 'block';
+                    previewContent.innerHTML = newTimeline.map(p =>
+                        `<p>📅 ${formatDateBR(p.start)}→${formatDateBR(p.end)} | <strong>${p.title}</strong> | 🎯 ${p.foco} | ⚡ ${p.criticity} | Setores: ${p.disponibilidadeSetores}</p>`
+                        ).join('');
+                }
+                showToast('✅ Cronograma gerado para ' + formatCompKey(competencia));
+            };
+
+            window.importarCronograma = function() {
+                const texto = document.getElementById('importarTexto')?.value.trim();
+                if (!texto) { alert('Cole o texto do cronograma.'); return; }
+                const newTimeline = parseCronogramaTexto(texto, state.currentCompetencia);
+                if (newTimeline.length === 0) { alert('Formato inválido.'); return; }
+                state.timeline = newTimeline;
+                const compData = getCompData();
+                compData.timeline = newTimeline;
+                allCompetencias[state.currentCompetencia] = compData;
+                saveAllState();
+                renderAll();
+                showToast('📥 Cronograma importado!');
+            };
+
+            function parseCronogramaTexto(texto, competencia) {
+                const lines = texto.split('\n').filter(l => l.trim());
+                const result = [];
+                const [compYear, compMonth] = (competencia || '2026-06').split('-').map(Number);
+                const colorMap = { 'Crítico': 'tl-red', 'Alto': 'tl-orange', 'Médio': 'tl-yellow', 'Baixo': 'tl-green',
+                    'Monitoramento': 'tl-blue', 'Preventivo': 'tl-purple' };
+                const dispMap = { 'eSocial Exclusivo': 'Não', 'eSocial Crítico': 'Não', 'eSocial Prioritário': 'Parcial',
+                    'CARP/SPD Prioritário': 'Parcial', 'Homologação da Folha': 'Parcial',
+                    'Preventivo Integrado': 'Sim', 'Monitoramento Crítico': 'Sim', 'Atuação Híbrida': 'Parcial',
+                    'Setores Prioritários': 'Sim' };
+                lines.forEach((line, idx) => {
+                    const parts = line.split('|').map(p => p.trim());
+                    if (parts.length < 2) return;
+                    const datePart = parts[0];
+                    const title = parts[1] || 'Período';
+                    const foco = parts[2] || 'Monitoramento';
+                    const criticity = parts[3] || 'Médio';
+                    let start, end;
+                    const rangeMatch = datePart.match(/(\d{1,2}\/\d{1,2})\s*a\s*(\d{1,2}\/\d{1,2})/i);
+                    if (rangeMatch) {
+                        const [sDay, sMonth] = rangeMatch[1].split('/').map(Number);
+                        const [eDay, eMonth] = rangeMatch[2].split('/').map(Number);
+                        start =
+                            `${compYear}-${String(sMonth||compMonth).padStart(2,'0')}-${String(sDay).padStart(2,'0')}`;
+                        end =
+                        `${compYear}-${String(eMonth||compMonth).padStart(2,'0')}-${String(eDay).padStart(2,'0')}`;
+                    } else {
+                        const singleMatch = datePart.match(/(\d{1,2})\/(\d{1,2})/);
+                        if (singleMatch) {
+                            const [day, month] = [Number(singleMatch[1]), Number(singleMatch[2])];
+                            const dateStr =
+                                `${compYear}-${String(month||compMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                            start = dateStr;
+                            end = dateStr;
+                        } else { return; }
+                    }
+                    const disponibilidade = dispMap[foco] || 'Parcial';
+                    const impactoMap = { 'eSocial Exclusivo': 'Fechamento em andamento', 'eSocial Crítico': 'Fechamento em andamento',
+                        'CARP/SPD Prioritário': 'Evitar alterações estruturais',
+                        'Homologação da Folha': 'Período seguro', 'Preventivo Integrado': 'Período seguro',
+                        'Monitoramento Crítico': 'Pode gerar retificação' };
+                    result.push({
+                        id: 'p_' + Date.now() + '_' + idx,
+                        start,
+                        end,
+                        title,
+                        foco,
+                        criticity,
+                        cor: colorMap[criticity] || 'tl-blue',
+                        disponibilidadeSetores: disponibilidade,
+                        impactoESocial: impactoMap[foco] || 'Monitorar',
+                        desc: `Período: ${title}. Foco: ${foco}. Criticidade: ${criticity}.`
+                    });
+                });
+                return result;
+            }
+
+            // ==================== CHARTS ====================
+            function drawProgressChart() {
+                const canvas = document.getElementById('chartProgress');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const w = rect.width || 400;
+                const h = 220;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, w, h);
+                const phases = state.timeline;
+                if (phases.length === 0) return;
+                const barW = Math.max((w - 70) / phases.length - 6, 20);
+                const values = phases.map((_, i) => Math.max(10, 90 - i * 12 + Math.random() * 15));
+                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--border').trim() || '#e2e8f0';
+                ctx.lineWidth = 1;
+                for (let i = 0; i <= 4; i++) {
+                    const y = 35 + (h - 70) * (i / 4);
+                    ctx.beginPath();
+                    ctx.moveTo(45, y);
+                    ctx.lineTo(w - 15, y);
+                    ctx.stroke();
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text3').trim() || '#64748b';
+                    ctx.font = '9px Segoe UI';
+                    ctx.textAlign = 'right';
+                    ctx.fillText((100 - i * 25) + '%', 40, y + 3);
+                }
+                phases.forEach((p, i) => {
+                    const x = 55 + i * (barW + 6);
+                    const barH = (values[i] / 100) * (h - 70);
+                    const y = 35 + (h - 70) - barH;
+                    const colorMap = { 'tl-red': '#dc2626', 'tl-orange': '#ea580c', 'tl-yellow': '#d97706',
+                        'tl-blue': '#2563eb', 'tl-green': '#16a34a', 'tl-azure': '#0891b2',
+                        'tl-purple': '#7c3aed' };
+                    ctx.fillStyle = colorMap[p.cor] || '#2563eb';
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
+                    ctx.fill();
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a202c';
+                    ctx.font = 'bold 8px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(Math.round(values[i]) + '%', x + barW / 2, y - 4);
+                    ctx.fillText((p.title || '').substring(0, 8), x + barW / 2, h - 10);
+                });
+            }
+
+            function drawRejeicoesChart() {
+                const canvas = document.getElementById('chartRejeicoes');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const w = rect.width || 400;
+                const h = 200;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, w, h);
+                const pend = state.rejeicoes.filter(r => r.status === 'pendente').length;
+                const and = state.rejeicoes.filter(r => r.status === 'andamento').length;
+                const res = state.rejeicoes.filter(r => r.status === 'resolvido').length;
+                const data = [{ label: 'Pendentes', v: pend, c: '#dc2626' }, { label: 'Andamento', v: and,
+                    c: '#d97706' }, { label: 'Resolvidos', v: res, c: '#16a34a' }];
+                const maxV = Math.max(...data.map(d => d.v), 1);
+                const barW = (w - 70) / data.length - 10;
+                data.forEach((d, i) => {
+                    const x = 55 + i * (barW + 10);
+                    const barH = Math.max((d.v / maxV) * (h - 50), 3);
+                    const y = 30 + (h - 50) - barH;
+                    ctx.fillStyle = d.c;
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
+                    ctx.fill();
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a202c';
+                    ctx.font = 'bold 10px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(d.v, x + barW / 2, y - 5);
+                    ctx.font = '9px Segoe UI';
+                    ctx.fillText(d.label, x + barW / 2, h - 8);
+                });
+            }
+
+            function drawFechamentoChart() {
+                const canvas = document.getElementById('chartFechamento');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const w = rect.width || 400;
+                const h = 180;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, w, h);
+                const statuses = state.fechamentoStatus;
+                const eventos = Object.keys(statuses);
+                if (eventos.length === 0) return;
+                const barW = Math.max((w - 60) / eventos.length - 6, 24);
+                const okColor = '#16a34a';
+                const pendColor = '#d97706';
+                const critColor = '#dc2626';
+                eventos.forEach((ev, i) => {
+                    const s = statuses[ev]?.status || 'pendente';
+                    const color = s === 'ok' ? okColor : s === 'pendente' ? pendColor : critColor;
+                    const val = s === 'ok' ? 100 : s === 'pendente' ? 50 : 20;
+                    const barH = (val / 100) * (h - 50);
+                    const x = 40 + i * (barW + 6);
+                    const y = 25 + (h - 50) - barH;
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
+                    ctx.fill();
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a202c';
+                    ctx.font = 'bold 9px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(ev, x + barW / 2, h - 6);
+                });
+            }
+
+            function drawHistoricoChart() {
+                const canvas = document.getElementById('chartHistorico');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const w = rect.width || 400;
+                const h = 200;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, w, h);
+                const compKeys = Object.keys(allCompetencias).sort();
+                if (compKeys.length === 0) return;
+                const maxVal = Math.max(1, ...compKeys.map(k => allCompetencias[k]?.historicoEntry?.rejeicoes || 0));
+                const barW = Math.max((w - 60) / compKeys.length - 6, 16);
+                compKeys.forEach((k, i) => {
+                    const v = allCompetencias[k]?.historicoEntry?.rejeicoes || 0;
+                    const barH = (v / maxVal) * (h - 50);
+                    const x = 40 + i * (barW + 6);
+                    const y = 25 + (h - 50) - barH;
+                    ctx.fillStyle = '#2563eb';
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, barW, Math.max(barH, 2), [4, 4, 0, 0]);
+                    ctx.fill();
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a202c';
+                    ctx.font = 'bold 8px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(v, x + barW / 2, y - 4);
+                    ctx.fillText(formatCompKey(k).substring(0, 5), x + barW / 2, h - 6);
+                });
+            }
+
+            // ==================== EXPORT ====================
+            window.exportPDF = function() { window.print(); };
+            window.exportExcel = function() {
+                let csv = 'CPF;Nome;Evento;CodErro;Status;Responsavel;Competencia;Obs\n';
+                [...state.rejeicoes, ...state.retidos].forEach(r => { csv +=
+                        `${r.cpf};${r.nome};${r.evento};${r.codErro};${r.status};${r.responsavel};${r.competencia||''};${r.obs||''}\n`; });
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'dados_esocial.csv';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            };
+            window.exportJSON = function() {
+                updateHistoricoEntry();
+                const exportData = { state, allCompetencias };
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'backup_governanca_' + new Date().toISOString().split('T')[0] + '.json';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            };
+            window.importJSONPrompt = function() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = async function(ev) {
+                        try {
+                            const data = JSON.parse(ev.target.result);
+                            if (data.state) state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)),
+                                data.state);
+                            if (data.allCompetencias) allCompetencias = data.allCompetencias;
+                            ensureCompetencia(state.currentCompetencia);
+                            await saveAllState();
+                            populateCompetenciaSelect();
+                            renderAll();
+                            showToast('✅ Backup restaurado!');
+                        } catch (err) { alert('❌ Arquivo inválido.'); }
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            };
+
+            // ==================== MODAL ====================
+            window.closeModal = function(e) { if (e.target === document.getElementById('modalOverlay')) document
+                    .getElementById('modalOverlay').style.display = 'none'; };
+            window.closeModalDirect = function() { document.getElementById('modalOverlay').style.display = 'none'; };
+
+            // ==================== NAVIGATION ====================
+            function navigateTo(pageName) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                const page = document.getElementById('page-' + pageName);
+                if (page) page.classList.add('active');
+                const navItem = document.querySelector(`.nav-item[data-page="${pageName}"]`);
+                if (navItem) navItem.classList.add('active');
+                if (pageName === 'dashboard') renderDashboard();
+                if (pageName === 'timeline') renderTimeline();
+                if (pageName === 'equipe') renderTeam();
+                if (pageName === 'rejeicoes') renderRejeicoes();
+                if (pageName === 'retidos') renderRetidos();
+                if (pageName === 'fechamento') renderFechamento();
+                if (pageName === 'calendario') renderCalendar();
+                if (pageName === 'gerencial') renderGerencial();
+                if (pageName === 'historico') renderHistorico();
+                if (pageName === 'acoes') renderUrgentActions();
+                updateKPIs();
+                if (window.innerWidth <= 950) document.getElementById('sidebar').classList.remove('open');
             }
 
             function setupEventListeners() {
-                document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', function() {
-                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                    const page = document.getElementById('page-' + this.dataset.page);
-                    if (page) page.classList.add('active');
-                    this.classList.add('active');
-                    if (this.dataset.page === 'dashboard') renderDashboard();
-                    // ... (navegação idêntica)
-                }));
-                document.getElementById('hamburgerBtn').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
-                document.getElementById('darkModeToggle').addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', function() { navigateTo(this.dataset.page); });
+                });
+                document.getElementById('hamburgerBtn').addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.toggle('open');
+                });
+                document.getElementById('darkModeToggle').addEventListener('click', function() {
                     state.darkMode = !state.darkMode;
                     document.body.classList.toggle('dark-mode', state.darkMode);
                     saveAllState();
+                    setTimeout(() => {
+                        drawProgressChart();
+                        drawRejeicoesChart();
+                        drawFechamentoChart();
+                        drawHistoricoChart();
+                    }, 150);
                 });
-                // ... outros listeners
+                document.getElementById('printBtn').addEventListener('click', () => window.print());
+                const searchRej = document.getElementById('searchRejeicoes');
+                if (searchRej) searchRej.addEventListener('input', renderRejeicoes);
+                const searchRet = document.getElementById('searchRetidos');
+                if (searchRet) searchRet.addEventListener('input', renderRetidos);
+                window.addEventListener('resize', () => {
+                    drawProgressChart();
+                    drawRejeicoesChart();
+                    drawFechamentoChart();
+                    drawHistoricoChart();
+                });
+                window.addEventListener('keydown', function(e) {
+                    if (e.ctrlKey && e.key === 's') { e.preventDefault();
+                        updateHistoricoEntry();
+                        saveAllState();
+                        showToast('💾 Dados salvos!'); }
+                });
+                // Auto-save before unload
+                window.addEventListener('beforeunload', () => {
+                    updateHistoricoEntry();
+                    saveAllState();
+                });
             }
 
-            initApp().catch(console.error);
+            // ==================== UTILS ====================
+            function formatDateBR(dateStr) {
+                const parts = dateStr.split('-');
+                if (parts.length === 3) return parts[2] + '/' + parts[1];
+                return dateStr;
+            }
+
+            function escHtml(str) { return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g,
+                    '&gt;').replace(/"/g, '&quot;'); }
+
+            function showToast(msg) {
+                const t = document.createElement('div');
+                t.className = 'toast';
+                t.textContent = msg;
+                document.body.appendChild(t);
+                setTimeout(() => t.remove(), 2200);
+            }
+
+            // ==================== START ====================
+            initApp().then(() => {
+                console.log('🚀 Plataforma pronta.');
+                console.log('📦 IndexedDB · Múltiplas competências · Cronograma dinâmico');
+                console.log('💡 Ctrl+S para salvar manualmente.');
+            });
         })();
     </script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDLcIO9xJHUa9IQxR54pBqXgxtcqU5un9w",
+    authDomain: "governanca-esocial-ufes.firebaseapp.com",
+    projectId: "governanca-esocial-ufes",
+    storageBucket: "governanca-esocial-ufes.firebasestorage.app",
+    messagingSenderId: "709758251282",
+    appId: "1:709758251282:web:75aaa7d86841d0945b03cb"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+
+const firestore = getFirestore(appFirebase);
+
+console.log("🔥 Firebase realtime ativo!");
+
+window.syncFullStateFirebase = async function() {
+
+try {
+
+    await setDoc(
+        doc(firestore, "governanca", "estadoCompleto"),
+        {
+            state: state,
+            atualizadoEm: new Date().toISOString()
+        }
+    );
+
+    console.log("☁️ Estado completo sincronizado!");
+
+} catch(e) {
+
+    console.error("❌ Erro Firebase:", e);
+
+}
+
+}
+
+
+onSnapshot(
+    doc(firestore, "governanca", "teamTasks"),
+
+    (snapshot) => {
+
+        if(snapshot.exists()) {
+
+            const dados = snapshot.data();
+
+           if(dados.state) {
+
+state = dados.state;
+
+window.state = state;
+
+if (typeof renderAll === 'function') {
+
+renderAll();
+
+} else {
+
+console.error("❌ renderAll não encontrado");
+
+}
+
+console.log("🔄 Estado completo atualizado realtime!");
+
+}
+
+
+        }
+
+    }
+);
+
+</script>
+
 </body>
 </html>
