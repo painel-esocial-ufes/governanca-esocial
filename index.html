@@ -2578,7 +2578,9 @@ onSnapshot(
 
             if(dados.teamTasks) {
 
-                window.state.teamTasks = dados.teamTasks;
+                state.teamTasks = dados.teamTasks;
+
+                window.state = state;
 
                 window.renderTeam();
 
