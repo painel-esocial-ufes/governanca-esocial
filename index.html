@@ -19,7 +19,7 @@
             appId: "1:709758251282:web:75aaa7d86841d0945b03cb"
         };
 
-        window.initFirebase = async function() {
+       window.initFirebase = async function() {
             try {
                 const app = initializeApp(firebaseConfig);
                 const db = getFirestore(app);
@@ -27,83 +27,65 @@
                 window.isApplyingRemoteState = false;
                 const docRef = doc(db, "governanca", "estadoCompleto");
 
+                // 1. FUNÇÃO DE ENVIO (Sua versão corrigida e perfeita)
                 window.syncToFirebase = async function(state, allCompetencias) {
+                    try {
+                        const stateToSave = JSON.parse(JSON.stringify(state));
+                        
+                        // 🚫 NÃO sincroniza navegação visual
+                        delete stateToSave.currentPage;
 
-    try {
+                        const payload = {
+                            state: stateToSave,
+                            allCompetencias: JSON.parse(JSON.stringify(allCompetencias)),
+                            atualizadoEm: new Date().toISOString()
+                        };
 
-        const stateToSave =
-            JSON.parse(JSON.stringify(state));
+                        await setDoc(docRef, payload);
+                        window._lastRemoteTimestamp = payload.atualizadoEm;
+                        window._syncFailures = 0;
+                        document.getElementById('syncStatus').textContent = '🔗 Sync Ativo';
+                        console.log('☁️ Estado enviado ao Firebase (sem UI)');
 
-        // 🚫 NÃO sincroniza navegação visual
-        delete stateToSave.currentPage;
+                    } catch (e) {
+                        window._syncFailures = (window._syncFailures || 0) + 1;
+                        console.warn('⚠️ Falha ao enviar para Firebase:', e);
+                        document.getElementById('syncStatus').textContent = '⚠️ Offline';
+                        if (window._syncFailures >= 3) {
+                            showToast('⚠️ Verifique a conexão com o Firebase', true);
+                        }
+                    }
+                };
 
-        const payload = {
+                // 2. FUNÇÃO DE RECEBIMENTO (Restaurada com as travas anti-loop)
+                onSnapshot(docRef, { includeMetadataChanges: true }, (docSnap) => {
+                    // Ignora ecos locais (se a mudança foi feita por esta aba, não reage)
+                    if (docSnap.metadata.hasPendingWrites) return;
 
-            state: stateToSave,
+                    const remote = docSnap.data();
+                    if (!remote || !remote.state) return;
 
-            allCompetencias:
-                JSON.parse(JSON.stringify(allCompetencias)),
+                    console.log('📥 Snapshot recebido do Firebase');
 
-            atualizadoEm:
-                new Date().toISOString()
+                    // 🛡️ ATIVA A TRAVA DE PROTEÇÃO
+                    window.isApplyingRemoteState = true;
 
-        };
+                    // Atualiza a memória sem perder a referência
+                    Object.assign(state, window.deepMerge(window.DEFAULT_STATE_DEEP, remote.state));
+                    if (remote.allCompetencias) {
+                        Object.assign(allCompetencias, window.deepMerge({}, remote.allCompetencias));
+                    }
 
-        await setDoc(docRef, payload);
+                    // Renderiza a interface na tela que o usuário já estava
+                    window.navigateTo(state.currentPage || 'dashboard', true);
+                    window._saveToIndexedDB();
 
-        window._lastRemoteTimestamp =
-            payload.atualizadoEm;
+                    // 🛡️ DESATIVA A TRAVA (Aguardando o Event Loop limpar a DOM)
+                    setTimeout(() => {
+                        window.isApplyingRemoteState = false;
+                    }, 50);
 
-        window._syncFailures = 0;
-
-        document.getElementById('syncStatus')
-            .textContent = '🔗 Sync Ativo';
-
-        console.log(
-            '☁️ Estado enviado ao Firebase (sem UI)'
-        );
-
-    } catch (e) {
-
-        window._syncFailures =
-            (window._syncFailures || 0) + 1;
-
-        console.warn(
-            '⚠️ Falha ao enviar para Firebase:',
-            e
-        );
-
-        document.getElementById('syncStatus')
-            .textContent = '⚠️ Offline';
-
-        if (window._syncFailures >= 3) {
-
-            showToast(
-                '⚠️ Verifique a conexão com o Firebase',
-                true
-            );
-
-        }
-
-    }
-
-};
-
-        window._saveToIndexedDB();
-
-        document.getElementById('syncStatus')
-            .textContent = '🔗 Sync Ativo';
-
-        // 🛡️ Libera trava após render completo
-        setTimeout(() => {
-
-            window.isApplyingRemoteState = false;
-
-        }, 50);
-    }
-);
-}, (error) => {
-
+                }, (error) => {
                     console.error('Erro no listener do Firebase:', error);
                     document.getElementById('syncStatus').textContent = '⚠️ Erro Sync';
                 });
