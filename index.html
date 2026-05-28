@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.4</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v3.2</title>
     
     <!-- Firebase SDK -->
     <script type="module">
@@ -24,10 +24,10 @@
                 const app = initializeApp(firebaseConfig);
                 const db = getFirestore(app);
                 window.db = db;
+                window.isApplyingRemoteState = false;
                 const docRef = doc(db, "governanca", "estadoCompleto");
 
                 window.syncToFirebase = async function(state, allCompetencias) {
-                    if (window._applyingRemote) return;
                     try {
                         const payload = {
                             state: JSON.parse(JSON.stringify(state)),
@@ -37,48 +37,86 @@
                         await setDoc(docRef, payload);
                         window._lastRemoteTimestamp = payload.atualizadoEm;
                         window._syncFailures = 0;
-                        const el = document.getElementById('syncStatus');
-                        if (el) el.textContent = '🔗 Sync Ativo';
+                        document.getElementById('syncStatus').textContent = '🔗 Sync Ativo';
+                        console.log('☁️ Estado enviado ao Firebase');
                     } catch (e) {
                         window._syncFailures = (window._syncFailures || 0) + 1;
-                        const el = document.getElementById('syncStatus');
-                        if (el) el.textContent = '⚠️ Offline';
-                        if (window._syncFailures >= 3 && window.showToast) window.showToast('⚠️ Verifique a conexão com o Firebase', true);
+                        console.warn('⚠️ Falha ao enviar para Firebase:', e);
+                        document.getElementById('syncStatus').textContent = '⚠️ Offline';
+                        if (window._syncFailures >= 3) {
+                            showToast('⚠️ Verifique a conexão com o Firebase', true);
+                        }
                     }
                 };
 
                 onSnapshot(docRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const remote = snapshot.data();
-                        if (remote.atualizadoEm && (!window._lastRemoteTimestamp || remote.atualizadoEm > window._lastRemoteTimestamp)) {
-                            window._applyingRemote = true;
-                            if (remote.state) {
-                                const currentPage = window.state?.currentPage || 'dashboard';
-                                window.state = window.deepMerge(window.DEFAULT_STATE_DEEP, remote.state);
-                                if (!remote.state.currentPage) window.state.currentPage = currentPage;
-                            }
-                            if (remote.allCompetencias) window.allCompetencias = remote.allCompetencias;
-                            window._lastRemoteTimestamp = remote.atualizadoEm;
-                            if (typeof window.refreshCurrentPage === 'function') window.refreshCurrentPage();
-                            if (typeof window._saveToIndexedDB === 'function') window._saveToIndexedDB();
-                            window._applyingRemote = false;
-                            const el = document.getElementById('syncStatus');
-                            if (el) el.textContent = '🔗 Sync Ativo';
-                        }
-                    }
-                }, (error) => {
+
+console.log("📡 Snapshot recebido do Firebase");
+
+if (!snapshot.exists()) return;
+
+window.isApplyingRemoteState = true;
+
+const remote = snapshot.data();
+
+console.log("📥 Dados remotos:", remote);
+
+console.log('🔄 Atualização remota recebida', remote.atualizadoEm);
+
+if (remote.state) {
+
+    const currentPage = state?.currentPage;
+
+    state = window.deepMerge(
+        window.DEFAULT_STATE_DEEP,
+        remote.state
+    );
+
+    window.state = state;
+
+    if (currentPage && !remote.state.currentPage) {
+        state.currentPage = currentPage;
+    }
+
+}
+
+if (remote.allCompetencias) {
+
+    allCompetencias = remote.allCompetencias;
+
+    window.allCompetencias = allCompetencias;
+
+}
+
+if (typeof window.navigateTo === 'function') {
+
+    console.log('🔄 Renderizando interface...');
+
+    window.navigateTo(
+        state.currentPage || 'dashboard',
+        true
+    );
+
+}
+
+window._saveToIndexedDB();
+
+document.getElementById('syncStatus').textContent =
+    '🔗 Sync Ativo';
+
+window.isApplyingRemoteState = false;
+
+}, (error) => {
+
                     console.error('Erro no listener do Firebase:', error);
-                    const el = document.getElementById('syncStatus');
-                    if (el) el.textContent = '⚠️ Erro Sync';
+                    document.getElementById('syncStatus').textContent = '⚠️ Erro Sync';
                 });
 
                 console.log('🔥 Firebase Realtime configurado');
-                const el = document.getElementById('syncStatus');
-                if (el) el.textContent = '🔗 Sync Ativo';
+                document.getElementById('syncStatus').textContent = '🔗 Sync Ativo';
             } catch (e) {
                 console.error('Falha ao inicializar Firebase:', e);
-                const el = document.getElementById('syncStatus');
-                if (el) el.textContent = '⚠️ Firebase Off';
+                document.getElementById('syncStatus').textContent = '⚠️ Firebase Off';
             }
         };
     </script>
@@ -264,7 +302,7 @@
             <div class="nav-item" data-page="importar"><span class="nav-icon">📥</span> Importar Cronograma</div>
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.4 · 2026<br>
+            UFES · v3.2 · 2026<br>
             <span class="version-badge" id="syncStatus">⏳ Iniciando...</span>
         </div>
     </aside>
@@ -510,10 +548,13 @@
             window.allCompetencias = allCompetencias;
             window.state = state;
             window.DEFAULT_STATE_DEEP = JSON.parse(JSON.stringify(DEFAULT_STATE));
-            window._applyingRemote = false;
 
             // ==================== PERSISTÊNCIA HÍBRIDA ====================
             async function saveAllState(skipFirebase = false) {
+                 if (window.isApplyingRemoteState) {
+                     return;
+                }
+
                 try {
                     if (db) {
                         await dbPut('state', { id: 'global', data: state });
@@ -525,7 +566,7 @@
                 if (!skipFirebase && window.syncToFirebase) {
                     window.syncToFirebase(state, allCompetencias);
                 }
-                window.showToast('💾 Sincronizado');
+                showToast('💾 Sincronizado');
             }
 
             window._saveToIndexedDB = async function() {
@@ -539,19 +580,21 @@
                 } catch (e) {}
             };
 
-            window.deepMerge = function(base, override) {
+            function deepMerge(base, override) {
                 const result = JSON.parse(JSON.stringify(base));
                 for (const key in override) {
                     if (override.hasOwnProperty(key)) {
                         if (typeof override[key] === 'object' && !Array.isArray(override[key]) && override[key] !== null && base[key] !== undefined && !Array.isArray(base[key])) {
-                            result[key] = window.deepMerge(base[key], override[key]);
+                            result[key] = deepMerge(base[key], override[key]);
                         } else {
                             result[key] = override[key];
                         }
                     }
                 }
                 return result;
-            };
+            }
+
+            window.deepMerge = deepMerge;
 
             // ==================== COMPETÊNCIA ====================
             function ensureCompetencia(key) {
@@ -600,12 +643,12 @@
                 state.timeline = newComp.timeline || JSON.parse(JSON.stringify(DEFAULT_TIMELINE));
                 state.fechamentoStatus = newComp.fechamentoStatus || JSON.parse(JSON.stringify(DEFAULT_STATE.fechamentoStatus));
                 saveAllState();
-                window.refreshCurrentPage();
+                renderAll();
                 populateCompetenciaSelect();
             };
 
-            // ==================== NAVEGAÇÃO (SEM SALVAR) ====================
-            window.navigateTo = function(pageName) {
+            // ==================== NAVEGAÇÃO (PERSISTENTE) ====================
+            function navigateTo(pageName, silent = false) {
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 const page = document.getElementById('page-' + pageName);
@@ -614,8 +657,9 @@
                 if (navItem) navItem.classList.add('active');
                 
                 state.currentPage = pageName;
+                if (!silent) saveAllState();
                 
-                if (pageName === 'dashboard') { updateKPIs(); drawProgressChart(); renderAlerts(); }
+                if (pageName === 'dashboard') { updateKPIs(); drawProgressChart(); }
                 if (pageName === 'timeline') renderTimeline();
                 if (pageName === 'equipe') renderTeam();
                 if (pageName === 'rejeicoes') renderRejeicoes();
@@ -626,41 +670,15 @@
                 if (pageName === 'historico') renderHistorico();
                 if (pageName === 'acoes') renderUrgentActions();
                 updateKPIs();
-                updatePhaseIndicator();
                 
                 if (window.innerWidth <= 950) {
                     document.getElementById('sidebar').classList.remove('open');
                 }
-            };
-
-            // ==================== ATUALIZAÇÃO SEM SALVAR ====================
-            window.refreshCurrentPage = function() {
-                const pageName = state.currentPage || 'dashboard';
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                const page = document.getElementById('page-' + pageName);
-                if (page) page.classList.add('active');
-                const navItem = document.querySelector(`.nav-item[data-page="${pageName}"]`);
-                if (navItem) {
-                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                    navItem.classList.add('active');
-                }
-                
-                if (pageName === 'dashboard') { updateKPIs(); drawProgressChart(); renderAlerts(); }
-                if (pageName === 'timeline') renderTimeline();
-                if (pageName === 'equipe') renderTeam();
-                if (pageName === 'rejeicoes') renderRejeicoes();
-                if (pageName === 'retidos') renderRetidos();
-                if (pageName === 'fechamento') renderFechamento();
-                if (pageName === 'calendario') renderCalendar();
-                if (pageName === 'gerencial') renderGerencial();
-                if (pageName === 'historico') renderHistorico();
-                if (pageName === 'acoes') renderUrgentActions();
-                updateKPIs();
-                updatePhaseIndicator();
-            };
+            }
+            window.navigateTo = navigateTo;
 
             // ==================== RENDERIZAÇÃO ====================
-            window.renderAll = function() {
+            function renderAll() {
                 updateKPIs();
                 renderTimeline();
                 renderTeam();
@@ -674,7 +692,8 @@
                 updatePhaseIndicator();
                 renderAlerts();
                 drawProgressChart();
-            };
+            }
+            window.renderAll = renderAll;
 
             function updateKPIs() {
                 const grid = document.getElementById('kpiGrid');
@@ -843,7 +862,7 @@
                 saveAllState();
             };
 
-            // ==================== REJEIÇÕES ====================
+            // ==================== REJEIÇÕES E RETIDOS ====================
             function renderRejeicoes() {
                 const tbody = document.querySelector('#rejeicoesTable tbody');
                 if (!tbody) return;
@@ -892,7 +911,6 @@
                 saveAllState(); renderRejeicoes(); updateKPIs();
             };
 
-            // ==================== RETIDOS ====================
             function renderRetidos() {
                 const tbody = document.querySelector('#retidosTable tbody');
                 if (!tbody) return;
@@ -1216,7 +1234,7 @@
                 allCompetencias[competencia].timeline = newTimeline;
                 saveAllState();
                 populateCompetenciaSelect();
-                window.refreshCurrentPage();
+                renderAll();
                 const preview = document.getElementById('geradorPreview');
                 const previewContent = document.getElementById('geradorPreviewContent');
                 if (preview && previewContent) {
@@ -1235,7 +1253,7 @@
                 compData.timeline = newTimeline;
                 allCompetencias[state.currentCompetencia] = compData;
                 saveAllState();
-                window.refreshCurrentPage();
+                renderAll();
             };
 
             function parseCronogramaTexto(texto, competencia) {
@@ -1279,14 +1297,14 @@
             // ==================== UTILITÁRIOS ====================
             function formatDateBR(dateStr) { const parts = dateStr.split('-'); if (parts.length === 3) return parts[2] + '/' + parts[1]; return dateStr; }
             function escHtml(str) { return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
-            window.showToast = function(msg, isWarning = false) { 
+            function showToast(msg, isWarning = false) { 
                 const t = document.createElement('div'); 
                 t.className = 'toast'; 
                 t.textContent = msg; 
                 if (isWarning) t.style.background = 'var(--warning)';
                 document.body.appendChild(t); 
                 setTimeout(() => t.remove(), 2200); 
-            };
+            }
             function formatCompKey(key) { const [y, m] = key.split('-'); const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return nomes[parseInt(m)-1] + '/' + y; }
 
             // ==================== INICIALIZAÇÃO ====================
@@ -1294,14 +1312,16 @@
                 try {
                     await openDB();
                     const savedState = await dbGet('state', 'global');
-                    if (savedState && savedState.data) state = window.deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), savedState.data);
+                    if (savedState && savedState.data) state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)), savedState.data);
                     const allComps = await dbGetAll('competencias');
                     allComps.forEach(c => { allCompetencias[c.key] = c.data; });
                     ensureCompetencia(state.currentCompetencia);
                     if (state.darkMode) document.body.classList.add('dark-mode');
                     populateCompetenciaSelect();
                     
-                    window.navigateTo(state.currentPage || 'dashboard');
+                    // Restaura a última página visitada
+                    const targetPage = state.currentPage || 'dashboard';
+                    navigateTo(targetPage);
                     
                     setupEventListeners();
                     setInterval(updateClock, 1000);
@@ -1311,7 +1331,7 @@
                     setTimeout(() => saveAllState(), 1500);
                 } catch (e) {
                     console.warn('Fallback localStorage:', e);
-                    window.navigateTo(state.currentPage || 'dashboard');
+                    navigateTo(state.currentPage || 'dashboard');
                     setupEventListeners();
                     setInterval(updateClock, 1000);
                     updateClock();
@@ -1321,7 +1341,7 @@
             function setupEventListeners() {
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.addEventListener('click', function() {
-                        window.navigateTo(this.dataset.page);
+                        navigateTo(this.dataset.page);
                     });
                 });
                 document.getElementById('hamburgerBtn').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
