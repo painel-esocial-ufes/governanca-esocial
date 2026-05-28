@@ -54,7 +54,7 @@
                     if (snapshot.exists()) {
                         const remote = snapshot.data();
                         console.log("📥 Dados remotos:", remote);
-                        if (remote.atualizadoEm && (!window._lastRemoteTimestamp || remote.atualizadoEm > window._lastRemoteTimestamp)) {
+                        if (snapshot.exists()) {
                             console.log('🔄 Atualização remota recebida', remote.atualizadoEm);
                             if (remote.state) {
                                 const currentPage = window.state?.currentPage;
