@@ -1412,6 +1412,8 @@
             };
 
             let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+            window.state = state;
             let allCompetencias = {}; // key -> { timeline, rejeicoes, retidos, historicoEntry, ... }
 
             // ==================== INIT ====================
