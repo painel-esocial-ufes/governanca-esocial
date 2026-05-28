@@ -2549,7 +2549,7 @@ window.syncTeamTasksFirebase = async function() {
         await setDoc(
             doc(firestore, "governanca", "teamTasks"),
             {
-                teamTasks: state.teamTasks,
+                teamTasks: window.state.teamTasks,
                 atualizadoEm: new Date().toISOString()
             }
         );
@@ -2575,9 +2575,9 @@ onSnapshot(
 
             if(dados.teamTasks) {
 
-                state.teamTasks = dados.teamTasks;
+                window.state.teamTasks = dados.teamTasks;
 
-                renderTeam();
+                window.renderTeam();
 
                 console.log("🔄 TeamTasks atualizado realtime!");
 
