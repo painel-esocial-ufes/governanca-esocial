@@ -58,7 +58,7 @@
                             console.log('🔄 Atualização remota recebida', remote.atualizadoEm);
                             if (remote.state) {
                                 const currentPage = window.state?.currentPage;
-                                window.state = deepMerge(window.DEFAULT_STATE_DEEP, remote.state);
+                                window.state = window.deepMerge(window.DEFAULT_STATE_DEEP, remote.state);
                                 if (currentPage && !remote.state.currentPage) {
                                     window.state.currentPage = currentPage;
                                 }
