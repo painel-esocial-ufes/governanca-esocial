@@ -2545,27 +2545,28 @@ const firestore = getFirestore(appFirebase);
 
 console.log("🔥 Firebase realtime ativo!");
 
-window.syncTeamTasksFirebase = async function() {
+window.syncFullStateFirebase = async function() {
 
-    try {
+try {
 
-        await setDoc(
-            doc(firestore, "governanca", "teamTasks"),
-            {
-                teamTasks: window.state.teamTasks,
-                atualizadoEm: new Date().toISOString()
-            }
-        );
+    await setDoc(
+        doc(firestore, "governanca", "estadoCompleto"),
+        {
+            state: state,
+            atualizadoEm: new Date().toISOString()
+        }
+    );
 
-        console.log("☁️ TeamTasks sincronizado!");
+    console.log("☁️ Estado completo sincronizado!");
 
-    } catch(e) {
+} catch(e) {
 
-        console.error("❌ Erro Firebase:", e);
-
-    }
+    console.error("❌ Erro Firebase:", e);
 
 }
+
+}
+
 
 onSnapshot(
     doc(firestore, "governanca", "teamTasks"),
@@ -2576,20 +2577,26 @@ onSnapshot(
 
             const dados = snapshot.data();
 
-            if(dados.teamTasks) {
+           if(dados.state) {
 
-                state.teamTasks = dados.teamTasks;
+state = dados.state;
 
-                window.state = state;
+window.state = state;
 
-                document.getElementById('view-team').innerHTML =
-                views.team();
+if (typeof renderAll === 'function') {
 
-                renderTeam();
+renderAll();
 
-                console.log("🔄 TeamTasks atualizado realtime!");
+} else {
 
-            }
+console.error("❌ renderAll não encontrado");
+
+}
+
+console.log("🔄 Estado completo atualizado realtime!");
+
+}
+
 
         }
 
