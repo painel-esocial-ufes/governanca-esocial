@@ -1751,32 +1751,71 @@
             }
 
             window.toggleTask = function(memberId, idx) {
-                if (state.teamTasks[memberId] && state.teamTasks[memberId][idx]) {
-                    state.teamTasks[memberId][idx].done = !state.teamTasks[memberId][idx].done;
-                    saveAllState();
-                    renderTeam();
-                }
-            };
-            window.deleteTask = function(memberId, idx) {
-                if (state.teamTasks[memberId]) {
-                    state.teamTasks[memberId].splice(idx, 1);
-                    saveAllState();
-                    renderTeam();
-                }
-            };
-            window.addTask = function(memberId) {
-                const input = document.getElementById('taskInput_' + memberId);
-                if (!input || !input.value.trim()) return;
-                if (!state.teamTasks[memberId]) state.teamTasks[memberId] = [];
-                state.teamTasks[memberId].push({ text: input.value.trim(), done: false });
-                input.value = '';
-                saveAllState();
-                renderTeam();
-            };
-            window.updateMemberObs = function(memberId, value) {
-                state.teamTasks[memberId + '_obs'] = value;
-                saveAllState();
-            };
+
+if (state.teamTasks[memberId] && state.teamTasks[memberId][idx]) {
+
+    state.teamTasks[memberId][idx].done =
+        !state.teamTasks[memberId][idx].done;
+
+    saveAllState();
+
+    syncTeamTasksFirebase();
+
+    renderTeam();
+
+}
+
+};
+
+          window.deleteTask = function(memberId, idx) {
+
+if (state.teamTasks[memberId]) {
+
+    state.teamTasks[memberId].splice(idx, 1);
+
+    saveAllState();
+
+    syncTeamTasksFirebase();
+
+    renderTeam();
+
+}
+};
+
+           window.addTask = function(memberId) {
+
+const input =
+    document.getElementById('taskInput_' + memberId);
+
+if (!input || !input.value.trim()) return;
+
+if (!state.teamTasks[memberId])
+    state.teamTasks[memberId] = [];
+
+state.teamTasks[memberId].push({
+    text: input.value.trim(),
+    done: false
+});
+
+input.value = '';
+
+saveAllState();
+
+syncTeamTasksFirebase();
+
+renderTeam();
+};
+
+           window.updateMemberObs = function(memberId, value) {
+
+state.teamTasks[memberId + '_obs'] = value;
+
+saveAllState();
+
+syncTeamTasksFirebase();
+
+};
+
 
             // ==================== REJEICOES ====================
             function renderRejeicoes() {
@@ -2483,8 +2522,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/fireba
 
 import {
     getFirestore,
-    collection,
-    addDoc
+    doc,
+    setDoc,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -2496,35 +2536,57 @@ const firebaseConfig = {
     appId: "1:709758251282:web:75aaa7d86841d0945b03cb"
 };
 
-const app = initializeApp(firebaseConfig);
+const appFirebase = initializeApp(firebaseConfig);
 
-const db = getFirestore(app);
+const firestore = getFirestore(appFirebase);
 
-console.log("🔥 Firebase conectado com Firestore!");
+console.log("🔥 Firebase realtime ativo!");
 
-async function testarFirebase() {
+window.syncTeamTasksFirebase = async function() {
 
     try {
 
-        const docRef = await addDoc(
-            collection(db, "teste"),
+        await setDoc(
+            doc(firestore, "governanca", "teamTasks"),
             {
-                mensagem: "Firebase funcionando!",
-                data: new Date().toISOString()
+                teamTasks: state.teamTasks,
+                atualizadoEm: new Date().toISOString()
             }
         );
 
-        console.log("✅ Documento salvo:", docRef.id);
+        console.log("☁️ TeamTasks sincronizado!");
 
-    } catch (e) {
+    } catch(e) {
 
-        console.error("❌ Erro ao salvar:", e);
+        console.error("❌ Erro Firebase:", e);
 
     }
 
 }
 
-testarFirebase();
+onSnapshot(
+    doc(firestore, "governanca", "teamTasks"),
+
+    (snapshot) => {
+
+        if(snapshot.exists()) {
+
+            const dados = snapshot.data();
+
+            if(dados.teamTasks) {
+
+                state.teamTasks = dados.teamTasks;
+
+                renderTeam();
+
+                console.log("🔄 TeamTasks atualizado realtime!");
+
+            }
+
+        }
+
+    }
+);
 
 </script>
 
