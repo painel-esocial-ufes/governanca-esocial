@@ -2582,7 +2582,10 @@ onSnapshot(
 
                 window.state = state;
 
-                window.renderTeam();
+                document.getElementById('view-team').innerHTML =
+                views.team();
+
+                renderTeam();
 
                 console.log("🔄 TeamTasks atualizado realtime!");
 
