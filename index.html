@@ -67,10 +67,13 @@ if (remote.state) {
 
     const currentPage = state?.currentPage;
 
-    state = window.deepMerge(
+   Object.assign(
+    state,
+    window.deepMerge(
         window.DEFAULT_STATE_DEEP,
         remote.state
-    );
+    )
+);
 
     window.state = state;
 
