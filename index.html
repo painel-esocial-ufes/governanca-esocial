@@ -28,104 +28,66 @@
                 const docRef = doc(db, "governanca", "estadoCompleto");
 
                 window.syncToFirebase = async function(state, allCompetencias) {
-                    try {
-                        const stateToSave =
-    JSON.parse(JSON.stringify(state));
 
-// 🚫 NÃO sincroniza a navegação da UI
-delete stateToSave.currentPage;
+    try {
 
-const payload = {
+        const stateToSave =
+            JSON.parse(JSON.stringify(state));
 
-    state: stateToSave,
+        // 🚫 NÃO sincroniza navegação visual
+        delete stateToSave.currentPage;
 
-    allCompetencias:
-        JSON.parse(JSON.stringify(allCompetencias)),
+        const payload = {
 
-    atualizadoEm:
-        new Date().toISOString()
+            state: stateToSave,
 
-};
-                        };
-                        await setDoc(docRef, payload);
-                        window._lastRemoteTimestamp = payload.atualizadoEm;
-                        window._syncFailures = 0;
-                        document.getElementById('syncStatus').textContent = '🔗 Sync Ativo';
-                        console.log('☁️ Estado enviado ao Firebase');
-                    } catch (e) {
-                        window._syncFailures = (window._syncFailures || 0) + 1;
-                        console.warn('⚠️ Falha ao enviar para Firebase:', e);
-                        document.getElementById('syncStatus').textContent = '⚠️ Offline';
-                        if (window._syncFailures >= 3) {
-                            showToast('⚠️ Verifique a conexão com o Firebase', true);
-                        }
-                    }
-                };
+            allCompetencias:
+                JSON.parse(JSON.stringify(allCompetencias)),
 
-                onSnapshot(
-    docRef,
-    { includeMetadataChanges: true },
-    (snapshot) => {
+            atualizadoEm:
+                new Date().toISOString()
 
-        console.log("📡 Snapshot recebido do Firebase");
+        };
 
-        // 🛡️ Ignora eco local
-        if (snapshot.metadata.hasPendingWrites) {
-            return;
-        }
-
-        if (!snapshot.exists()) return;
-
-        const remote = snapshot.data();
-
-        console.log("📥 Dados remotos:", remote);
-
-        console.log('🔄 Atualização remota recebida', remote.atualizadoEm);
-
-        // 🛡️ Ativa trava ANTES do render
-        window.isApplyingRemoteState = true;
-
-        if (remote.state) {
-
-            const currentPage = window.state?.currentPage;
-
-            Object.assign(
-                state,
-                window.deepMerge(
-                    window.DEFAULT_STATE_DEEP,
-                    remote.state
-                )
-            );
-
-            window.state = state;
-
-            if (
-                currentPage &&
-                !remote.state.currentPage
-            ) {
-                window.state.currentPage = currentPage;
-            }
-
-        }
-
-        if (remote.allCompetencias) {
-
-            window.allCompetencias =
-                remote.allCompetencias;
-
-        }
+        await setDoc(docRef, payload);
 
         window._lastRemoteTimestamp =
-            remote.atualizadoEm;
+            payload.atualizadoEm;
 
-        if (typeof window.navigateTo === 'function') {
+        window._syncFailures = 0;
 
-            window.navigateTo(
-                state.currentPage || 'dashboard',
+        document.getElementById('syncStatus')
+            .textContent = '🔗 Sync Ativo';
+
+        console.log(
+            '☁️ Estado enviado ao Firebase (sem UI)'
+        );
+
+    } catch (e) {
+
+        window._syncFailures =
+            (window._syncFailures || 0) + 1;
+
+        console.warn(
+            '⚠️ Falha ao enviar para Firebase:',
+            e
+        );
+
+        document.getElementById('syncStatus')
+            .textContent = '⚠️ Offline';
+
+        if (window._syncFailures >= 3) {
+
+            showToast(
+                '⚠️ Verifique a conexão com o Firebase',
                 true
             );
 
         }
+
+    }
+
+};
 
         window._saveToIndexedDB();
 
