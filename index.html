@@ -49,66 +49,84 @@
                     }
                 };
 
-                onSnapshot(docRef, (snapshot) => {
+                onSnapshot(
+    docRef,
+    { includeMetadataChanges: true },
+    (snapshot) => {
 
-console.log("📡 Snapshot recebido do Firebase");
+        console.log("📡 Snapshot recebido do Firebase");
 
-if (!snapshot.exists()) return;
+        // 🛡️ Ignora eco local
+        if (snapshot.metadata.hasPendingWrites) {
+            return;
+        }
 
-window.isApplyingRemoteState = true;
+        if (!snapshot.exists()) return;
 
-const remote = snapshot.data();
+        const remote = snapshot.data();
 
-console.log("📥 Dados remotos:", remote);
+        console.log("📥 Dados remotos:", remote);
 
-console.log('🔄 Atualização remota recebida', remote.atualizadoEm);
+        console.log('🔄 Atualização remota recebida', remote.atualizadoEm);
 
-if (remote.state) {
+        // 🛡️ Ativa trava ANTES do render
+        window.isApplyingRemoteState = true;
 
-    const currentPage = state?.currentPage;
+        if (remote.state) {
 
-   Object.assign(
-    state,
-    window.deepMerge(
-        window.DEFAULT_STATE_DEEP,
-        remote.state
-    )
-);
+            const currentPage = window.state?.currentPage;
 
-    window.state = state;
+            Object.assign(
+                state,
+                window.deepMerge(
+                    window.DEFAULT_STATE_DEEP,
+                    remote.state
+                )
+            );
 
-    if (currentPage && !remote.state.currentPage) {
-        state.currentPage = currentPage;
+            window.state = state;
+
+            if (
+                currentPage &&
+                !remote.state.currentPage
+            ) {
+                window.state.currentPage = currentPage;
+            }
+
+        }
+
+        if (remote.allCompetencias) {
+
+            window.allCompetencias =
+                remote.allCompetencias;
+
+        }
+
+        window._lastRemoteTimestamp =
+            remote.atualizadoEm;
+
+        if (typeof window.navigateTo === 'function') {
+
+            window.navigateTo(
+                state.currentPage || 'dashboard',
+                true
+            );
+
+        }
+
+        window._saveToIndexedDB();
+
+        document.getElementById('syncStatus')
+            .textContent = '🔗 Sync Ativo';
+
+        // 🛡️ Libera trava após render completo
+        setTimeout(() => {
+
+            window.isApplyingRemoteState = false;
+
+        }, 50);
     }
-
-}
-
-if (remote.allCompetencias) {
-
-    allCompetencias = remote.allCompetencias;
-
-    window.allCompetencias = allCompetencias;
-
-}
-
-if (typeof window.navigateTo === 'function') {
-
-    console.log('🔄 Renderizando interface...');
-
-    window.navigateTo(
-        state.currentPage || 'dashboard',
-        true
-    );
-
-}
-
-window._saveToIndexedDB();
-
-document.getElementById('syncStatus').textContent =
-    '🔗 Sync Ativo';
-
-window.isApplyingRemoteState = false;
-
+);
 }, (error) => {
 
                     console.error('Erro no listener do Firebase:', error);
@@ -555,6 +573,7 @@ window.isApplyingRemoteState = false;
             // ==================== PERSISTÊNCIA HÍBRIDA ====================
             async function saveAllState(skipFirebase = false) {
                  if (window.isApplyingRemoteState) {
+                     console.warn("⛔ Save bloqueado durante render remoto");
                      return;
                 }
 
@@ -900,6 +919,7 @@ window.isApplyingRemoteState = false;
             }
 
             window.updateRejeicao = function(idx, field, value) {
+                if (window.isApplyingRemoteState) return;
                 if (idx >= 0 && idx < state.rejeicoes.length) {
                     state.rejeicoes[idx][field] = value;
                     saveAllState();
@@ -948,6 +968,7 @@ window.isApplyingRemoteState = false;
             }
 
             window.updateRetido = function(idx, field, value) {
+                if (window.isApplyingRemoteState) return;
                 if (idx >= 0 && idx < state.retidos.length) { state.retidos[idx][field] = value; saveAllState(); updateKPIs(); }
             };
             window.deleteRetido = function(idx) {
@@ -1036,6 +1057,7 @@ window.isApplyingRemoteState = false;
                 detailDiv.scrollIntoView({ behavior: 'smooth' });
             };
             window.updateCalDay = function(dateKey, field, value) {
+                if (window.isApplyingRemoteState) return;
                 if (!state.calendarEvents[dateKey]) state.calendarEvents[dateKey] = { event: false, done: false, obs: '' };
                 state.calendarEvents[dateKey][field] = value;
                 saveAllState();
