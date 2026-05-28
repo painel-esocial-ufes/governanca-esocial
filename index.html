@@ -2505,8 +2505,6 @@
   const db = getFirestore(app);
 
   console.log("🔥 Firebase conectado com Firestore!");
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
 async function testarFirebase() {
     try {
         const docRef = await addDoc(collection(db, "teste"), {
