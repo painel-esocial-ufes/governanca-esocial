@@ -1157,8 +1157,7 @@
                     <div id="timelineDetailContent"></div>
                 </div>
             </div>
-<div class="page" id="page-lepisma">
-
+<div class="page" id="page-lepisma" style="display:none;">
     <div class="card">
 
         <div class="card-header">
@@ -2713,12 +2712,12 @@
 
         // ==================== START ====================
         initApp().then(() => {
-            console.log('🚀 Plataforma pronta.');
-            console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
-            console.log('👥 Múltiplos usuários simultâneos suportados.');
-            console.log('💡 Ctrl+S para salvar manualmente.');
-        });
-carregarLepisma();
+    console.log('🚀 Plataforma pronta.');
+    console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
+    console.log('👥 Múltiplos usuários simultâneos suportados.');
+    console.log('💡 Ctrl+S para salvar manualmente.');
+    carregarLepisma();
+});
 async function carregarLepisma() {
     const url =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1DFOLb0fFSz78vvuKJzPn7YuPj8TkFZRhj_fZL9rS9RkUJaG5PKOBpLYbAOVbkvUQdSnPuPMf-PRC/pub?gid=715000686&single=true&output=csv";
