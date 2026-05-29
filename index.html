@@ -1165,25 +1165,48 @@
             <h3>📁 Controle Lepisma</h3>
         </div>
 
-        <p>Total de processos: <strong id="lepTotal">0</strong></p>
+        <div class="kpi-grid">
 
-        <br>
+    <div class="kpi-card">
+        <h2 id="lepTotal">0</h2>
+        <small>Total</small>
+    </div>
 
-        <div class="table-wrap">
+    <div class="kpi-card">
+        <h2 id="lepCaixa">0</h2>
+        <small>Na Caixa</small>
+    </div>
 
-            <table>
+    <div class="kpi-card">
+        <h2 id="lepDespachado">0</h2>
+        <small>Despachados</small>
+    </div>
 
-                <thead>
-                    <tr>
-                        <th>Processo</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
+</div>
 
-                <tbody id="lepismaTable"></tbody>
+<br>
 
-            </table>
+<div class="table-wrap">
 
+    <table>
+
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Resumo</th>
+                <th>Interessado</th>
+                <th>Responsável</th>
+                <th>Situação</th>
+                <th>Caixa</th>
+                <th>Observação</th>
+            </tr>
+        </thead>
+
+        <tbody id="lepismaTable"></tbody>
+
+    </table>
+
+</div>
         </div>
 
     </div>
@@ -2705,7 +2728,9 @@ async function carregarLepisma() {
     const texto = await resposta.text();
 
     const linhas = texto.split("\n");
-
+let total = 0;
+let caixa = 0;
+let despachado = 0;
     document.getElementById("lepTotal").textContent =
     linhas.length - 1;
 
@@ -2714,21 +2739,34 @@ async function carregarLepisma() {
 
     tabela.innerHTML = "";
 
-    linhas.slice(1).forEach(linha => {
+ linhas.slice(5).forEach(linha => {
 
         const colunas = linha.split(",");
+total++;
+
+if ((colunas[8] || "").includes("NA CAIXA"))
+    caixa++;
+
+if ((colunas[8] || "").includes("DESPACHADO"))
+    despachado++;
 
         if(colunas.length < 1) return;
 
-        tabela.innerHTML += `
-            <tr>
-                <td>${colunas[0]}</td>
-                <td>${colunas[5] || ""}</td>
-            </tr>
-        `;
-
+       tabela.innerHTML += `
+<tr>
+    <td>${colunas[0] || ""}</td>
+    <td>${colunas[1] || ""}</td>
+    <td>${colunas[2] || ""}</td>
+    <td>${colunas[4] || ""}</td>
+    <td>${colunas[6] || ""}</td>
+    <td>${colunas[8] || ""}</td>
+    <td>${colunas[10] || ""}</td>
+</tr>
+`;
     });
-
+document.getElementById("lepTotal").textContent = total;
+document.getElementById("lepCaixa").textContent = caixa;
+document.getElementById("lepDespachado").textContent = despachado;
 }
     </script>
 </body>
