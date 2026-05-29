@@ -1074,6 +1074,11 @@
             <div class="nav-item" data-page="retidos"><span class="nav-icon">🔒</span> Retidos</div>
             <div class="nav-item" data-page="fechamento"><span class="nav-icon">📝</span> Fechamento eSocial</div>
             <div class="nav-section">📈 Gestão</div>
+            <div class="nav-section">📁 Lepisma</div>
+            <div class="nav-item" data-page="lepisma">
+            <span class="nav-icon">📂</span>
+            Controle Lepisma
+            </div>
             <div class="nav-item" data-page="calendario"><span class="nav-icon">🗓️</span> Calendário</div>
             <div class="nav-item" data-page="gerencial"><span class="nav-icon">📈</span> Modo Gerencial</div>
             <div class="nav-item" data-page="historico"><span class="nav-icon">📚</span> Histórico</div>
@@ -1152,7 +1157,38 @@
                     <div id="timelineDetailContent"></div>
                 </div>
             </div>
+<div class="page" id="page-lepisma">
 
+    <div class="card">
+
+        <div class="card-header">
+            <h3>📁 Controle Lepisma</h3>
+        </div>
+
+        <p>Total de processos: <strong id="lepTotal">0</strong></p>
+
+        <br>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Processo</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="lepismaTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
             <!-- PAGE: EQUIPE -->
             <div class="page" id="page-equipe">
                 <div class="card-header" style="margin-bottom:10px;"><h3>👥 Quadro de Equipe</h3></div>
@@ -2659,6 +2695,41 @@
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
         });
+async function carregarLepisma() {
+
+    const url =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1DFOLb0fFSz78vvuKJzPn7YuPj8TkFZRhj_fZL9rS9RkUJaG5PKOBpLYbAOVbkvUQdSnPuPMf-PRC/pub?gid=715000686&single=true&output=csv";
+
+    const resposta = await fetch(url);
+
+    const texto = await resposta.text();
+
+    const linhas = texto.split("\n");
+
+    document.getElementById("lepTotal").textContent =
+    linhas.length - 1;
+
+    const tabela =
+    document.getElementById("lepismaTable");
+
+    tabela.innerHTML = "";
+
+    linhas.slice(1).forEach(linha => {
+
+        const colunas = linha.split(",");
+
+        if(colunas.length < 1) return;
+
+        tabela.innerHTML += `
+            <tr>
+                <td>${colunas[0]}</td>
+                <td>${colunas[5] || ""}</td>
+            </tr>
+        `;
+
+    });
+
+}
     </script>
 </body>
 </html>
