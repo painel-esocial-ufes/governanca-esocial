@@ -2942,7 +2942,6 @@
             }
             
             // Se não bater com nenhuma variação conhecida, retorna o valor original capitalizado
-            // para não perder a informação
             const capitalized = normalized.charAt(0).toUpperCase() + normalized.slice(1);
             return capitalized;
         }
@@ -2983,20 +2982,16 @@
             }
 
             // 3. Inferência por outros campos
-            // Se tem "Caixa Lepisma" preenchido mas não tem "Data Saída", assume "Caixa"
             if (caixaLepisma && !dataSaida) {
                 console.log('[Lepisma DEBUG] Inferido como Caixa (tem caixaLepisma, sem dataSaida)');
                 return 'Caixa';
             }
             
-            // Se tem "Data Saída", assume "Despachado"
             if (dataSaida) {
                 console.log('[Lepisma DEBUG] Inferido como Despachado (tem dataSaida)');
                 return 'Despachado';
             }
 
-            // 4. Fallback: se não conseguiu determinar, retorna "Caixa" como padrão
-            // (pois se está na planilha e não tem data de saída, provavelmente está na caixa)
             console.log('[Lepisma DEBUG] Fallback para Caixa');
             return 'Caixa';
         }
@@ -3117,7 +3112,6 @@
 
                 if (!numero && !resumo && !interessado) continue;
 
-                // Determinar status operacional unificado usando a nova função
                 const statusOperacional = determineStatusOperacional({
                     status,
                     situacao,
@@ -3125,7 +3119,7 @@
                     dataSaida
                 });
 
-                console.log('[Lepisma DEBUG] Processo:', numero, '| Status Operacional determinado:', statusOperacional);
+                console.log('[Lepisma DEBUG] Processo:', numero, '| Acesso bruto:', acesso, '| Status Operacional:', statusOperacional);
 
                 data.push({
                     numero,
@@ -3159,27 +3153,28 @@
             
             if (!acesso || acesso.trim() === '') {
                 console.log('[Lepisma DEBUG] Acesso vazio ou nulo');
-                return '<span style="color:var(--text3);font-size:0.68rem;">—</span>';
+                return '<span style="color:var(--text3);font-size:0.68rem;" title="Sem link disponível">🚫 Sem link</span>';
             }
             
             const url = acesso.trim();
             console.log('[Lepisma DEBUG] URL processada:', url);
             
-            // Aceitar qualquer URL que comece com http/https
+            // CORREÇÃO: Aceitar qualquer URL que comece com http/https
             if (url.startsWith('http://') || url.startsWith('https://')) {
-                console.log('[Lepisma DEBUG] URL válida detectada');
-                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(url)}" onclick="event.stopPropagation();">🔗 Abrir Processo</a>`;
+                console.log('[Lepisma DEBUG] URL válida detectada, criando link clicável');
+                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(url)}" onclick="event.stopPropagation(); console.log('Link clicado: ${escHtml(url)}');">🔗 Abrir Processo</a>`;
             }
             
-            // Tentar corrigir URLs sem protocolo (se contiver ponto e não tiver espaços)
+            // CORREÇÃO: Tentar corrigir URLs sem protocolo
             if (url.includes('.') && !url.includes(' ') && url.length > 5) {
                 const fixedUrl = 'https://' + url;
                 console.log('[Lepisma DEBUG] URL corrigida com https:', fixedUrl);
-                return `<a href="${escHtml(fixedUrl)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(fixedUrl)}" onclick="event.stopPropagation();">🔗 Abrir Processo</a>`;
+                return `<a href="${escHtml(fixedUrl)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(fixedUrl)}" onclick="event.stopPropagation(); console.log('Link clicado (corrigido): ${escHtml(fixedUrl)}');">🔗 Abrir Processo</a>`;
             }
             
+            // CORREÇÃO: Se não for URL, exibir como texto não clicável
             console.log('[Lepisma DEBUG] URL não reconhecida como link, exibindo como texto');
-            return `<span style="font-size:0.65rem;color:var(--text3);">${escHtml(url)}</span>`;
+            return `<span style="font-size:0.65rem;color:var(--text3);" title="${escHtml(url)}">📄 ${escHtml(url)}</span>`;
         }
 
         function getLepismaRowClass(item) {
@@ -3195,7 +3190,6 @@
             
             const total = lepismaAllData.length;
             
-            // CORREÇÃO: Usar a mesma lógica de normalização para o contador
             const naCaixa = lepismaAllData.filter(d => {
                 const so = normalizeStatusOperacional(d.statusOperacional);
                 return so === 'Caixa';
@@ -3276,7 +3270,6 @@
                     if (!haystack.includes(searchText)) return false;
                 }
                 
-                // CORREÇÃO: Usar normalizeStatusOperacional para o filtro de Status Operacional
                 if (filterStatus) {
                     const normalizedSO = normalizeStatusOperacional(d.statusOperacional);
                     console.log('[Lepisma DEBUG] Filtrando Status - processo:', d.numero, '| statusOperacional:', d.statusOperacional, '| normalizado:', normalizedSO, '| filtro:', filterStatus);
@@ -3293,7 +3286,7 @@
                         if (sit === 'atrasado' || sit === 'atenção' || sit === 'atencao') return false;
                     } else {
                         const filterLower = filterSit.toLowerCase();
-                        if (filterLower === 'atenção' && sit === 'atencao') return true; // Aceitar variação sem acento
+                        if (filterLower === 'atenção' && sit === 'atencao') return true;
                         if (sit !== filterLower) return false;
                     }
                 }
@@ -3332,7 +3325,6 @@
             lepismaFilteredData.sort((a, b) => {
                 let valA, valB;
                 
-                // Para statusOperacional, usar o valor normalizado
                 if (column === 'statusOperacional') {
                     valA = normalizeStatusOperacional(a[column]) || '';
                     valB = normalizeStatusOperacional(b[column]) || '';
@@ -3394,15 +3386,13 @@
             }
         }
 
-        // Função para salvar observação editada
         window.saveLepismaObs = function(numero, value) {
             if (!numero) return;
             lepismaObservations[numero] = value;
             scheduleSave();
-            console.log('[Lepisma DEBUG] Observação salva para processo:', numero, '| valor:', value);
+            console.log('[Lepisma DEBUG] Observação salva para processo:', numero);
         };
 
-        // Função para carregar observação salva
         function getLepismaObs(numero) {
             const obs = lepismaObservations[numero] || '';
             return obs;
@@ -3417,12 +3407,11 @@
                 const savedObs = getLepismaObs(d.numero);
                 const statusOperacionalNormalized = normalizeStatusOperacional(d.statusOperacional) || d.statusOperacional || '—';
                 
-                // CORREÇÃO: Cores baseadas no valor normalizado
                 const statusColor = statusOperacionalNormalized === 'Caixa' ? 'var(--warning)' : 
                                    statusOperacionalNormalized === 'Despachado' ? 'var(--success)' : 
                                    'var(--text3)';
                 
-                console.log('[Lepisma DEBUG] Renderizando processo:', d.numero, '| Status:', statusOperacionalNormalized, '| Cor:', statusColor);
+                console.log('[Lepisma DEBUG] Renderizando processo:', d.numero, '| Acesso:', d.acesso);
                 
                 return `
                 <tr class="${rowClass}">
@@ -3467,12 +3456,10 @@
                 lepismaAllData.slice(0, 5).forEach((d, i) => {
                     console.log(`[Lepisma DEBUG] Processo ${i+1}:`, {
                         numero: d.numero,
-                        status: d.status,
-                        situacao: d.situacao,
+                        acesso: d.acesso,
                         statusOperacional: d.statusOperacional,
                         caixaLepisma: d.caixaLepisma,
-                        dataSaida: d.dataSaida,
-                        acesso: d.acesso
+                        dataSaida: d.dataSaida
                     });
                 });
                 
@@ -3529,7 +3516,7 @@
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
             console.log('📁 Módulo Controle Lepisma ativo.');
-            console.log('🔍 Logs de diagnóstico do Lepisma ativos no console.');
+            console.log('🔍 Logs de diagnóstico do Lepisma ativos no console - verifique a coluna Acesso.');
         });
     </script>
 </body>
