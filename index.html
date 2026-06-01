@@ -1181,7 +1181,7 @@
         #lepismaTable .col-interessado { width: 16%; }
         #lepismaTable .col-envio { width: 8%; }
         #lepismaTable .col-responsavel { width: 9%; }
-        #lepismaTable .col-acesso { width: 7%; }
+        #lepismaTable .col-link { width: 7%; }
         #lepismaTable .col-caixa-lepisma { width: 9%; }
         #lepismaTable .col-data-saida { width: 8%; }
         #lepismaTable .col-status-operacional { width: 9%; }
@@ -1211,7 +1211,7 @@
             font-weight: 600;
             font-size: 0.7rem;
             cursor: pointer;
-            word-break: break-all;
+            white-space: nowrap;
         }
         .lepisma-link-direct:hover {
             text-decoration: underline;
@@ -1516,7 +1516,7 @@
                                         <th class="sortable col-interessado" onclick="sortLepisma('interessado')">Interessado <span class="sort-icon"></span></th>
                                         <th class="sortable col-envio" onclick="sortLepisma('envio')">Envio <span class="sort-icon"></span></th>
                                         <th class="sortable col-responsavel" onclick="sortLepisma('responsavel')">Responsável <span class="sort-icon"></span></th>
-                                        <th class="col-acesso">Acesso</th>
+                                        <th class="col-link">Link</th>
                                         <th class="sortable col-caixa-lepisma" onclick="sortLepisma('caixaLepisma')">Caixa Lepisma <span class="sort-icon"></span></th>
                                         <th class="sortable col-data-saida" onclick="sortLepisma('dataSaida')">Data Saída <span class="sort-icon"></span></th>
                                         <th class="sortable col-status-operacional" onclick="sortLepisma('statusOperacional')">Status Operacional <span class="sort-icon"></span></th>
@@ -2911,18 +2911,12 @@
         // ==================== LEPISMA MODULE ====================
         const LEPISMA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1DFOLb0fFSz78vvuKJzPn7YuPj8TkFZRhj_fZL9rS9RkUJaG5PKOBpLYbAOVbkvUQdSnPuPMf-PRC/pub?gid=715000686&single=true&output=csv';
 
-        /**
-         * Função de normalização de Status Operacional.
-         * Padroniza todas as variações possíveis para "Caixa" ou "Despachado".
-         * Trata espaços, maiúsculas/minúsculas, valores nulos e variações comuns.
-         */
         function normalizeStatusOperacional(rawValue) {
             if (rawValue === null || rawValue === undefined || rawValue === '') {
                 return null;
             }
             const normalized = String(rawValue).trim().toLowerCase();
             
-            // Variações que indicam "Caixa"
             if (normalized === 'caixa' || 
                 normalized === 'na caixa' || 
                 normalized === 'caixa lepisma' ||
@@ -2931,7 +2925,6 @@
                 return 'Caixa';
             }
             
-            // Variações que indicam "Despachado"
             if (normalized === 'despachado' || 
                 normalized === 'despach' || 
                 normalized === 'enviado' ||
@@ -2941,58 +2934,38 @@
                 return 'Despachado';
             }
             
-            // Se não bater com nenhuma variação conhecida, retorna o valor original capitalizado
             const capitalized = normalized.charAt(0).toUpperCase() + normalized.slice(1);
             return capitalized;
         }
 
-        /**
-         * Determina o status operacional a partir dos dados brutos do CSV.
-         * Prioridade: campo "Status", depois "Situação", depois inferência por "Caixa Lepisma" e "Data Saída".
-         */
         function determineStatusOperacional(rawData) {
             const statusRaw = (rawData.status || '').trim();
             const situacaoRaw = (rawData.situacao || '').trim();
             const caixaLepisma = (rawData.caixaLepisma || '').trim();
             const dataSaida = (rawData.dataSaida || '').trim();
 
-            console.log('[Lepisma DEBUG] determineStatusOperacional - dados brutos:', {
-                statusRaw,
-                situacaoRaw,
-                caixaLepisma,
-                dataSaida
-            });
-
-            // 1. Tenta usar o campo "Status" primeiro
             if (statusRaw) {
                 const normalized = normalizeStatusOperacional(statusRaw);
-                console.log('[Lepisma DEBUG] Status normalizado:', normalized);
                 if (normalized === 'Caixa' || normalized === 'Despachado') {
                     return normalized;
                 }
             }
 
-            // 2. Se "Status" não for conclusivo, tenta "Situação"
             if (situacaoRaw) {
                 const normalized = normalizeStatusOperacional(situacaoRaw);
-                console.log('[Lepisma DEBUG] Situação normalizada:', normalized);
                 if (normalized === 'Caixa' || normalized === 'Despachado') {
                     return normalized;
                 }
             }
 
-            // 3. Inferência por outros campos
             if (caixaLepisma && !dataSaida) {
-                console.log('[Lepisma DEBUG] Inferido como Caixa (tem caixaLepisma, sem dataSaida)');
                 return 'Caixa';
             }
             
             if (dataSaida) {
-                console.log('[Lepisma DEBUG] Inferido como Despachado (tem dataSaida)');
                 return 'Despachado';
             }
 
-            console.log('[Lepisma DEBUG] Fallback para Caixa');
             return 'Caixa';
         }
 
@@ -3002,30 +2975,18 @@
             return await response.text();
         }
 
-        /**
-         * Extrai o número do processo de uma string.
-         * Suporta formatos como "23054.001234/2024-56", "001234/2024", etc.
-         */
         function extractProcessNumber(str) {
             if (!str) return '';
-            // Procura por padrão de número de processo: XXXXX.XXXXXX/XXXX-XX
             const match = str.match(/(\d{5}\.\d{6}\/\d{4}-\d{2})/);
             if (match) return match[1];
-            // Procura por padrão mais curto: XXXXXX/XXXX
             const match2 = str.match(/(\d{6}\/\d{4})/);
             if (match2) return match2[1];
-            // Se não encontrar padrão, retorna a string original limpa
             return str.replace(/[^\d.\/\-]/g, '').trim();
         }
 
-        /**
-         * Constrói a URL real do processo Lepisma a partir do número do processo.
-         * URL base: https://lepisma.ufes.br/#/processo/{numero}
-         */
         function buildRealLepismaUrl(processNumber) {
             const numero = processNumber.trim();
             if (!numero) return '';
-            // URL base do sistema Lepisma
             const baseUrl = 'https://lepisma.ufes.br/#/processo/';
             return baseUrl + encodeURIComponent(numero);
         }
@@ -3133,44 +3094,12 @@
                 const responsavel = obj['Responsável'] || obj['Responsavel'] || obj['RESPONSÁVEL'] || obj['RESPONSAVEL'] || '';
                 const status = obj['Status'] || obj['STATUS'] || '';
                 const situacao = obj['Situação'] || obj['Situacao'] || obj['SITUAÇÃO'] || obj['SITUACAO'] || '';
-                const acessoRaw = obj['Acesso'] || obj['ACESSO'] || '';
+                const link = obj['Link'] || obj['LINK'] || '';
                 const caixaLepisma = obj['Caixa Lepisma'] || obj['CAIXA LEPISMA'] || obj['Caixa'] || '';
                 const dataSaida = obj['Data Saída'] || obj['Data Saida'] || obj['DATA SAÍDA'] || obj['DATA SAIDA'] || '';
                 const observacao = obj['Observação'] || obj['Observacao'] || obj['OBSERVAÇÃO'] || obj['OBSERVACAO'] || '';
 
                 if (!numeroRaw && !resumo && !interessado) continue;
-
-                // ========== CORREÇÃO PRINCIPAL: TRATAMENTO DO CAMPO ACESSO ==========
-                // O CSV do Google Sheets exporta apenas o texto visível da célula.
-                // Se a célula contém um hiperlink com texto "ABRIR", o CSV terá apenas "ABRIR".
-                // Solução: detectar quando o campo contém apenas texto não-URL e construir
-                // a URL real a partir do número do processo.
-                
-                let acessoFinal = acessoRaw.trim();
-                const numeroProcesso = extractProcessNumber(numeroRaw);
-                
-                console.log('[Lepisma DEBUG] Processo:', numeroRaw, '| Acesso bruto:', acessoRaw, '| Número extraído:', numeroProcesso);
-                
-                // Se o campo acesso está vazio ou contém apenas texto como "ABRIR", "LINK", etc.
-                // e não é uma URL válida, constrói a URL real do Lepisma
-                if (!acessoFinal || 
-                    acessoFinal === 'ABRIR' || 
-                    acessoFinal === 'LINK' || 
-                    acessoFinal === 'VER' || 
-                    acessoFinal === 'ACESSAR' ||
-                    acessoFinal === 'ABRIR PROCESSO' ||
-                    acessoFinal === 'CLIQUE AQUI' ||
-                    (!acessoFinal.startsWith('http://') && !acessoFinal.startsWith('https://') && !acessoFinal.includes('.'))) {
-                    
-                    if (numeroProcesso) {
-                        acessoFinal = buildRealLepismaUrl(numeroProcesso);
-                        console.log('[Lepisma DEBUG] URL construída para processo', numeroProcesso, ':', acessoFinal);
-                    } else {
-                        console.log('[Lepisma DEBUG] Não foi possível extrair número do processo para construir URL');
-                        acessoFinal = '';
-                    }
-                }
-                // ========== FIM DA CORREÇÃO ==========
 
                 const statusOperacional = determineStatusOperacional({
                     status,
@@ -3178,8 +3107,6 @@
                     caixaLepisma,
                     dataSaida
                 });
-
-                console.log('[Lepisma DEBUG] Acesso final:', acessoFinal, '| Status Operacional:', statusOperacional);
 
                 data.push({
                     numero: numeroRaw,
@@ -3189,7 +3116,7 @@
                     responsavel,
                     status,
                     situacao,
-                    acesso: acessoFinal,
+                    link,
                     caixaLepisma,
                     dataSaida,
                     observacao,
@@ -3208,33 +3135,23 @@
             return data;
         }
 
-        function buildLepismaLink(acesso) {
-            console.log('[Lepisma DEBUG] buildLepismaLink - acesso recebido:', acesso);
-            
-            if (!acesso || acesso.trim() === '') {
-                console.log('[Lepisma DEBUG] Acesso vazio ou nulo');
-                return '<span style="color:var(--text3);font-size:0.68rem;" title="Sem link disponível">🚫 Sem link</span>';
+        function buildLepismaLink(linkUrl) {
+            if (!linkUrl || linkUrl.trim() === '') {
+                return '<span style="color:var(--text3);font-size:0.68rem;">—</span>';
             }
             
-            const url = acesso.trim();
-            console.log('[Lepisma DEBUG] URL processada:', url);
+            const url = linkUrl.trim();
             
-            // Aceitar qualquer URL que comece com http/https
             if (url.startsWith('http://') || url.startsWith('https://')) {
-                console.log('[Lepisma DEBUG] URL válida detectada, criando link clicável');
-                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(url)}" onclick="event.stopPropagation(); console.log('Link clicado: ${escHtml(url)}');">🔗 Abrir Processo</a>`;
+                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo">🔗 Abrir</a>`;
             }
             
-            // Tentar corrigir URLs sem protocolo
             if (url.includes('.') && !url.includes(' ') && url.length > 5) {
                 const fixedUrl = 'https://' + url;
-                console.log('[Lepisma DEBUG] URL corrigida com https:', fixedUrl);
-                return `<a href="${escHtml(fixedUrl)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(fixedUrl)}" onclick="event.stopPropagation(); console.log('Link clicado (corrigido): ${escHtml(fixedUrl)}');">🔗 Abrir Processo</a>`;
+                return `<a href="${escHtml(fixedUrl)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo">🔗 Abrir</a>`;
             }
             
-            // Se não for URL, exibir como texto não clicável
-            console.log('[Lepisma DEBUG] URL não reconhecida como link, exibindo como texto');
-            return `<span style="font-size:0.65rem;color:var(--text3);" title="${escHtml(url)}">📄 ${escHtml(url)}</span>`;
+            return '<span style="color:var(--text3);font-size:0.68rem;">—</span>';
         }
 
         function getLepismaRowClass(item) {
@@ -3259,8 +3176,6 @@
                 const so = normalizeStatusOperacional(d.statusOperacional);
                 return so === 'Despachado';
             }).length;
-            
-            console.log('[Lepisma DEBUG] updateLepismaKPIs - Total:', total, '| Na Caixa:', naCaixa, '| Despachados:', despachados);
             
             const atrasados = lepismaAllData.filter(d => {
                 const sit = (d.situacao || '').trim().toLowerCase();
@@ -3317,13 +3232,6 @@
             const filterResp = document.getElementById('lepismaFilterResp')?.value || '';
             const filterSit = document.getElementById('lepismaFilterSit')?.value || '';
 
-            console.log('[Lepisma DEBUG] applyLepismaFilters - filtros:', {
-                searchText,
-                filterStatus,
-                filterResp,
-                filterSit
-            });
-
             lepismaFilteredData = lepismaAllData.filter(d => {
                 if (searchText) {
                     const haystack = ((d.numero || '') + ' ' + (d.interessado || '') + ' ' + (d.resumo || '') + ' ' + (d.responsavel || '')).toLowerCase();
@@ -3332,7 +3240,6 @@
                 
                 if (filterStatus) {
                     const normalizedSO = normalizeStatusOperacional(d.statusOperacional);
-                    console.log('[Lepisma DEBUG] Filtrando Status - processo:', d.numero, '| statusOperacional:', d.statusOperacional, '| normalizado:', normalizedSO, '| filtro:', filterStatus);
                     if (normalizedSO !== filterStatus) return false;
                 }
                 
@@ -3352,8 +3259,6 @@
                 }
                 return true;
             });
-
-            console.log('[Lepisma DEBUG] Resultado da filtragem:', lepismaFilteredData.length, 'processos');
 
             if (lepismaSortColumn) {
                 sortLepismaData(lepismaSortColumn, true);
@@ -3450,7 +3355,6 @@
             if (!numero) return;
             lepismaObservations[numero] = value;
             scheduleSave();
-            console.log('[Lepisma DEBUG] Observação salva para processo:', numero);
         };
 
         function getLepismaObs(numero) {
@@ -3471,8 +3375,6 @@
                                    statusOperacionalNormalized === 'Despachado' ? 'var(--success)' : 
                                    'var(--text3)';
                 
-                console.log('[Lepisma DEBUG] Renderizando processo:', d.numero, '| Acesso:', d.acesso);
-                
                 return `
                 <tr class="${rowClass}">
                     <td><strong>${escHtml(d.numero)}</strong></td>
@@ -3480,7 +3382,7 @@
                     <td>${escHtml(d.interessado)}</td>
                     <td>${escHtml(d.envio)}</td>
                     <td>${escHtml(d.responsavel)}</td>
-                    <td>${buildLepismaLink(d.acesso)}</td>
+                    <td>${buildLepismaLink(d.link)}</td>
                     <td>${escHtml(d.caixaLepisma)}</td>
                     <td>${escHtml(d.dataSaida)}</td>
                     <td><span style="font-weight:600;color:${statusColor};">${escHtml(statusOperacionalNormalized)}</span></td>
@@ -3504,24 +3406,8 @@
             document.getElementById('lepismaContent').style.display = 'none';
 
             try {
-                console.log('[Lepisma DEBUG] Iniciando carregamento dos dados...');
                 const csvText = await fetchLepismaCSV();
-                console.log('[Lepisma DEBUG] CSV recebido, tamanho:', csvText.length, 'caracteres');
-                
                 lepismaAllData = parseLepismaCSV(csvText);
-                console.log('[Lepisma DEBUG] Dados parseados:', lepismaAllData.length, 'processos');
-                
-                // Log detalhado dos primeiros 5 processos para diagnóstico
-                console.log('[Lepisma DEBUG] Amostra dos primeiros processos:');
-                lepismaAllData.slice(0, 5).forEach((d, i) => {
-                    console.log(`[Lepisma DEBUG] Processo ${i+1}:`, {
-                        numero: d.numero,
-                        acesso: d.acesso,
-                        statusOperacional: d.statusOperacional,
-                        caixaLepisma: d.caixaLepisma,
-                        dataSaida: d.dataSaida
-                    });
-                });
                 
                 lepismaFilteredData = [...lepismaAllData];
                 lepismaSortColumn = null;
@@ -3537,7 +3423,6 @@
                 document.getElementById('lepismaContent').style.display = 'block';
                 
                 showToast('✅ Dados do Lepisma carregados: ' + lepismaAllData.length + ' processos');
-                console.log('[Lepisma DEBUG] Carregamento concluído com sucesso');
             } catch (err) {
                 console.error('[Lepisma DEBUG] Erro ao carregar:', err);
                 document.getElementById('lepismaLoading').style.display = 'none';
@@ -3549,12 +3434,9 @@
         }
 
         function renderLepismaPage() {
-            console.log('[Lepisma DEBUG] renderLepismaPage - dados carregados:', lepismaAllData.length);
             if (lepismaAllData.length === 0 && !lepismaIsLoading) {
-                console.log('[Lepisma DEBUG] Dados não carregados, iniciando loadLepismaData()');
                 loadLepismaData();
             } else if (lepismaAllData.length > 0) {
-                console.log('[Lepisma DEBUG] Dados já carregados, atualizando interface');
                 document.getElementById('lepismaLoading').style.display = 'none';
                 document.getElementById('lepismaError').style.display = 'none';
                 document.getElementById('lepismaContent').style.display = 'block';
@@ -3576,10 +3458,7 @@
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
             console.log('📁 Módulo Controle Lepisma ativo.');
-            console.log('🔍 Logs de diagnóstico do Lepisma ativos no console.');
-            console.log('🔗 URLs dos processos agora são construídas a partir do número do processo.');
-            console.log('   Quando a planilha contém "ABRIR" como hiperlink, o sistema extrai o número');
-            console.log('   do processo e gera a URL real: https://lepisma.ufes.br/#/processo/{numero}');
+            console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
 </body>
