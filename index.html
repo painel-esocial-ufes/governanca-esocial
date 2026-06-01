@@ -1081,76 +1081,6 @@
             padding: 20px;
             text-align: center;
         }
-        .badge-lepisma-caixa {
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        .badge-lepisma-despachado {
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            background: #e5e7eb;
-            color: #6b7280;
-        }
-        .badge-lepisma-atraso {
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            background: #fef2f2;
-            color: #dc2626;
-        }
-        .badge-lepisma-atencao {
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            background: #fffbeb;
-            color: #d97706;
-        }
-        .badge-lepisma-normal {
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            background: #f0fdf4;
-            color: #16a34a;
-        }
-        .dark-mode .badge-lepisma-caixa {
-            background: #1a2e4a;
-            color: #93c5fd;
-        }
-        .dark-mode .badge-lepisma-despachado {
-            background: #1f2937;
-            color: #9ca3af;
-        }
-        .dark-mode .badge-lepisma-atraso {
-            background: #1f1218;
-            color: #fca5a5;
-        }
-        .dark-mode .badge-lepisma-atencao {
-            background: #1f1a10;
-            color: #fcd34d;
-        }
-        .dark-mode .badge-lepisma-normal {
-            background: #0f1f14;
-            color: #86efac;
-        }
         .btn-lepisma-link {
             display: inline-flex;
             align-items: center;
@@ -1165,6 +1095,7 @@
             border: 1px solid var(--info-light);
             transition: all 0.2s;
             white-space: nowrap;
+            cursor: pointer;
         }
         .btn-lepisma-link:hover {
             background: var(--accent);
@@ -1173,17 +1104,11 @@
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(29,111,189,0.3);
         }
-        .lepisma-row-caixa {
-            background: #eff6ff !important;
-        }
         .lepisma-row-atraso {
             background: #fef2f2 !important;
         }
         .lepisma-row-atencao {
             background: #fffbeb !important;
-        }
-        .dark-mode .lepisma-row-caixa {
-            background: #0f1a2a !important;
         }
         .dark-mode .lepisma-row-atraso {
             background: #1f1218 !important;
@@ -1249,6 +1174,25 @@
         #lepismaTable td {
             font-size: 0.7rem;
             padding: 7px 9px;
+        }
+        .lepisma-obs-textarea {
+            width: 100%;
+            min-width: 120px;
+            min-height: 40px;
+            font-size: 0.65rem;
+            padding: 4px 6px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--surface);
+            color: var(--text);
+            resize: vertical;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .lepisma-obs-textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(29, 111, 189, 0.08);
         }
     </style>
 </head>
@@ -1544,8 +1488,6 @@
                                         <th class="sortable" onclick="sortLepisma('interessado')">Interessado <span class="sort-icon"></span></th>
                                         <th class="sortable" onclick="sortLepisma('envio')">Envio <span class="sort-icon"></span></th>
                                         <th class="sortable" onclick="sortLepisma('responsavel')">Responsável <span class="sort-icon"></span></th>
-                                        <th class="sortable" onclick="sortLepisma('status')">Status <span class="sort-icon"></span></th>
-                                        <th class="sortable" onclick="sortLepisma('situacao')">Situação <span class="sort-icon"></span></th>
                                         <th>Acesso</th>
                                         <th class="sortable" onclick="sortLepisma('caixaLepisma')">Caixa Lepisma <span class="sort-icon"></span></th>
                                         <th class="sortable" onclick="sortLepisma('dataSaida')">Data Saída <span class="sort-icon"></span></th>
@@ -1609,6 +1551,7 @@
         let lepismaSortColumn = null;
         let lepismaSortDirection = 'asc';
         let lepismaIsLoading = false;
+        let lepismaObservations = {}; // Armazena observações editadas: { numero: texto }
 
         // ==================== DEFAULT DATA ====================
         const DEFAULT_TIMELINE = [
@@ -1662,6 +1605,7 @@
             ],
             darkMode: false,
             historico: {},
+            lepismaObservations: {},
         };
 
         // ==================== STATE ====================
@@ -1782,6 +1726,8 @@
                 isSaving = true;
                 updateSyncIndicator('syncing');
                 updateHistoricoEntry();
+                // Salva observações do Lepisma no state
+                state.lepismaObservations = lepismaObservations;
                 const dataToSave = {
                     state: JSON.parse(JSON.stringify(state)),
                     allCompetencias: JSON.parse(JSON.stringify(allCompetencias)),
@@ -1821,6 +1767,8 @@
                 if (!allCompetencias[state.currentCompetencia]) {
                     ensureCompetencia(state.currentCompetencia);
                 }
+                // Restaura observações do Lepisma
+                lepismaObservations = state.lepismaObservations || {};
                 if (state.darkMode) {
                     document.body.classList.add('dark-mode');
                 } else {
@@ -1918,6 +1866,7 @@
                     if (!allCompetencias[state.currentCompetencia]) {
                         ensureCompetencia(state.currentCompetencia);
                     }
+                    lepismaObservations = state.lepismaObservations || {};
                     console.log('📥 Dados carregados do Firebase');
                 } else {
                     ensureCompetencia(state.currentCompetencia);
@@ -2806,6 +2755,7 @@
         };
         window.exportJSON = function() {
             updateHistoricoEntry();
+            state.lepismaObservations = lepismaObservations;
             const exportData = { state, allCompetencias };
             const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
@@ -2828,6 +2778,7 @@
                         if (data.state) state = deepMerge(JSON.parse(JSON.stringify(DEFAULT_STATE)),
                             data.state);
                         if (data.allCompetencias) allCompetencias = data.allCompetencias;
+                        lepismaObservations = state.lepismaObservations || {};
                         ensureCompetencia(state.currentCompetencia);
                         await saveAllState();
                         populateCompetenciaSelect();
@@ -2921,6 +2872,7 @@
                 if (e.ctrlKey && e.key === 's') {
                     e.preventDefault();
                     updateHistoricoEntry();
+                    state.lepismaObservations = lepismaObservations;
                     saveAllState();
                     showToast('💾 Dados salvos!');
                 }
@@ -3067,36 +3019,20 @@
             return data;
         }
 
-        function getLepismaBadgeStatus(status) {
-            const s = (status || '').trim();
-            if (s === 'Na Caixa' || s === 'NA CAIXA') return 'badge-lepisma-caixa';
-            if (s === 'Despachado' || s === 'DESPACHADO') return 'badge-lepisma-despachado';
-            return 'badge-lepisma-normal';
-        }
-
-        function getLepismaBadgeSituacao(situacao) {
-            const s = (situacao || '').trim();
-            if (s === 'Atrasado' || s === 'ATRASADO') return 'badge-lepisma-atraso';
-            if (s === 'Atenção' || s === 'ATENÇÃO' || s === 'Atencao') return 'badge-lepisma-atencao';
-            return 'badge-lepisma-normal';
+        function buildLepismaLink(acesso) {
+            if (!acesso || acesso.trim() === '') return '<span style="color:var(--text3);">—</span>';
+            const url = acesso.trim();
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="btn-lepisma-link" title="Abrir processo" onclick="event.stopPropagation();">🔗 Abrir</a>`;
+            }
+            return `<span style="font-size:0.65rem;color:var(--text3);">${escHtml(url)}</span>`;
         }
 
         function getLepismaRowClass(item) {
             const sit = (item.situacao || '').trim();
             if (sit === 'Atrasado' || sit === 'ATRASADO') return 'lepisma-row-atraso';
             if (sit === 'Atenção' || sit === 'ATENÇÃO' || sit === 'Atencao') return 'lepisma-row-atencao';
-            const st = (item.status || '').trim();
-            if (st === 'Na Caixa' || st === 'NA CAIXA') return 'lepisma-row-caixa';
             return '';
-        }
-
-        function buildLepismaLink(acesso) {
-            if (!acesso || acesso.trim() === '') return '<span style="color:var(--text3);">—</span>';
-            const url = acesso.trim();
-            if (url.startsWith('http://') || url.startsWith('https://')) {
-                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="btn-lepisma-link" title="Abrir processo">🔗 Abrir</a>`;
-            }
-            return `<span style="font-size:0.65rem;color:var(--text3);">${escHtml(url)}</span>`;
         }
 
         function updateLepismaKPIs() {
@@ -3157,9 +3093,11 @@
                     const haystack = ((d.numero || '') + ' ' + (d.interessado || '') + ' ' + (d.resumo || '')).toLowerCase();
                     if (!haystack.includes(searchText)) return false;
                 }
+                // CORREÇÃO: Filtro de Status (compara ignorando case e espaços)
                 if (filterStatus) {
                     const st = (d.status || '').trim();
-                    if (st !== filterStatus) return false;
+                    // Faz comparação case-insensitive
+                    if (st.toLowerCase() !== filterStatus.toLowerCase()) return false;
                 }
                 if (filterResp) {
                     if ((d.responsavel || '').trim() !== filterResp) return false;
@@ -3167,9 +3105,13 @@
                 if (filterSit) {
                     const sit = (d.situacao || '').trim();
                     if (filterSit === 'Normal') {
-                        if (sit === 'Atrasado' || sit === 'ATRASADO' || sit === 'Atenção' || sit === 'ATENÇÃO' || sit === 'Atencao') return false;
+                        const sitLower = sit.toLowerCase();
+                        if (sitLower === 'atrasado' || sitLower === 'atenção' || sitLower === 'atencao') return false;
                     } else {
-                        if (sit !== filterSit && sit !== filterSit.toUpperCase()) return false;
+                        const sitLower = sit.toLowerCase();
+                        const filterLower = filterSit.toLowerCase();
+                        if (filterLower === 'atenção' && sitLower === 'atencao') return true;
+                        if (sitLower !== filterLower) return false;
                     }
                 }
                 return true;
@@ -3259,11 +3201,25 @@
             }
         }
 
+        // Função para salvar observação editada
+        window.saveLepismaObs = function(numero, value) {
+            if (!numero) return;
+            lepismaObservations[numero] = value;
+            scheduleSave();
+            showToast('💾 Observação salva!');
+        };
+
+        // Função para carregar observação salva
+        function getLepismaObs(numero) {
+            return lepismaObservations[numero] || '';
+        }
+
         function renderLepismaTable() {
             const tbody = document.getElementById('lepismaTbody');
             if (!tbody) return;
             tbody.innerHTML = lepismaFilteredData.map(d => {
                 const rowClass = getLepismaRowClass(d);
+                const savedObs = getLepismaObs(d.numero);
                 return `
                 <tr class="${rowClass}">
                     <td><strong>${escHtml(d.numero)}</strong></td>
@@ -3271,12 +3227,15 @@
                     <td>${escHtml(d.interessado)}</td>
                     <td>${escHtml(d.envio)}</td>
                     <td>${escHtml(d.responsavel)}</td>
-                    <td><span class="${getLepismaBadgeStatus(d.status)}">${escHtml(d.status)}</span></td>
-                    <td><span class="${getLepismaBadgeSituacao(d.situacao)}">${escHtml(d.situacao)}</span></td>
                     <td>${buildLepismaLink(d.acesso)}</td>
                     <td>${escHtml(d.caixaLepisma)}</td>
                     <td>${escHtml(d.dataSaida)}</td>
-                    <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(d.observacao)}">${escHtml(d.observacao)}</td>
+                    <td style="min-width:150px;">
+                        <textarea class="lepisma-obs-textarea" 
+                                  data-numero="${escHtml(d.numero)}"
+                                  oninput="saveLepismaObs('${escHtml(d.numero).replace(/'/g, "\\'")}', this.value)"
+                                  placeholder="Digite sua observação...">${escHtml(savedObs)}</textarea>
+                    </td>
                 </tr>`;
             }).join('');
             updateSortIcons();
@@ -3330,7 +3289,6 @@
         window.loadLepismaData = loadLepismaData;
         window.applyLepismaFilters = applyLepismaFilters;
         window.resetLepismaFilters = resetLepismaFilters;
-        // sortLepisma já está em window via atribuição anterior
 
         // ==================== START ====================
         initApp().then(() => {
