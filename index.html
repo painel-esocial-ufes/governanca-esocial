@@ -3002,6 +3002,34 @@
             return await response.text();
         }
 
+        /**
+         * Extrai o número do processo de uma string.
+         * Suporta formatos como "23054.001234/2024-56", "001234/2024", etc.
+         */
+        function extractProcessNumber(str) {
+            if (!str) return '';
+            // Procura por padrão de número de processo: XXXXX.XXXXXX/XXXX-XX
+            const match = str.match(/(\d{5}\.\d{6}\/\d{4}-\d{2})/);
+            if (match) return match[1];
+            // Procura por padrão mais curto: XXXXXX/XXXX
+            const match2 = str.match(/(\d{6}\/\d{4})/);
+            if (match2) return match2[1];
+            // Se não encontrar padrão, retorna a string original limpa
+            return str.replace(/[^\d.\/\-]/g, '').trim();
+        }
+
+        /**
+         * Constrói a URL real do processo Lepisma a partir do número do processo.
+         * URL base: https://lepisma.ufes.br/#/processo/{numero}
+         */
+        function buildRealLepismaUrl(processNumber) {
+            const numero = processNumber.trim();
+            if (!numero) return '';
+            // URL base do sistema Lepisma
+            const baseUrl = 'https://lepisma.ufes.br/#/processo/';
+            return baseUrl + encodeURIComponent(numero);
+        }
+
         function parseLepismaCSV(csvText) {
             const rows = [];
             let currentRow = [];
@@ -3098,19 +3126,51 @@
                     obj[h] = row[idx] !== undefined ? row[idx] : '';
                 });
 
-                const numero = obj['Número'] || obj['Número '] || obj['NUMERO'] || obj['N°'] || '';
+                const numeroRaw = obj['Número'] || obj['Número '] || obj['NUMERO'] || obj['N°'] || '';
                 const resumo = obj['Resumo'] || obj['RESUMO'] || '';
                 const interessado = obj['Interessado'] || obj['INTERESSADO'] || '';
                 const envio = obj['Envio'] || obj['ENVIO'] || '';
                 const responsavel = obj['Responsável'] || obj['Responsavel'] || obj['RESPONSÁVEL'] || obj['RESPONSAVEL'] || '';
                 const status = obj['Status'] || obj['STATUS'] || '';
                 const situacao = obj['Situação'] || obj['Situacao'] || obj['SITUAÇÃO'] || obj['SITUACAO'] || '';
-                const acesso = obj['Acesso'] || obj['ACESSO'] || '';
+                const acessoRaw = obj['Acesso'] || obj['ACESSO'] || '';
                 const caixaLepisma = obj['Caixa Lepisma'] || obj['CAIXA LEPISMA'] || obj['Caixa'] || '';
                 const dataSaida = obj['Data Saída'] || obj['Data Saida'] || obj['DATA SAÍDA'] || obj['DATA SAIDA'] || '';
                 const observacao = obj['Observação'] || obj['Observacao'] || obj['OBSERVAÇÃO'] || obj['OBSERVACAO'] || '';
 
-                if (!numero && !resumo && !interessado) continue;
+                if (!numeroRaw && !resumo && !interessado) continue;
+
+                // ========== CORREÇÃO PRINCIPAL: TRATAMENTO DO CAMPO ACESSO ==========
+                // O CSV do Google Sheets exporta apenas o texto visível da célula.
+                // Se a célula contém um hiperlink com texto "ABRIR", o CSV terá apenas "ABRIR".
+                // Solução: detectar quando o campo contém apenas texto não-URL e construir
+                // a URL real a partir do número do processo.
+                
+                let acessoFinal = acessoRaw.trim();
+                const numeroProcesso = extractProcessNumber(numeroRaw);
+                
+                console.log('[Lepisma DEBUG] Processo:', numeroRaw, '| Acesso bruto:', acessoRaw, '| Número extraído:', numeroProcesso);
+                
+                // Se o campo acesso está vazio ou contém apenas texto como "ABRIR", "LINK", etc.
+                // e não é uma URL válida, constrói a URL real do Lepisma
+                if (!acessoFinal || 
+                    acessoFinal === 'ABRIR' || 
+                    acessoFinal === 'LINK' || 
+                    acessoFinal === 'VER' || 
+                    acessoFinal === 'ACESSAR' ||
+                    acessoFinal === 'ABRIR PROCESSO' ||
+                    acessoFinal === 'CLIQUE AQUI' ||
+                    (!acessoFinal.startsWith('http://') && !acessoFinal.startsWith('https://') && !acessoFinal.includes('.'))) {
+                    
+                    if (numeroProcesso) {
+                        acessoFinal = buildRealLepismaUrl(numeroProcesso);
+                        console.log('[Lepisma DEBUG] URL construída para processo', numeroProcesso, ':', acessoFinal);
+                    } else {
+                        console.log('[Lepisma DEBUG] Não foi possível extrair número do processo para construir URL');
+                        acessoFinal = '';
+                    }
+                }
+                // ========== FIM DA CORREÇÃO ==========
 
                 const statusOperacional = determineStatusOperacional({
                     status,
@@ -3119,17 +3179,17 @@
                     dataSaida
                 });
 
-                console.log('[Lepisma DEBUG] Processo:', numero, '| Acesso bruto:', acesso, '| Status Operacional:', statusOperacional);
+                console.log('[Lepisma DEBUG] Acesso final:', acessoFinal, '| Status Operacional:', statusOperacional);
 
                 data.push({
-                    numero,
+                    numero: numeroRaw,
                     resumo,
                     interessado,
                     envio,
                     responsavel,
                     status,
                     situacao,
-                    acesso,
+                    acesso: acessoFinal,
                     caixaLepisma,
                     dataSaida,
                     observacao,
@@ -3159,20 +3219,20 @@
             const url = acesso.trim();
             console.log('[Lepisma DEBUG] URL processada:', url);
             
-            // CORREÇÃO: Aceitar qualquer URL que comece com http/https
+            // Aceitar qualquer URL que comece com http/https
             if (url.startsWith('http://') || url.startsWith('https://')) {
                 console.log('[Lepisma DEBUG] URL válida detectada, criando link clicável');
                 return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(url)}" onclick="event.stopPropagation(); console.log('Link clicado: ${escHtml(url)}');">🔗 Abrir Processo</a>`;
             }
             
-            // CORREÇÃO: Tentar corrigir URLs sem protocolo
+            // Tentar corrigir URLs sem protocolo
             if (url.includes('.') && !url.includes(' ') && url.length > 5) {
                 const fixedUrl = 'https://' + url;
                 console.log('[Lepisma DEBUG] URL corrigida com https:', fixedUrl);
                 return `<a href="${escHtml(fixedUrl)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(fixedUrl)}" onclick="event.stopPropagation(); console.log('Link clicado (corrigido): ${escHtml(fixedUrl)}');">🔗 Abrir Processo</a>`;
             }
             
-            // CORREÇÃO: Se não for URL, exibir como texto não clicável
+            // Se não for URL, exibir como texto não clicável
             console.log('[Lepisma DEBUG] URL não reconhecida como link, exibindo como texto');
             return `<span style="font-size:0.65rem;color:var(--text3);" title="${escHtml(url)}">📄 ${escHtml(url)}</span>`;
         }
@@ -3516,7 +3576,10 @@
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
             console.log('📁 Módulo Controle Lepisma ativo.');
-            console.log('🔍 Logs de diagnóstico do Lepisma ativos no console - verifique a coluna Acesso.');
+            console.log('🔍 Logs de diagnóstico do Lepisma ativos no console.');
+            console.log('🔗 URLs dos processos agora são construídas a partir do número do processo.');
+            console.log('   Quando a planilha contém "ABRIR" como hiperlink, o sistema extrai o número');
+            console.log('   do processo e gera a URL real: https://lepisma.ufes.br/#/processo/{numero}');
         });
     </script>
 </body>
