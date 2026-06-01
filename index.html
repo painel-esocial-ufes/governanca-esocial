@@ -1175,6 +1175,17 @@
             font-size: 0.7rem;
             padding: 7px 9px;
         }
+        /* Larguras otimizadas para a tabela Lepisma (sem Status/Situação, com Status Operacional) */
+        #lepismaTable .col-numero { width: 10%; }
+        #lepismaTable .col-resumo { width: 20%; }
+        #lepismaTable .col-interessado { width: 16%; }
+        #lepismaTable .col-envio { width: 8%; }
+        #lepismaTable .col-responsavel { width: 9%; }
+        #lepismaTable .col-acesso { width: 7%; }
+        #lepismaTable .col-caixa-lepisma { width: 9%; }
+        #lepismaTable .col-data-saida { width: 8%; }
+        #lepismaTable .col-status-operacional { width: 9%; }
+        #lepismaTable .col-observacao { width: auto; min-width: 140px; }
         .lepisma-obs-textarea {
             width: 100%;
             min-width: 120px;
@@ -1193,6 +1204,24 @@
             border-color: var(--accent);
             outline: none;
             box-shadow: 0 0 0 2px rgba(29, 111, 189, 0.08);
+        }
+        .lepisma-link-direct {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.7rem;
+            cursor: pointer;
+            word-break: break-all;
+        }
+        .lepisma-link-direct:hover {
+            text-decoration: underline;
+            color: #1a5f9f;
+        }
+        .dark-mode .lepisma-link-direct {
+            color: #60a5fa;
+        }
+        .dark-mode .lepisma-link-direct:hover {
+            color: #93c5fd;
         }
     </style>
 </head>
@@ -1221,7 +1250,6 @@
             <div class="nav-section">⚙️ Configurações</div>
             <div class="nav-item" data-page="gerador"><span class="nav-icon">🔧</span> Gerar Cronograma</div>
             <div class="nav-item" data-page="importar"><span class="nav-icon">📥</span> Importar Cronograma</div>
-            <!-- NOVO ITEM LEPISMA -->
             <div class="nav-section">📁 Processos</div>
             <div class="nav-item" data-page="lepisma"><span class="nav-icon">📁</span> Controle Lepisma</div>
         </nav>
@@ -1464,7 +1492,7 @@
                             <input type="text" class="search-box" id="lepismaSearch" placeholder="🔍 Buscar número, interessado, resumo..." style="width:260px;" oninput="applyLepismaFilters()">
                             <select id="lepismaFilterStatus" onchange="applyLepismaFilters()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
                                 <option value="">Todos Status</option>
-                                <option value="Na Caixa">Na Caixa</option>
+                                <option value="Caixa">Na Caixa</option>
                                 <option value="Despachado">Despachado</option>
                             </select>
                             <select id="lepismaFilterResp" onchange="applyLepismaFilters()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
@@ -1483,15 +1511,16 @@
                             <table id="lepismaTable">
                                 <thead>
                                     <tr>
-                                        <th class="sortable" onclick="sortLepisma('numero')">Número <span class="sort-icon"></span></th>
-                                        <th class="sortable" onclick="sortLepisma('resumo')">Resumo <span class="sort-icon"></span></th>
-                                        <th class="sortable" onclick="sortLepisma('interessado')">Interessado <span class="sort-icon"></span></th>
-                                        <th class="sortable" onclick="sortLepisma('envio')">Envio <span class="sort-icon"></span></th>
-                                        <th class="sortable" onclick="sortLepisma('responsavel')">Responsável <span class="sort-icon"></span></th>
-                                        <th>Acesso</th>
-                                        <th class="sortable" onclick="sortLepisma('caixaLepisma')">Caixa Lepisma <span class="sort-icon"></span></th>
-                                        <th class="sortable" onclick="sortLepisma('dataSaida')">Data Saída <span class="sort-icon"></span></th>
-                                        <th>Observação</th>
+                                        <th class="sortable col-numero" onclick="sortLepisma('numero')">Número <span class="sort-icon"></span></th>
+                                        <th class="sortable col-resumo" onclick="sortLepisma('resumo')">Resumo <span class="sort-icon"></span></th>
+                                        <th class="sortable col-interessado" onclick="sortLepisma('interessado')">Interessado <span class="sort-icon"></span></th>
+                                        <th class="sortable col-envio" onclick="sortLepisma('envio')">Envio <span class="sort-icon"></span></th>
+                                        <th class="sortable col-responsavel" onclick="sortLepisma('responsavel')">Responsável <span class="sort-icon"></span></th>
+                                        <th class="col-acesso">Acesso</th>
+                                        <th class="sortable col-caixa-lepisma" onclick="sortLepisma('caixaLepisma')">Caixa Lepisma <span class="sort-icon"></span></th>
+                                        <th class="sortable col-data-saida" onclick="sortLepisma('dataSaida')">Data Saída <span class="sort-icon"></span></th>
+                                        <th class="sortable col-status-operacional" onclick="sortLepisma('statusOperacional')">Status Operacional <span class="sort-icon"></span></th>
+                                        <th class="col-observacao">Observação</th>
                                     </tr>
                                 </thead>
                                 <tbody id="lepismaTbody"></tbody>
@@ -1551,7 +1580,7 @@
         let lepismaSortColumn = null;
         let lepismaSortDirection = 'asc';
         let lepismaIsLoading = false;
-        let lepismaObservations = {}; // Armazena observações editadas: { numero: texto }
+        let lepismaObservations = {};
 
         // ==================== DEFAULT DATA ====================
         const DEFAULT_TIMELINE = [
@@ -1726,7 +1755,6 @@
                 isSaving = true;
                 updateSyncIndicator('syncing');
                 updateHistoricoEntry();
-                // Salva observações do Lepisma no state
                 state.lepismaObservations = lepismaObservations;
                 const dataToSave = {
                     state: JSON.parse(JSON.stringify(state)),
@@ -1767,7 +1795,6 @@
                 if (!allCompetencias[state.currentCompetencia]) {
                     ensureCompetencia(state.currentCompetencia);
                 }
-                // Restaura observações do Lepisma
                 lepismaObservations = state.lepismaObservations || {};
                 if (state.darkMode) {
                     document.body.classList.add('dark-mode');
@@ -2942,7 +2969,6 @@
                 }
             }
 
-            // Encontrar linha de cabeçalho
             let headerIndex = -1;
             for (let i = 0; i < rows.length; i++) {
                 const row = rows[i];
@@ -3001,6 +3027,29 @@
 
                 if (!numero && !resumo && !interessado) continue;
 
+                // Determinar status operacional unificado
+                let statusOperacional = (status || '').trim();
+                if (!statusOperacional) {
+                    // Se não tiver status, tenta inferir
+                    if (caixaLepisma && !dataSaida) {
+                        statusOperacional = 'Caixa';
+                    } else if (dataSaida) {
+                        statusOperacional = 'Despachado';
+                    }
+                }
+                // Normalizar para dois valores
+                const statusLower = statusOperacional.toLowerCase();
+                if (statusLower.includes('caixa') || statusLower.includes('na caixa')) {
+                    statusOperacional = 'Caixa';
+                } else if (statusLower.includes('despachado') || statusLower.includes('despach')) {
+                    statusOperacional = 'Despachado';
+                } else if (statusOperacional && statusOperacional.length > 0) {
+                    // Se tiver algum valor mas não bater com Caixa/Despachado, mantém como está
+                    // mas tenta interpretar
+                    if (statusLower.includes('caixa')) statusOperacional = 'Caixa';
+                    else if (statusLower.includes('despach')) statusOperacional = 'Despachado';
+                }
+
                 data.push({
                     numero,
                     resumo,
@@ -3012,7 +3061,8 @@
                     acesso,
                     caixaLepisma,
                     dataSaida,
-                    observacao
+                    observacao,
+                    statusOperacional
                 });
             }
 
@@ -3022,8 +3072,14 @@
         function buildLepismaLink(acesso) {
             if (!acesso || acesso.trim() === '') return '<span style="color:var(--text3);">—</span>';
             const url = acesso.trim();
+            // Aceitar qualquer URL que comece com http/https ou qualquer string que pareça uma URL
             if (url.startsWith('http://') || url.startsWith('https://')) {
-                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="btn-lepisma-link" title="Abrir processo" onclick="event.stopPropagation();">🔗 Abrir</a>`;
+                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(url)}" onclick="event.stopPropagation();">🔗 Abrir Processo</a>`;
+            }
+            // Tentar corrigir URLs sem protocolo
+            if (url.includes('.') && !url.includes(' ') && url.length > 5) {
+                const fixedUrl = 'https://' + url;
+                return `<a href="${escHtml(fixedUrl)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(fixedUrl)}" onclick="event.stopPropagation();">🔗 Abrir Processo</a>`;
             }
             return `<span style="font-size:0.65rem;color:var(--text3);">${escHtml(url)}</span>`;
         }
@@ -3039,8 +3095,14 @@
             const grid = document.getElementById('lepismaKpiGrid');
             if (!grid) return;
             const total = lepismaAllData.length;
-            const naCaixa = lepismaAllData.filter(d => (d.status || '').trim() === 'Na Caixa' || (d.status || '').trim() === 'NA CAIXA').length;
-            const despachados = lepismaAllData.filter(d => (d.status || '').trim() === 'Despachado' || (d.status || '').trim() === 'DESPACHADO').length;
+            const naCaixa = lepismaAllData.filter(d => {
+                const so = (d.statusOperacional || '').trim();
+                return so === 'Caixa';
+            }).length;
+            const despachados = lepismaAllData.filter(d => {
+                const so = (d.statusOperacional || '').trim();
+                return so === 'Despachado';
+            }).length;
             const atrasados = lepismaAllData.filter(d => (d.situacao || '').trim() === 'Atrasado' || (d.situacao || '').trim() === 'ATRASADO').length;
             const atencao = lepismaAllData.filter(d => (d.situacao || '').trim() === 'Atenção' || (d.situacao || '').trim() === 'ATENÇÃO' || (d.situacao || '').trim() === 'Atencao').length;
             grid.innerHTML = `
@@ -3093,11 +3155,10 @@
                     const haystack = ((d.numero || '') + ' ' + (d.interessado || '') + ' ' + (d.resumo || '')).toLowerCase();
                     if (!haystack.includes(searchText)) return false;
                 }
-                // CORREÇÃO: Filtro de Status (compara ignorando case e espaços)
+                // Filtro de Status Operacional (Caixa / Despachado)
                 if (filterStatus) {
-                    const st = (d.status || '').trim();
-                    // Faz comparação case-insensitive
-                    if (st.toLowerCase() !== filterStatus.toLowerCase()) return false;
+                    const so = (d.statusOperacional || '').trim();
+                    if (so !== filterStatus) return false;
                 }
                 if (filterResp) {
                     if ((d.responsavel || '').trim() !== filterResp) return false;
@@ -3220,6 +3281,8 @@
             tbody.innerHTML = lepismaFilteredData.map(d => {
                 const rowClass = getLepismaRowClass(d);
                 const savedObs = getLepismaObs(d.numero);
+                const statusOperacional = d.statusOperacional || '—';
+                const statusColor = statusOperacional === 'Caixa' ? 'var(--warning)' : statusOperacional === 'Despachado' ? 'var(--success)' : 'var(--text3)';
                 return `
                 <tr class="${rowClass}">
                     <td><strong>${escHtml(d.numero)}</strong></td>
@@ -3230,6 +3293,7 @@
                     <td>${buildLepismaLink(d.acesso)}</td>
                     <td>${escHtml(d.caixaLepisma)}</td>
                     <td>${escHtml(d.dataSaida)}</td>
+                    <td><span style="font-weight:600;color:${statusColor};">${escHtml(statusOperacional)}</span></td>
                     <td style="min-width:150px;">
                         <textarea class="lepisma-obs-textarea" 
                                   data-numero="${escHtml(d.numero)}"
