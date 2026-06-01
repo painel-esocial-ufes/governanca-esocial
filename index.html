@@ -1492,7 +1492,7 @@
                             <input type="text" class="search-box" id="lepismaSearch" placeholder="🔍 Buscar número, interessado, resumo..." style="width:260px;" oninput="applyLepismaFilters()">
                             <select id="lepismaFilterStatus" onchange="applyLepismaFilters()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
                                 <option value="">Todos Status</option>
-                                <option value="Caixa">Na Caixa</option>
+                                <option value="Caixa">Caixa</option>
                                 <option value="Despachado">Despachado</option>
                             </select>
                             <select id="lepismaFilterResp" onchange="applyLepismaFilters()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
@@ -2911,6 +2911,96 @@
         // ==================== LEPISMA MODULE ====================
         const LEPISMA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1DFOLb0fFSz78vvuKJzPn7YuPj8TkFZRhj_fZL9rS9RkUJaG5PKOBpLYbAOVbkvUQdSnPuPMf-PRC/pub?gid=715000686&single=true&output=csv';
 
+        /**
+         * Função de normalização de Status Operacional.
+         * Padroniza todas as variações possíveis para "Caixa" ou "Despachado".
+         * Trata espaços, maiúsculas/minúsculas, valores nulos e variações comuns.
+         */
+        function normalizeStatusOperacional(rawValue) {
+            if (rawValue === null || rawValue === undefined || rawValue === '') {
+                return null;
+            }
+            const normalized = String(rawValue).trim().toLowerCase();
+            
+            // Variações que indicam "Caixa"
+            if (normalized === 'caixa' || 
+                normalized === 'na caixa' || 
+                normalized === 'caixa lepisma' ||
+                normalized === 'pendente' ||
+                normalized === 'aguardando') {
+                return 'Caixa';
+            }
+            
+            // Variações que indicam "Despachado"
+            if (normalized === 'despachado' || 
+                normalized === 'despach' || 
+                normalized === 'enviado' ||
+                normalized === 'concluído' ||
+                normalized === 'concluido' ||
+                normalized === 'finalizado') {
+                return 'Despachado';
+            }
+            
+            // Se não bater com nenhuma variação conhecida, retorna o valor original capitalizado
+            // para não perder a informação
+            const capitalized = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+            return capitalized;
+        }
+
+        /**
+         * Determina o status operacional a partir dos dados brutos do CSV.
+         * Prioridade: campo "Status", depois "Situação", depois inferência por "Caixa Lepisma" e "Data Saída".
+         */
+        function determineStatusOperacional(rawData) {
+            const statusRaw = (rawData.status || '').trim();
+            const situacaoRaw = (rawData.situacao || '').trim();
+            const caixaLepisma = (rawData.caixaLepisma || '').trim();
+            const dataSaida = (rawData.dataSaida || '').trim();
+
+            console.log('[Lepisma DEBUG] determineStatusOperacional - dados brutos:', {
+                statusRaw,
+                situacaoRaw,
+                caixaLepisma,
+                dataSaida
+            });
+
+            // 1. Tenta usar o campo "Status" primeiro
+            if (statusRaw) {
+                const normalized = normalizeStatusOperacional(statusRaw);
+                console.log('[Lepisma DEBUG] Status normalizado:', normalized);
+                if (normalized === 'Caixa' || normalized === 'Despachado') {
+                    return normalized;
+                }
+            }
+
+            // 2. Se "Status" não for conclusivo, tenta "Situação"
+            if (situacaoRaw) {
+                const normalized = normalizeStatusOperacional(situacaoRaw);
+                console.log('[Lepisma DEBUG] Situação normalizada:', normalized);
+                if (normalized === 'Caixa' || normalized === 'Despachado') {
+                    return normalized;
+                }
+            }
+
+            // 3. Inferência por outros campos
+            // Se tem "Caixa Lepisma" preenchido mas não tem "Data Saída", assume "Caixa"
+            if (caixaLepisma && !dataSaida) {
+                console.log('[Lepisma DEBUG] Inferido como Caixa (tem caixaLepisma, sem dataSaida)');
+                return 'Caixa';
+            }
+            
+            // Se tem "Data Saída", assume "Despachado"
+            if (dataSaida) {
+                console.log('[Lepisma DEBUG] Inferido como Despachado (tem dataSaida)');
+                return 'Despachado';
+            }
+
+            // 4. Fallback: se não conseguiu determinar, retorna "Caixa" como padrão
+            // (pois se está na planilha e não tem data de saída, provavelmente está na caixa)
+            console.log('[Lepisma DEBUG] Fallback para Caixa');
+            return 'Caixa';
+        }
+
         async function fetchLepismaCSV() {
             const response = await fetch(LEPISMA_CSV_URL, { cache: 'no-store' });
             if (!response.ok) throw new Error('Falha ao carregar CSV: ' + response.status);
@@ -3027,28 +3117,15 @@
 
                 if (!numero && !resumo && !interessado) continue;
 
-                // Determinar status operacional unificado
-                let statusOperacional = (status || '').trim();
-                if (!statusOperacional) {
-                    // Se não tiver status, tenta inferir
-                    if (caixaLepisma && !dataSaida) {
-                        statusOperacional = 'Caixa';
-                    } else if (dataSaida) {
-                        statusOperacional = 'Despachado';
-                    }
-                }
-                // Normalizar para dois valores
-                const statusLower = statusOperacional.toLowerCase();
-                if (statusLower.includes('caixa') || statusLower.includes('na caixa')) {
-                    statusOperacional = 'Caixa';
-                } else if (statusLower.includes('despachado') || statusLower.includes('despach')) {
-                    statusOperacional = 'Despachado';
-                } else if (statusOperacional && statusOperacional.length > 0) {
-                    // Se tiver algum valor mas não bater com Caixa/Despachado, mantém como está
-                    // mas tenta interpretar
-                    if (statusLower.includes('caixa')) statusOperacional = 'Caixa';
-                    else if (statusLower.includes('despach')) statusOperacional = 'Despachado';
-                }
+                // Determinar status operacional unificado usando a nova função
+                const statusOperacional = determineStatusOperacional({
+                    status,
+                    situacao,
+                    caixaLepisma,
+                    dataSaida
+                });
+
+                console.log('[Lepisma DEBUG] Processo:', numero, '| Status Operacional determinado:', statusOperacional);
 
                 data.push({
                     numero,
@@ -3066,21 +3143,42 @@
                 });
             }
 
+            console.log('[Lepisma DEBUG] Total de processos parseados:', data.length);
+            console.log('[Lepisma DEBUG] Distribuição de Status Operacional:',
+                data.reduce((acc, d) => {
+                    acc[d.statusOperacional] = (acc[d.statusOperacional] || 0) + 1;
+                    return acc;
+                }, {})
+            );
+
             return data;
         }
 
         function buildLepismaLink(acesso) {
-            if (!acesso || acesso.trim() === '') return '<span style="color:var(--text3);">—</span>';
+            console.log('[Lepisma DEBUG] buildLepismaLink - acesso recebido:', acesso);
+            
+            if (!acesso || acesso.trim() === '') {
+                console.log('[Lepisma DEBUG] Acesso vazio ou nulo');
+                return '<span style="color:var(--text3);font-size:0.68rem;">—</span>';
+            }
+            
             const url = acesso.trim();
-            // Aceitar qualquer URL que comece com http/https ou qualquer string que pareça uma URL
+            console.log('[Lepisma DEBUG] URL processada:', url);
+            
+            // Aceitar qualquer URL que comece com http/https
             if (url.startsWith('http://') || url.startsWith('https://')) {
+                console.log('[Lepisma DEBUG] URL válida detectada');
                 return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(url)}" onclick="event.stopPropagation();">🔗 Abrir Processo</a>`;
             }
-            // Tentar corrigir URLs sem protocolo
+            
+            // Tentar corrigir URLs sem protocolo (se contiver ponto e não tiver espaços)
             if (url.includes('.') && !url.includes(' ') && url.length > 5) {
                 const fixedUrl = 'https://' + url;
+                console.log('[Lepisma DEBUG] URL corrigida com https:', fixedUrl);
                 return `<a href="${escHtml(fixedUrl)}" target="_blank" rel="noopener noreferrer" class="lepisma-link-direct" title="Abrir processo: ${escHtml(fixedUrl)}" onclick="event.stopPropagation();">🔗 Abrir Processo</a>`;
             }
+            
+            console.log('[Lepisma DEBUG] URL não reconhecida como link, exibindo como texto');
             return `<span style="font-size:0.65rem;color:var(--text3);">${escHtml(url)}</span>`;
         }
 
@@ -3094,17 +3192,32 @@
         function updateLepismaKPIs() {
             const grid = document.getElementById('lepismaKpiGrid');
             if (!grid) return;
+            
             const total = lepismaAllData.length;
+            
+            // CORREÇÃO: Usar a mesma lógica de normalização para o contador
             const naCaixa = lepismaAllData.filter(d => {
-                const so = (d.statusOperacional || '').trim();
+                const so = normalizeStatusOperacional(d.statusOperacional);
                 return so === 'Caixa';
             }).length;
+            
             const despachados = lepismaAllData.filter(d => {
-                const so = (d.statusOperacional || '').trim();
+                const so = normalizeStatusOperacional(d.statusOperacional);
                 return so === 'Despachado';
             }).length;
-            const atrasados = lepismaAllData.filter(d => (d.situacao || '').trim() === 'Atrasado' || (d.situacao || '').trim() === 'ATRASADO').length;
-            const atencao = lepismaAllData.filter(d => (d.situacao || '').trim() === 'Atenção' || (d.situacao || '').trim() === 'ATENÇÃO' || (d.situacao || '').trim() === 'Atencao').length;
+            
+            console.log('[Lepisma DEBUG] updateLepismaKPIs - Total:', total, '| Na Caixa:', naCaixa, '| Despachados:', despachados);
+            
+            const atrasados = lepismaAllData.filter(d => {
+                const sit = (d.situacao || '').trim().toLowerCase();
+                return sit === 'atrasado';
+            }).length;
+            
+            const atencao = lepismaAllData.filter(d => {
+                const sit = (d.situacao || '').trim().toLowerCase();
+                return sit === 'atenção' || sit === 'atencao';
+            }).length;
+            
             grid.innerHTML = `
                 <div class="kpi-card kpi-blue"><h2>${total}</h2><small>Total de Processos</small></div>
                 <div class="kpi-card" style="background:#eff6ff;"><h2 style="color:#1e40af;">${naCaixa}</h2><small>Na Caixa</small></div>
@@ -3150,33 +3263,44 @@
             const filterResp = document.getElementById('lepismaFilterResp')?.value || '';
             const filterSit = document.getElementById('lepismaFilterSit')?.value || '';
 
+            console.log('[Lepisma DEBUG] applyLepismaFilters - filtros:', {
+                searchText,
+                filterStatus,
+                filterResp,
+                filterSit
+            });
+
             lepismaFilteredData = lepismaAllData.filter(d => {
                 if (searchText) {
-                    const haystack = ((d.numero || '') + ' ' + (d.interessado || '') + ' ' + (d.resumo || '')).toLowerCase();
+                    const haystack = ((d.numero || '') + ' ' + (d.interessado || '') + ' ' + (d.resumo || '') + ' ' + (d.responsavel || '')).toLowerCase();
                     if (!haystack.includes(searchText)) return false;
                 }
-                // Filtro de Status Operacional (Caixa / Despachado)
+                
+                // CORREÇÃO: Usar normalizeStatusOperacional para o filtro de Status Operacional
                 if (filterStatus) {
-                    const so = (d.statusOperacional || '').trim();
-                    if (so !== filterStatus) return false;
+                    const normalizedSO = normalizeStatusOperacional(d.statusOperacional);
+                    console.log('[Lepisma DEBUG] Filtrando Status - processo:', d.numero, '| statusOperacional:', d.statusOperacional, '| normalizado:', normalizedSO, '| filtro:', filterStatus);
+                    if (normalizedSO !== filterStatus) return false;
                 }
+                
                 if (filterResp) {
                     if ((d.responsavel || '').trim() !== filterResp) return false;
                 }
+                
                 if (filterSit) {
-                    const sit = (d.situacao || '').trim();
+                    const sit = (d.situacao || '').trim().toLowerCase();
                     if (filterSit === 'Normal') {
-                        const sitLower = sit.toLowerCase();
-                        if (sitLower === 'atrasado' || sitLower === 'atenção' || sitLower === 'atencao') return false;
+                        if (sit === 'atrasado' || sit === 'atenção' || sit === 'atencao') return false;
                     } else {
-                        const sitLower = sit.toLowerCase();
                         const filterLower = filterSit.toLowerCase();
-                        if (filterLower === 'atenção' && sitLower === 'atencao') return true;
-                        if (sitLower !== filterLower) return false;
+                        if (filterLower === 'atenção' && sit === 'atencao') return true; // Aceitar variação sem acento
+                        if (sit !== filterLower) return false;
                     }
                 }
                 return true;
             });
+
+            console.log('[Lepisma DEBUG] Resultado da filtragem:', lepismaFilteredData.length, 'processos');
 
             if (lepismaSortColumn) {
                 sortLepismaData(lepismaSortColumn, true);
@@ -3206,8 +3330,16 @@
             lepismaSortColumn = column;
 
             lepismaFilteredData.sort((a, b) => {
-                const valA = (a[column] || '').toString().toLowerCase().trim();
-                const valB = (b[column] || '').toString().toLowerCase().trim();
+                let valA, valB;
+                
+                // Para statusOperacional, usar o valor normalizado
+                if (column === 'statusOperacional') {
+                    valA = normalizeStatusOperacional(a[column]) || '';
+                    valB = normalizeStatusOperacional(b[column]) || '';
+                } else {
+                    valA = (a[column] || '').toString().toLowerCase().trim();
+                    valB = (b[column] || '').toString().toLowerCase().trim();
+                }
 
                 if (column === 'numero') {
                     const numA = parseFloat(valA.replace(/[^0-9.]/g, ''));
@@ -3267,22 +3399,31 @@
             if (!numero) return;
             lepismaObservations[numero] = value;
             scheduleSave();
-            showToast('💾 Observação salva!');
+            console.log('[Lepisma DEBUG] Observação salva para processo:', numero, '| valor:', value);
         };
 
         // Função para carregar observação salva
         function getLepismaObs(numero) {
-            return lepismaObservations[numero] || '';
+            const obs = lepismaObservations[numero] || '';
+            return obs;
         }
 
         function renderLepismaTable() {
             const tbody = document.getElementById('lepismaTbody');
             if (!tbody) return;
+            
             tbody.innerHTML = lepismaFilteredData.map(d => {
                 const rowClass = getLepismaRowClass(d);
                 const savedObs = getLepismaObs(d.numero);
-                const statusOperacional = d.statusOperacional || '—';
-                const statusColor = statusOperacional === 'Caixa' ? 'var(--warning)' : statusOperacional === 'Despachado' ? 'var(--success)' : 'var(--text3)';
+                const statusOperacionalNormalized = normalizeStatusOperacional(d.statusOperacional) || d.statusOperacional || '—';
+                
+                // CORREÇÃO: Cores baseadas no valor normalizado
+                const statusColor = statusOperacionalNormalized === 'Caixa' ? 'var(--warning)' : 
+                                   statusOperacionalNormalized === 'Despachado' ? 'var(--success)' : 
+                                   'var(--text3)';
+                
+                console.log('[Lepisma DEBUG] Renderizando processo:', d.numero, '| Status:', statusOperacionalNormalized, '| Cor:', statusColor);
+                
                 return `
                 <tr class="${rowClass}">
                     <td><strong>${escHtml(d.numero)}</strong></td>
@@ -3293,7 +3434,7 @@
                     <td>${buildLepismaLink(d.acesso)}</td>
                     <td>${escHtml(d.caixaLepisma)}</td>
                     <td>${escHtml(d.dataSaida)}</td>
-                    <td><span style="font-weight:600;color:${statusColor};">${escHtml(statusOperacional)}</span></td>
+                    <td><span style="font-weight:600;color:${statusColor};">${escHtml(statusOperacionalNormalized)}</span></td>
                     <td style="min-width:150px;">
                         <textarea class="lepisma-obs-textarea" 
                                   data-numero="${escHtml(d.numero)}"
@@ -3302,6 +3443,7 @@
                     </td>
                 </tr>`;
             }).join('');
+            
             updateSortIcons();
         }
 
@@ -3313,21 +3455,44 @@
             document.getElementById('lepismaContent').style.display = 'none';
 
             try {
+                console.log('[Lepisma DEBUG] Iniciando carregamento dos dados...');
                 const csvText = await fetchLepismaCSV();
+                console.log('[Lepisma DEBUG] CSV recebido, tamanho:', csvText.length, 'caracteres');
+                
                 lepismaAllData = parseLepismaCSV(csvText);
+                console.log('[Lepisma DEBUG] Dados parseados:', lepismaAllData.length, 'processos');
+                
+                // Log detalhado dos primeiros 5 processos para diagnóstico
+                console.log('[Lepisma DEBUG] Amostra dos primeiros processos:');
+                lepismaAllData.slice(0, 5).forEach((d, i) => {
+                    console.log(`[Lepisma DEBUG] Processo ${i+1}:`, {
+                        numero: d.numero,
+                        status: d.status,
+                        situacao: d.situacao,
+                        statusOperacional: d.statusOperacional,
+                        caixaLepisma: d.caixaLepisma,
+                        dataSaida: d.dataSaida,
+                        acesso: d.acesso
+                    });
+                });
+                
                 lepismaFilteredData = [...lepismaAllData];
                 lepismaSortColumn = null;
                 lepismaSortDirection = 'asc';
+                
                 updateLepismaKPIs();
                 updateLepismaRespCards();
                 populateLepismaFilters();
                 applyLepismaFilters();
+                
                 document.getElementById('lepismaCount').textContent = lepismaAllData.length + ' processos';
                 document.getElementById('lepismaLoading').style.display = 'none';
                 document.getElementById('lepismaContent').style.display = 'block';
+                
                 showToast('✅ Dados do Lepisma carregados: ' + lepismaAllData.length + ' processos');
+                console.log('[Lepisma DEBUG] Carregamento concluído com sucesso');
             } catch (err) {
-                console.error('Erro ao carregar Lepisma:', err);
+                console.error('[Lepisma DEBUG] Erro ao carregar:', err);
                 document.getElementById('lepismaLoading').style.display = 'none';
                 document.getElementById('lepismaError').style.display = 'block';
                 document.getElementById('lepismaContent').style.display = 'none';
@@ -3337,9 +3502,12 @@
         }
 
         function renderLepismaPage() {
+            console.log('[Lepisma DEBUG] renderLepismaPage - dados carregados:', lepismaAllData.length);
             if (lepismaAllData.length === 0 && !lepismaIsLoading) {
+                console.log('[Lepisma DEBUG] Dados não carregados, iniciando loadLepismaData()');
                 loadLepismaData();
             } else if (lepismaAllData.length > 0) {
+                console.log('[Lepisma DEBUG] Dados já carregados, atualizando interface');
                 document.getElementById('lepismaLoading').style.display = 'none';
                 document.getElementById('lepismaError').style.display = 'none';
                 document.getElementById('lepismaContent').style.display = 'block';
@@ -3361,6 +3529,7 @@
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
             console.log('📁 Módulo Controle Lepisma ativo.');
+            console.log('🔍 Logs de diagnóstico do Lepisma ativos no console.');
         });
     </script>
 </body>
