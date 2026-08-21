@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.3</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v3.4</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg: #f0f4f9;
@@ -1893,6 +1894,48 @@
             @page { size:A4 landscape; margin:7mm; }
         }
 
+
+        /* ========== CENTRAL eSOCIAL / v3.4 ========== */
+        .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
+        .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
+        .central-kpis { display:grid; grid-template-columns:repeat(6,minmax(130px,1fr)); gap:10px; margin-bottom:16px; }
+        .central-kpi { border:1px solid var(--border); border-top:3px solid #70869a; background:var(--surface); border-radius:9px; padding:13px 14px; }
+        .central-kpi span,.central-kpi strong,.central-kpi small { display:block; }
+        .central-kpi span { color:var(--text3); text-transform:uppercase; font-size:8px; font-weight:800; letter-spacing:.6px; }
+        .central-kpi strong { font-size:22px; margin:4px 0 1px; }
+        .central-kpi small { color:var(--text3); font-size:9px; }
+        .central-kpi-danger { border-top-color:#dc2626; }
+        .central-kpi-warning { border-top-color:#d97706; }
+        .central-kpi-success { border-top-color:#159669; }
+        .central-kpi-info { border-top-color:#1769aa; }
+        .case-type { display:inline-flex; align-items:center; padding:3px 7px; border-radius:5px; font-size:9px; font-weight:800; text-transform:uppercase; }
+        .case-rejeicao { background:#fff0f0; color:#b42318; }
+        .case-retido { background:#fff7e6; color:#9a5a00; }
+        .case-solution { max-width:260px; white-space:normal; line-height:1.3; color:var(--text2); font-size:10px; }
+        .known-solution { display:block; margin-top:3px; padding:4px 5px; border-radius:4px; background:#eef8f3; color:#17643d; font-size:8.5px; line-height:1.25; }
+        .competence-lock { display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border-radius:6px; font-size:10px; font-weight:800; background:#f2f4f7; color:#475467; }
+        .competence-lock.closed { background:#fff1f1; color:#a51d1d; }
+        .daily-work-grid { display:grid; grid-template-columns:1.3fr repeat(4,minmax(115px,.55fr)); gap:9px; align-items:stretch; }
+        .daily-work-main { padding:14px; border-radius:8px; background:#f5f9fc; border:1px solid #dce7ef; }
+        .daily-work-main strong { display:block; font-size:17px; margin-bottom:3px; }
+        .daily-work-main span { color:var(--text3); font-size:10px; }
+        .daily-work-person { padding:12px; border:1px solid var(--border); border-radius:8px; background:var(--surface2); }
+        .daily-work-person strong,.daily-work-person span { display:block; }
+        .daily-work-person strong { font-size:18px; }
+        .daily-work-person span { font-size:9px; color:var(--text3); text-transform:uppercase; font-weight:700; }
+        .lepisma-updated { font-size:9px; color:var(--text3); font-weight:600; }
+        .lepisma-resp-meta { margin-top:3px; font-size:9px; color:var(--text3); }
+        #lepismaTable .col-dias-caixa { width:7%; }
+        .days-box { font-weight:800; color:var(--text2); }
+        .days-box.warning { color:#b45309; }
+        .days-box.danger { color:#b91c1c; }
+        .import-preview-list { max-height:220px; overflow:auto; margin-top:10px; border:1px solid var(--border); border-radius:7px; }
+        .import-preview-item { display:grid; grid-template-columns:70px 120px 1fr 90px; gap:8px; padding:7px 9px; border-bottom:1px solid var(--border-light); font-size:10px; }
+        .import-preview-item:last-child { border-bottom:0; }
+        @media (max-width:1200px) { .central-kpis { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } }
+
     </style>
 </head>
 <body>
@@ -1911,6 +1954,7 @@
             <div class="nav-item" data-page="equipe"><span class="nav-icon">●</span> Quadro de Equipe</div>
 
             <div class="nav-section">Controle eSocial</div>
+            <div class="nav-item" data-page="central"><span class="nav-icon">◎</span> Central eSocial</div>
             <div class="nav-item" data-page="rejeicoes"><span class="nav-icon">!</span> Rejeições</div>
             <div class="nav-item" data-page="retidos"><span class="nav-icon">◆</span> Retidos</div>
             <div class="nav-item" data-page="fechamento"><span class="nav-icon">✓</span> Fechamento eSocial</div>
@@ -1928,7 +1972,7 @@
             <div class="nav-item" data-page="importar"><span class="nav-icon">⇩</span> Importar Cronograma</div>
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.3 · 2026<br>
+            UFES · v3.4 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -1965,6 +2009,8 @@
                 <section class="ops-hero" id="dashboardToday"></section>
 
                 <div class="kpi-grid ops-kpi-grid" id="kpiGrid"></div>
+
+                <div class="card" id="dashboardDailyWork"></div>
 
                 <div class="dashboard-layout">
                     <div class="card ops-panel">
@@ -2042,6 +2088,41 @@
             <div class="page" id="page-equipe">
                 <div class="card-header" style="margin-bottom:10px;"><h3>👥 Quadro de Equipe</h3></div>
                 <div class="team-grid" id="teamGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;"></div>
+            </div>
+
+            <!-- PAGE: CENTRAL eSOCIAL -->
+            <div class="page" id="page-central">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">TRATAMENTO MENSAL</span>
+                        <h2>Central eSocial</h2>
+                        <p>Visão unificada de eventos rejeitados e retidos da competência.</p>
+                    </div>
+                    <div class="page-heading-actions">
+                        <input type="file" id="esocialImportInput" accept=".xlsx,.xls,.csv" hidden onchange="handleEsocialImport(event)">
+                        <button class="btn btn-primary" onclick="document.getElementById('esocialImportInput').click()">Importar Excel/CSV</button>
+                        <button class="btn btn-outline" onclick="navigatePublic('fechamento')">Fechamento</button>
+                    </div>
+                </div>
+                <div class="central-kpis" id="centralKpis"></div>
+                <div class="card">
+                    <div class="central-toolbar">
+                        <div class="central-filters">
+                            <input type="text" class="search-box" id="centralSearch" placeholder="Buscar CPF, nome, evento ou erro" oninput="renderCentralEsocial()" style="width:260px;">
+                            <select id="centralType" onchange="renderCentralEsocial()"><option value="">Rejeitados + Retidos</option><option value="rejeicao">Rejeitados</option><option value="retido">Retidos</option></select>
+                            <select id="centralStatus" onchange="renderCentralEsocial()"><option value="">Todos os status</option><option value="pendente">Pendentes</option><option value="andamento">Em tratamento</option><option value="resolvido">Resolvidos</option></select>
+                            <select id="centralResp" onchange="renderCentralEsocial()"><option value="">Todos responsáveis</option><option value="__SEM__">Sem responsável</option><option>Roni</option><option>Rafael</option><option>Fabianne</option></select>
+                            <button class="btn btn-sm btn-outline" onclick="resetCentralFilters()">Limpar filtros</button>
+                        </div>
+                        <span class="competence-lock" id="centralCompetenceStatus"></span>
+                    </div>
+                    <div class="table-wrap" style="margin-top:12px;max-height:63vh;overflow:auto;">
+                        <table id="centralTable" style="min-width:1180px;">
+                            <thead><tr><th>Tipo</th><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód. erro</th><th>Status</th><th>Responsável</th><th>Observação / solução</th><th>Ação</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- PAGE: REJEICOES -->
@@ -2160,7 +2241,9 @@
                     <div><span class="eyebrow">VISÃO EXECUTIVA</span><h2>Painel Gerencial</h2><p>Síntese operacional da competência para acompanhamento da chefia.</p></div>
                     <div class="page-heading-actions">
                         <button class="btn btn-primary" onclick="printOperationalCalendar()">Calendário em PDF</button>
-                        <button class="btn btn-outline" onclick="exportExcel()">Exportar dados</button>
+                        <button class="btn btn-outline" onclick="openMonthlyReport()">Relatório mensal</button>
+                        <button class="btn btn-outline" id="competenciaCloseBtn" onclick="toggleCompetenciaClosed()">Encerrar competência</button>
+                        <button class="btn btn-outline" onclick="exportExcel()">Exportar XLSX</button>
                         <button class="btn btn-outline" onclick="exportJSON()">Backup JSON</button>
                         <button class="btn btn-outline" onclick="importJSONPrompt()">Restaurar</button>
                     </div>
@@ -2243,7 +2326,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h3>📋 Processos</h3>
-                            <span class="badge badge-blue" id="lepismaCount">0 processos</span>
+                            <div style="display:flex;gap:9px;align-items:center;"><span class="lepisma-updated" id="lepismaUpdatedAt">Ainda não atualizado</span><span class="badge badge-blue" id="lepismaCount">0 processos</span></div>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
                             <input type="text" class="search-box" id="lepismaSearch" placeholder="🔍 Buscar número, interessado, resumo..." style="width:260px;" oninput="applyLepismaFilters()">
@@ -2277,6 +2360,7 @@
                                         <th class="sortable col-caixa-lepisma" onclick="sortLepisma('caixaLepisma')">Caixa Lepisma <span class="sort-icon"></span></th>
                                         <th class="sortable col-data-saida" onclick="sortLepisma('dataSaida')">Data Saída <span class="sort-icon"></span></th>
                                         <th class="sortable col-status-operacional" onclick="sortLepisma('statusOperacional')">Status Operacional <span class="sort-icon"></span></th>
+                                        <th class="col-dias-caixa">Dias na caixa</th>
                                         <th class="col-observacao">Observação</th>
                                     </tr>
                                 </thead>
@@ -2403,6 +2487,7 @@
         let lepismaSortDirection = 'asc';
         let lepismaIsLoading = false;
         let lepismaObservations = {};
+        let lepismaLastUpdated = null;
 
         // ==================== DEFAULT DATA ====================
         const DEFAULT_TIMELINE = [
@@ -2452,6 +2537,7 @@
             darkMode: false,
             historico: {},
             lepismaObservations: {},
+            closedCompetencias: {},
         };
 
         // ==================== STATE ====================
@@ -2478,6 +2564,20 @@
             const parts = dateStr.split('-');
             if (parts.length === 3) return parts[2] + '/' + parts[1];
             return dateStr;
+        }
+
+        function getLocalDateKey(date = new Date()) {
+            return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+        }
+
+        function isCompetenciaClosed(key = state.currentCompetencia) {
+            return Boolean(state.closedCompetencias?.[key]?.closedAt);
+        }
+
+        function ensureCompetenciaWritable(key = state.currentCompetencia) {
+            if (!isCompetenciaClosed(key)) return true;
+            alert(`A competência ${formatCompKey(key)} está encerrada. Reabra a competência no Painel Gerencial antes de alterar os dados.`);
+            return false;
         }
 
         function escHtml(str) {
@@ -2634,6 +2734,10 @@
         }
 
         function applyOperationalPlan(plan, notify = true) {
+            if (isCompetenciaClosed(plan.competencia)) {
+                alert(`A competência ${formatCompKey(plan.competencia)} está encerrada. Reabra-a antes de substituir o planejamento.`);
+                return;
+            }
             if (!state.operationalCalendars) state.operationalCalendars = {};
             state.operationalCalendars[plan.competencia] = plan;
             state.currentCompetencia = plan.competencia;
@@ -2736,7 +2840,7 @@
 
         function getCurrentPhase() {
             const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const todayStr = getLocalDateKey(today);
             for (const p of state.timeline) {
                 if (todayStr >= p.start && todayStr <= p.end) return p;
             }
@@ -2848,6 +2952,9 @@
                 case 'dashboard':
                     renderDashboard();
                     break;
+                case 'central':
+                    renderCentralEsocial();
+                    break;
                 case 'timeline':
                     renderTimeline();
                     break;
@@ -2939,7 +3046,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v3.3 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v3.4 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3004,6 +3111,7 @@
         // ==================== RENDER ALL ====================
         function renderAll() {
             renderDashboard();
+            renderCentralEsocial();
             renderTimeline();
             renderTeam();
             renderRejeicoes();
@@ -3021,6 +3129,7 @@
             updateKPIs();
             renderDashboardToday();
             renderDashboardTeam();
+            renderDashboardDailyWork();
             renderMilestoneList('dashboardMilestones');
             renderAlerts();
             drawProgressChart();
@@ -3066,6 +3175,208 @@
             `).join('');
         }
 
+
+        function getCentralCases() {
+            return [
+                ...state.rejeicoes.map((item, idx) => ({ ...item, _type: 'rejeicao', _idx: idx })),
+                ...state.retidos.map((item, idx) => ({ ...item, _type: 'retido', _idx: idx }))
+            ];
+        }
+
+        function getKnownSolution(item) {
+            if (!item?.codErro) return '';
+            const code = String(item.codErro).trim().toLowerCase();
+            const event = String(item.evento || '').trim().toLowerCase();
+            const candidates = [];
+            const collect = rows => (rows || []).forEach(row => {
+                if (row.status !== 'resolvido' || !String(row.obs || '').trim()) return;
+                if (String(row.codErro || '').trim().toLowerCase() !== code) return;
+                if (event && String(row.evento || '').trim().toLowerCase() !== event) return;
+                candidates.push(String(row.obs).trim());
+            });
+            Object.values(allCompetencias || {}).forEach(comp => { collect(comp?.rejeicoes); collect(comp?.retidos); });
+            collect(state.rejeicoes); collect(state.retidos);
+            return candidates.length ? candidates[candidates.length - 1] : '';
+        }
+
+        function renderCentralEsocial() {
+            const tbody = document.querySelector('#centralTable tbody');
+            const kpis = document.getElementById('centralKpis');
+            if (!tbody || !kpis) return;
+            const all = getCentralCases();
+            const pending = all.filter(x => x.status === 'pendente').length;
+            const progress = all.filter(x => x.status === 'andamento').length;
+            const solved = all.filter(x => x.status === 'resolvido').length;
+            const unassigned = all.filter(x => !String(x.responsavel || '').trim()).length;
+            const rejected = all.filter(x => x._type === 'rejeicao').length;
+            const retained = all.filter(x => x._type === 'retido').length;
+            kpis.innerHTML = `
+                <div class="central-kpi central-kpi-danger"><span>Pendentes</span><strong>${pending}</strong><small>Exigem tratamento</small></div>
+                <div class="central-kpi central-kpi-warning"><span>Em tratamento</span><strong>${progress}</strong><small>Com atuação iniciada</small></div>
+                <div class="central-kpi central-kpi-success"><span>Resolvidos</span><strong>${solved}</strong><small>Concluídos na competência</small></div>
+                <div class="central-kpi central-kpi-info"><span>Rejeitados</span><strong>${rejected}</strong><small>Eventos rejeitados</small></div>
+                <div class="central-kpi"><span>Retidos</span><strong>${retained}</strong><small>Eventos retidos</small></div>
+                <div class="central-kpi ${unassigned ? 'central-kpi-warning' : 'central-kpi-success'}"><span>Sem responsável</span><strong>${unassigned}</strong><small>Precisam de distribuição</small></div>`;
+
+            const q = (document.getElementById('centralSearch')?.value || '').trim().toLowerCase();
+            const type = document.getElementById('centralType')?.value || '';
+            const status = document.getElementById('centralStatus')?.value || '';
+            const resp = document.getElementById('centralResp')?.value || '';
+            let rows = all.filter(item => {
+                if (type && item._type !== type) return false;
+                if (status && item.status !== status) return false;
+                if (resp === '__SEM__' && String(item.responsavel || '').trim()) return false;
+                if (resp && resp !== '__SEM__' && item.responsavel !== resp) return false;
+                if (q) {
+                    const hay = [item.cpf,item.nome,item.evento,item.codErro,item.obs,item.responsavel].join(' ').toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+            const lock = document.getElementById('centralCompetenceStatus');
+            if (lock) {
+                const closed = isCompetenciaClosed();
+                lock.className = 'competence-lock' + (closed ? ' closed' : '');
+                lock.textContent = closed ? '🔒 Competência encerrada' : '🔓 Competência aberta';
+            }
+            tbody.innerHTML = rows.map(item => {
+                const known = getKnownSolution(item);
+                const arrName = item._type === 'rejeicao' ? 'rejeicoes' : 'retidos';
+                return `<tr>
+                    <td><span class="case-type case-${item._type}">${item._type === 'rejeicao' ? 'Rejeitado' : 'Retido'}</span></td>
+                    <td><input value="${escHtml(item.cpf||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'cpf',this.value)"></td>
+                    <td><input value="${escHtml(item.nome||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'nome',this.value)"></td>
+                    <td><input value="${escHtml(item.evento||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'evento',this.value)"></td>
+                    <td><input value="${escHtml(item.codErro||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'codErro',this.value)"></td>
+                    <td><select onchange="updateCentralCase('${arrName}',${item._idx},'status',this.value)"><option value="pendente" ${item.status==='pendente'?'selected':''}>🔴 Pendente</option><option value="andamento" ${item.status==='andamento'?'selected':''}>🟡 Em tratamento</option><option value="resolvido" ${item.status==='resolvido'?'selected':''}>🟢 Resolvido</option></select></td>
+                    <td><select onchange="updateCentralCase('${arrName}',${item._idx},'responsavel',this.value)"><option value="" ${!item.responsavel?'selected':''}>Não atribuído</option><option ${item.responsavel==='Roni'?'selected':''}>Roni</option><option ${item.responsavel==='Rafael'?'selected':''}>Rafael</option><option ${item.responsavel==='Fabianne'?'selected':''}>Fabianne</option></select></td>
+                    <td class="case-solution"><textarea onchange="updateCentralCase('${arrName}',${item._idx},'obs',this.value)" placeholder="Providência adotada / solução">${escHtml(item.obs||'')}</textarea>${known && known !== item.obs ? `<span class="known-solution" title="Solução já registrada para este evento e código de erro">💡 Solução anterior: ${escHtml(known)}</span>` : ''}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteCentralCase('${arrName}',${item._idx})">🗑️</button></td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:22px;">Nenhum evento encontrado com os filtros atuais.</td></tr>';
+        }
+        window.renderCentralEsocial = renderCentralEsocial;
+
+        window.resetCentralFilters = function() {
+            ['centralSearch','centralType','centralStatus','centralResp'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+            renderCentralEsocial();
+        };
+
+        window.updateCentralCase = function(arrName, idx, field, value) {
+            if (!ensureCompetenciaWritable()) { renderCentralEsocial(); return; }
+            const arr = state[arrName];
+            if (!arr?.[idx]) return;
+            arr[idx][field] = value;
+            scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork();
+        };
+
+        window.deleteCentralCase = function(arrName, idx) {
+            if (!ensureCompetenciaWritable()) return;
+            if (!confirm('Remover este evento da competência?')) return;
+            state[arrName]?.splice(idx, 1);
+            scheduleSave(); renderCentralEsocial(); renderRejeicoes(); renderRetidos(); updateKPIs(); renderDashboardDailyWork();
+        };
+
+        function renderDashboardDailyWork() {
+            const container = document.getElementById('dashboardDailyWork');
+            if (!container) return;
+            const open = getCentralCases().filter(x => x.status !== 'resolvido');
+            const countFor = name => open.filter(x => x.responsavel === name).length;
+            const unassigned = open.filter(x => !String(x.responsavel || '').trim()).length;
+            container.innerHTML = `<div class="card-header"><div><span class="eyebrow">EXECUÇÃO DO DIA</span><h3>O que ainda precisa de atenção</h3></div><button class="btn btn-sm btn-outline" onclick="navigatePublic('central')">Abrir Central eSocial</button></div>
+                <div class="daily-work-grid">
+                    <div class="daily-work-main"><strong>${open.length} pendência${open.length===1?'':'s'} em aberto</strong><span>${unassigned ? `${unassigned} ainda sem responsável. ` : ''}${isCompetenciaClosed() ? 'Competência encerrada para edição.' : 'Distribua e trate os eventos até o fechamento.'}</span></div>
+                    <div class="daily-work-person"><strong>${countFor('Roni')}</strong><span>Roni</span></div>
+                    <div class="daily-work-person"><strong>${countFor('Rafael')}</strong><span>Rafael</span></div>
+                    <div class="daily-work-person"><strong>${countFor('Fabianne')}</strong><span>Fabianne</span></div>
+                    <div class="daily-work-person"><strong>${unassigned}</strong><span>Sem responsável</span></div>
+                </div>`;
+        }
+
+        function normalizeImportKey(key) {
+            return String(key || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+        }
+
+        function valueByKey(row, tests) {
+            for (const [key, value] of Object.entries(row || {})) {
+                const k = normalizeImportKey(key);
+                if (tests.some(test => typeof test === 'string' ? k === test || k.includes(test) : test.test(k))) return String(value ?? '').trim();
+            }
+            return '';
+        }
+
+        function parseEsocialImportRows(rows) {
+            const parsed = [];
+            rows.forEach(row => {
+                const rowText = Object.values(row || {}).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+                const sheetText = String(row.__sheetName || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+                let type = '';
+                if (/rejeitad|rejeicao|rejeitado/.test(rowText) || /rejeitad|rejeicao/.test(sheetText)) type = 'rejeicao';
+                else if (/retid|retencao|retido/.test(rowText) || /retid|retencao/.test(sheetText)) type = 'retido';
+                if (!type) return;
+                const cpf = valueByKey(row,['cpf']);
+                const nome = valueByKey(row,['nome','trabalhador','servidor']);
+                const evento = valueByKey(row,['evento','tipo evento']);
+                const codErro = valueByKey(row,['codigo erro','cod erro','erro codigo','codigo','cod']);
+                const mensagem = valueByKey(row,['mensagem','descricao erro','descricao','motivo','erro']);
+                if (!cpf && !nome && !evento) return;
+                parsed.push({ type, cpf, nome, evento, codErro, mensagem });
+            });
+            return parsed;
+        }
+
+        window.handleEsocialImport = async function(event) {
+            const file = event.target.files?.[0]; event.target.value=''; if (!file) return;
+            if (!ensureCompetenciaWritable()) return;
+            try {
+                let rows=[];
+                const XLSXLib = window.XLSX;
+                if (!XLSXLib) throw new Error('O leitor de Excel não carregou. Verifique a conexão com a internet e tente novamente.');
+                const ext=(file.name.split('.').pop()||'').toLowerCase();
+                if (ext === 'csv') {
+                    const text=await file.text();
+                    const wb=XLSXLib.read(text,{type:'string'});
+                    wb.SheetNames.forEach(sheetName => {
+                        const parsedRows=XLSXLib.utils.sheet_to_json(wb.Sheets[sheetName],{defval:''});
+                        parsedRows.forEach(row => rows.push({...row,__sheetName:sheetName}));
+                    });
+                } else {
+                    const data=await file.arrayBuffer();
+                    const wb=XLSXLib.read(data,{type:'array'});
+                    wb.SheetNames.forEach(sheetName => {
+                        const parsedRows=XLSXLib.utils.sheet_to_json(wb.Sheets[sheetName],{defval:''});
+                        parsedRows.forEach(row => rows.push({...row,__sheetName:sheetName}));
+                    });
+                }
+                const parsed=parseEsocialImportRows(rows);
+                if (!parsed.length) throw new Error('Nenhuma linha identificada como rejeitada ou retida. A planilha precisa conter essas indicações em alguma coluna.');
+                window.pendingEsocialImport={parsed, filename:file.name};
+                const rej=parsed.filter(x=>x.type==='rejeicao').length, ret=parsed.filter(x=>x.type==='retido').length;
+                const overlay=document.getElementById('modalOverlay'), content=document.getElementById('modalContent');
+                content.innerHTML=`<span class="eyebrow">IMPORTAÇÃO DA COMPETÊNCIA</span><h3>Conferir eventos do eSocial</h3><p class="modal-intro">Arquivo: <strong>${escHtml(file.name)}</strong></p><div class="report-preview-grid"><div><span>Total identificado</span><strong>${parsed.length}</strong></div><div><span>Rejeitados</span><strong>${rej}</strong></div><div><span>Retidos</span><strong>${ret}</strong></div><div><span>Competência</span><strong>${formatCompKey(state.currentCompetencia)}</strong></div></div><div class="import-preview-list">${parsed.slice(0,12).map(x=>`<div class="import-preview-item"><span>${x.type==='rejeicao'?'Rejeitado':'Retido'}</span><span>${escHtml(x.cpf||'Sem CPF')}</span><strong>${escHtml(x.nome||'Sem nome')}</strong><span>${escHtml(x.evento||'—')}</span></div>`).join('')}</div><p class="modal-intro" style="margin-top:9px;">Eventos já existentes serão atualizados sem apagar responsável, status ou solução já registrados.</p><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Cancelar</button><button class="btn btn-primary" onclick="confirmEsocialImport()">Confirmar importação</button></div>`;
+                overlay.style.display='flex';
+            } catch(err) { console.error(err); alert('Não foi possível importar o arquivo. '+err.message); }
+        };
+
+        window.confirmEsocialImport = function() {
+            const payload=window.pendingEsocialImport; if(!payload) return;
+            if (!ensureCompetenciaWritable()) return;
+            let added=0, updated=0;
+            payload.parsed.forEach(item=>{
+                const arrName=item.type==='rejeicao'?'rejeicoes':'retidos'; const arr=state[arrName];
+                const key=x=>[x.cpf,x.evento,x.codErro].map(v=>String(v||'').trim().toLowerCase()).join('|');
+                const targetKey=key(item); const existing=arr.find(x=>key(x)===targetKey && targetKey!=='||');
+                if(existing){
+                    existing.cpf=item.cpf||existing.cpf; existing.nome=item.nome||existing.nome; existing.evento=item.evento||existing.evento; existing.codErro=item.codErro||existing.codErro;
+                    if(!existing.obs && item.mensagem) existing.obs=item.mensagem;
+                    existing.competencia=state.currentCompetencia; existing.importedAt=new Date().toISOString(); updated++;
+                } else {
+                    arr.push({cpf:item.cpf,nome:item.nome,evento:item.evento,codErro:item.codErro,status:'pendente',responsavel:'',competencia:state.currentCompetencia,obs:item.mensagem||'',importedAt:new Date().toISOString()}); added++;
+                }
+            });
+            window.pendingEsocialImport=null; closeModalDirect(); scheduleSave(); renderAll(); showToast(`Importação concluída: ${added} novos · ${updated} atualizados`);
+        };
+
         function updateKPIs() {
             const grid = document.getElementById('kpiGrid');
             if (!grid) return;
@@ -3077,7 +3388,7 @@
             const fechOk = Object.values(state.fechamentoStatus).filter(s => s.status === 'ok').length;
             const fechTotal = Object.keys(state.fechamentoStatus).length;
             const nextMilestone = [...(getOperationalCalendar()?.milestones || [])]
-                .filter(item => item.date >= new Date().toISOString().slice(0,10)).sort((a,b)=>a.date.localeCompare(b.date))[0];
+                .filter(item => item.date >= getLocalDateKey()).sort((a,b)=>a.date.localeCompare(b.date))[0];
             grid.innerHTML = `
             <div class="kpi-card ops-kpi ops-kpi-danger"><span class="kpi-label">Rejeições pendentes</span><h2>${rejPend}</h2><small>Exigem tratamento</small></div>
             <div class="kpi-card ops-kpi ops-kpi-warning"><span class="kpi-label">Eventos retidos</span><h2>${retPend}</h2><small>Aguardando liberação</small></div>
@@ -3153,7 +3464,7 @@
             const container = document.getElementById('timelineContainer');
             if (!container) return;
             const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const todayStr = getLocalDateKey(today);
             container.innerHTML = state.timeline.map(p => {
                 const isToday = todayStr >= p.start && todayStr <= p.end;
                 const startFmt = formatDateBR(p.start);
@@ -3287,6 +3598,7 @@
                   <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Resolvido</option>
                 </select></td>
                 <td><select onchange="updateRejeicao(${realIdx},'responsavel',this.value)">
+                  <option value="" ${!r.responsavel?'selected':''}>Não atribuído</option>
                   <option ${r.responsavel==='Roni'?'selected':''}>Roni</option>
                   <option ${r.responsavel==='Rafael'?'selected':''}>Rafael</option>
                   <option ${r.responsavel==='Fabianne'?'selected':''}>Fabianne</option>
@@ -3299,25 +3611,34 @@
         }
 
         window.updateRejeicao = function(idx, field, value) {
+            if (!ensureCompetenciaWritable()) { renderRejeicoes(); return; }
             if (idx >= 0 && idx < state.rejeicoes.length) {
                 state.rejeicoes[idx][field] = value;
                 scheduleSave();
                 updateKPIs();
+                renderCentralEsocial();
+                renderDashboardDailyWork();
             }
         };
         window.deleteRejeicao = function(idx) {
+            if (!ensureCompetenciaWritable()) return;
             if (confirm('Remover?')) {
                 state.rejeicoes.splice(idx, 1);
                 scheduleSave();
                 renderRejeicoes();
+                renderCentralEsocial();
+                renderDashboardDailyWork();
                 updateKPIs();
             }
         };
         window.addRejeicao = function() {
+            if (!ensureCompetenciaWritable()) return;
             state.rejeicoes.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
                 responsavel: 'Roni', competencia: state.currentCompetencia, obs: '' });
             scheduleSave();
             renderRejeicoes();
+            renderCentralEsocial();
+            renderDashboardDailyWork();
             updateKPIs();
         };
 
@@ -3345,6 +3666,7 @@
                   <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Liberado</option>
                 </select></td>
                 <td><select onchange="updateRetido(${realIdx},'responsavel',this.value)">
+                  <option value="" ${!r.responsavel?'selected':''}>Não atribuído</option>
                   <option ${r.responsavel==='Roni'?'selected':''}>Roni</option>
                   <option ${r.responsavel==='Rafael'?'selected':''}>Rafael</option>
                   <option ${r.responsavel==='Fabianne'?'selected':''}>Fabianne</option>
@@ -3357,25 +3679,34 @@
         }
 
         window.updateRetido = function(idx, field, value) {
+            if (!ensureCompetenciaWritable()) { renderRetidos(); return; }
             if (idx >= 0 && idx < state.retidos.length) {
                 state.retidos[idx][field] = value;
                 scheduleSave();
                 updateKPIs();
+                renderCentralEsocial();
+                renderDashboardDailyWork();
             }
         };
         window.deleteRetido = function(idx) {
+            if (!ensureCompetenciaWritable()) return;
             if (confirm('Remover?')) {
                 state.retidos.splice(idx, 1);
                 scheduleSave();
                 renderRetidos();
+                renderCentralEsocial();
+                renderDashboardDailyWork();
                 updateKPIs();
             }
         };
         window.addRetido = function() {
+            if (!ensureCompetenciaWritable()) return;
             state.retidos.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
                 responsavel: 'Roni', competencia: state.currentCompetencia, obs: '' });
             scheduleSave();
             renderRetidos();
+            renderCentralEsocial();
+            renderDashboardDailyWork();
             updateKPIs();
         };
 
@@ -3403,11 +3734,20 @@
         }
 
         window.toggleFechamentoStatus = function(evento) {
+            if (!ensureCompetenciaWritable()) { renderFechamento(); return; }
             const statuses = ['ok', 'pendente', 'nao_fechado', 'rejeicoes'];
             const current = state.fechamentoStatus[evento]?.status || 'pendente';
             const nextIdx = (statuses.indexOf(current) + 1) % statuses.length;
+            const nextStatus = statuses[nextIdx];
+            if (evento === 'S-1299' && nextStatus === 'ok') {
+                const abertos = getCentralCases().filter(item => item.status !== 'resolvido');
+                if (abertos.length) {
+                    const proceed = confirm(`Existem ${abertos.length} evento(s) rejeitado(s)/retido(s) ainda não resolvido(s). Confirmar o S-1299 como transmitido mesmo assim?`);
+                    if (!proceed) return;
+                }
+            }
             if (!state.fechamentoStatus[evento]) state.fechamentoStatus[evento] = { status: 'pendente', obs: '' };
-            state.fechamentoStatus[evento].status = statuses[nextIdx];
+            state.fechamentoStatus[evento].status = nextStatus;
             const obs = prompt('Observação (opcional):', state.fechamentoStatus[evento].obs || '');
             if (obs !== null) state.fechamentoStatus[evento].obs = obs;
             scheduleSave();
@@ -3537,6 +3877,7 @@
         };
 
         window.updateCalDay = function(dateKey, field, value) {
+            if (!ensureCompetenciaWritable(dateKey.slice(0,7))) { renderCalendar(); return; }
             if (!state.calendarEvents[dateKey]) state.calendarEvents[dateKey] = { event: false, done: false, obs: '' };
             state.calendarEvents[dateKey][field] = value;
             scheduleSave();
@@ -3849,8 +4190,11 @@
             const fechOk = Object.values(state.fechamentoStatus).filter(s => s.status === 'ok').length;
             const fechTotal = Object.keys(state.fechamentoStatus).length;
             const riskClass = phase?.criticity === 'Crítico' ? 'exec-danger' : phase?.criticity === 'Alto' ? 'exec-warning' : 'exec-success';
+            const closed = isCompetenciaClosed();
+            const closeBtn = document.getElementById('competenciaCloseBtn');
+            if (closeBtn) { closeBtn.textContent = closed ? 'Reabrir competência' : 'Encerrar competência'; closeBtn.className = 'btn btn-outline'; }
             container.innerHTML = `
-                <div class="executive-card"><span>Competência</span><strong>${formatCompKey(state.currentCompetencia)}</strong><small>Período em acompanhamento</small></div>
+                <div class="executive-card ${closed?'exec-danger':'exec-success'}"><span>Competência</span><strong>${formatCompKey(state.currentCompetencia)}</strong><small>${closed?'🔒 Encerrada':'🔓 Aberta para tratamento'}</small></div>
                 <div class="executive-card"><span>Atuação programada</span><strong>${escHtml(context.period?.shortTitle || context.period?.title || 'Não definida')}</strong><small>${context.period ? formatDateBR(context.period.start)+' a '+formatDateBR(context.period.end) : 'Importe o relatório'}</small></div>
                 <div class="executive-card ${riskClass}"><span>Criticidade</span><strong>${phase?.criticity||'N/D'}</strong><small>${phase?.title||'Sem fase ativa'}</small></div>
                 <div class="executive-card"><span>Pendências eSocial</span><strong>${pendencias + retidos}</strong><small>${pendencias} rejeições · ${retidos} retidos</small></div>
@@ -3858,6 +4202,59 @@
             renderMilestoneList('gerencialMilestones');
             drawRejeicoesChart();
         }
+
+
+        window.toggleCompetenciaClosed = function() {
+            if (!state.closedCompetencias) state.closedCompetencias = {};
+            const key = state.currentCompetencia;
+            const existing = state.closedCompetencias[key];
+            if (existing?.closedAt) {
+                const reason = prompt(`A competência ${formatCompKey(key)} está encerrada. Informe a justificativa para reabertura:`);
+                if (!reason?.trim()) return;
+                state.closedCompetencias[key] = { ...existing, closedAt: null, reopenedAt: new Date().toISOString(), reopenReason: reason.trim() };
+                scheduleSave(); renderAll(); showToast('🔓 Competência reaberta.');
+                return;
+            }
+            const openItems = getCentralCases().filter(x => x.status !== 'resolvido').length;
+            const msg = openItems ? `Ainda existem ${openItems} pendência(s) não resolvida(s). Encerrar a competência mesmo assim?` : `Encerrar a competência ${formatCompKey(key)}?`;
+            if (!confirm(msg)) return;
+            state.closedCompetencias[key] = {
+                closedAt: new Date().toISOString(),
+                snapshot: {
+                    rejeicoes: state.rejeicoes.length,
+                    retidos: state.retidos.length,
+                    resolvidos: getCentralCases().filter(x => x.status === 'resolvido').length,
+                    pendentes: openItems,
+                    fechamento: JSON.parse(JSON.stringify(state.fechamentoStatus))
+                }
+            };
+            scheduleSave(); renderAll(); showToast('🔒 Competência encerrada e protegida contra alterações.');
+        };
+
+        function buildMonthlyReportData() {
+            const all=getCentralCases();
+            const resolved=all.filter(x=>x.status==='resolvido').length;
+            const open=all.length-resolved;
+            const byResp=['Roni','Rafael','Fabianne'].map(name=>({name,total:all.filter(x=>x.responsavel===name).length,resolved:all.filter(x=>x.responsavel===name&&x.status==='resolvido').length}));
+            const errors={}; all.forEach(x=>{ const k=x.codErro||'Sem código'; errors[k]=(errors[k]||0)+1; });
+            const topErrors=Object.entries(errors).sort((a,b)=>b[1]-a[1]).slice(0,6);
+            return {all,resolved,open,byResp,topErrors};
+        }
+
+        window.openMonthlyReport = function() {
+            const d=buildMonthlyReportData();
+            const closed=isCompetenciaClosed();
+            const content=document.getElementById('modalContent'), overlay=document.getElementById('modalOverlay');
+            content.innerHTML=`<span class="eyebrow">RELATÓRIO GERENCIAL</span><h3>Competência ${formatCompKey(state.currentCompetencia)}</h3><div class="report-preview-grid"><div><span>Total de ocorrências</span><strong>${d.all.length}</strong></div><div><span>Resolvidas</span><strong>${d.resolved}</strong></div><div><span>Pendentes</span><strong>${d.open}</strong></div><div><span>Situação</span><strong>${closed?'Encerrada':'Aberta'}</strong></div></div><h4 style="margin-top:12px;">Distribuição da equipe</h4><div class="milestone-list" style="margin-top:7px;">${d.byResp.map(x=>`<div class="milestone-item"><div class="milestone-date">${x.total}</div><div><strong>${x.name}</strong><small>${x.resolved} resolvido(s)</small></div></div>`).join('')}</div><h4 style="margin-top:12px;">Erros mais frequentes</h4><div class="milestone-list" style="margin-top:7px;">${d.topErrors.map(([code,count])=>`<div class="milestone-item"><div class="milestone-date">${count}</div><div><strong>${escHtml(code)}</strong><small>ocorrência(s)</small></div></div>`).join('') || '<div class="empty-state">Sem ocorrências.</div>'}</div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Fechar</button><button class="btn btn-primary" onclick="printMonthlyReport()">Imprimir / salvar PDF</button></div>`;
+            overlay.style.display='flex';
+        };
+
+        window.printMonthlyReport = function() {
+            const d=buildMonthlyReportData();
+            const win=window.open('','_blank'); if(!win){ alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.'); return; }
+            const rows=d.all.map(x=>`<tr><td>${x._type==='rejeicao'?'Rejeitado':'Retido'}</td><td>${escHtml(x.cpf||'')}</td><td>${escHtml(x.nome||'')}</td><td>${escHtml(x.evento||'')}</td><td>${escHtml(x.codErro||'')}</td><td>${x.status==='resolvido'?'Resolvido':x.status==='andamento'?'Em tratamento':'Pendente'}</td><td>${escHtml(x.responsavel||'Não atribuído')}</td><td>${escHtml(x.obs||'')}</td></tr>`).join('');
+            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório ${formatCompKey(state.currentCompetencia)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:28px}h1{color:#123b5d;margin-bottom:4px}p{color:#5c6875}.k{display:flex;gap:10px;margin:18px 0}.k div{border:1px solid #ccd6df;padding:10px 14px;min-width:120px}.k strong{display:block;font-size:22px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7dee5;padding:6px;text-align:left;vertical-align:top}th{background:#123b5d;color:white}@page{size:A4 landscape;margin:10mm}</style></head><body><h1>Relatório Operacional eSocial</h1><p>Universidade Federal do Espírito Santo · Competência ${formatCompKey(state.currentCompetencia)} · ${isCompetenciaClosed()?'Competência encerrada':'Competência aberta'}</p><div class="k"><div><span>Total</span><strong>${d.all.length}</strong></div><div><span>Resolvidos</span><strong>${d.resolved}</strong></div><div><span>Pendentes</span><strong>${d.open}</strong></div></div><table><thead><tr><th>Tipo</th><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód. erro</th><th>Status</th><th>Responsável</th><th>Providência / solução</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print();<\/script></body></html>`); win.document.close();
+        };
 
 
         // ==================== HISTORICO ====================
@@ -4047,7 +4444,7 @@
                 ctx.fillText(`${formatDateBR(period.start)}–${formatDateBR(period.end)}`, x + (width - 4)/2, barY + 37);
                 x += width;
             });
-            const todayKey = new Date().toISOString().slice(0,10);
+            const todayKey = getLocalDateKey();
             const periodStart = periods[0].start;
             const periodEnd = periods[periods.length-1].end;
             if (todayKey >= periodStart && todayKey <= periodEnd) {
@@ -4208,15 +4605,13 @@
         // ==================== EXPORT ====================
         window.exportPDF = function() { window.print(); };
         window.exportExcel = function() {
-            let csv = 'CPF;Nome;Evento;CodErro;Status;Responsavel;Competencia;Obs\n';
-            [...state.rejeicoes, ...state.retidos].forEach(r => { csv +=
-                    `${r.cpf};${r.nome};${r.evento};${r.codErro};${r.status};${r.responsavel};${r.competencia||''};${r.obs||''}\n`; });
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'dados_esocial.csv';
-            a.click();
-            URL.revokeObjectURL(a.href);
+            const XLSXLib = window.XLSX;
+            if (!XLSXLib) { alert('Biblioteca de Excel não carregada. Verifique a conexão e tente novamente.'); return; }
+            const clean = rows => rows.map(r => ({ CPF:r.cpf||'', Nome:r.nome||'', Evento:r.evento||'', 'Código do erro':r.codErro||'', Status:r.status||'', Responsável:r.responsavel||'', Competência:r.competencia||state.currentCompetencia, 'Observação / solução':r.obs||'' }));
+            const wb = XLSXLib.utils.book_new();
+            XLSXLib.utils.book_append_sheet(wb, XLSXLib.utils.json_to_sheet(clean(state.rejeicoes)), 'Rejeitados');
+            XLSXLib.utils.book_append_sheet(wb, XLSXLib.utils.json_to_sheet(clean(state.retidos)), 'Retidos');
+            XLSXLib.writeFile(wb, `eSocial_${state.currentCompetencia}.xlsx`);
         };
         window.exportJSON = function() {
             updateHistoricoEntry();
@@ -4225,7 +4620,7 @@
             const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = 'backup_governanca_' + new Date().toISOString().split('T')[0] + '.json';
+            a.download = 'backup_governanca_' + getLocalDateKey() + '.json';
             a.click();
             URL.revokeObjectURL(a.href);
         };
@@ -4600,6 +4995,16 @@
             return '';
         }
 
+
+        function getLepismaDaysInBox(item) {
+            if (normalizeStatusOperacional(item.statusOperacional) !== 'Caixa') return null;
+            const start = parseDateBR(item.envio || item.caixaLepisma || '');
+            if (!start || isNaN(start)) return null;
+            const [y,m,d] = getLocalDateKey().split('-').map(Number);
+            const today = new Date(y,m-1,d);
+            return Math.max(0, Math.floor((today - start) / 86400000));
+        }
+
         function updateLepismaKPIs() {
             const grid = document.getElementById('lepismaKpiGrid');
             if (!grid) return;
@@ -4641,13 +5046,18 @@
             const respMap = {};
             lepismaAllData.forEach(d => {
                 const r = (d.responsavel || '').trim().toUpperCase();
-                if (r) respMap[r] = (respMap[r] || 0) + 1;
+                if (!r) return;
+                if (!respMap[r]) respMap[r] = { total:0, caixa:0, atrasado:0 };
+                respMap[r].total++;
+                if (normalizeStatusOperacional(d.statusOperacional) === 'Caixa') respMap[r].caixa++;
+                if ((d.situacao || '').trim().toLowerCase() === 'atrasado') respMap[r].atrasado++;
             });
-            const sorted = Object.entries(respMap).sort((a, b) => b[1] - a[1]);
-            container.innerHTML = sorted.map(([nome, count]) => `
+            const sorted = Object.entries(respMap).sort((a, b) => b[1].caixa - a[1].caixa);
+            container.innerHTML = sorted.map(([nome, stats]) => `
                 <div class="lepisma-resp-card">
-                    <div class="resp-count" style="color:${nome==='RAFA'?'#4f46e5':nome==='FABI'?'#b45389':'#1d6fbd'}">${count}</div>
-                    <div class="resp-label">${nome}</div>
+                    <div class="resp-count" style="color:${nome==='RAFA'?'#4f46e5':nome==='FABI'?'#b45389':'#1d6fbd'}">${stats.caixa}</div>
+                    <div class="resp-label">${nome} · NA CAIXA</div>
+                    <div class="lepisma-resp-meta">${stats.total} total · ${stats.atrasado} atrasado(s)</div>
                 </div>
             `).join('');
         }
@@ -4825,6 +5235,7 @@
                     <td>${escHtml(d.caixaLepisma)}</td>
                     <td>${escHtml(d.dataSaida)}</td>
                     <td><span style="font-weight:600;color:${statusColor};">${escHtml(statusOperacionalNormalized)}</span></td>
+                    <td>${(() => { const days=getLepismaDaysInBox(d); if(days===null) return '—'; const cls=days>=10?'danger':days>=5?'warning':''; return `<span class="days-box ${cls}">${days} dia${days===1?'':'s'}</span>`; })()}</td>
                     <td style="min-width:150px;">
                         <textarea class="lepisma-obs-textarea" 
                                   data-numero="${escHtml(d.numero)}"
@@ -4858,6 +5269,9 @@
                 applyLepismaFilters();
                 
                 document.getElementById('lepismaCount').textContent = lepismaAllData.length + ' processos';
+                lepismaLastUpdated = new Date();
+                const updatedEl = document.getElementById('lepismaUpdatedAt');
+                if (updatedEl) updatedEl.textContent = 'Atualizado em ' + lepismaLastUpdated.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
                 document.getElementById('lepismaLoading').style.display = 'none';
                 document.getElementById('lepismaContent').style.display = 'block';
                 
@@ -4896,7 +5310,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Módulo Controle Lepisma ativo.');
+            console.log('📁 Módulo Controle Lepisma ativo · Central eSocial v3.4 ativa.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
