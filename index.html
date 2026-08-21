@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.7</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v3.8</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -1948,7 +1948,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v3.7 ========== */
+        /* ========== CENTRAL eSOCIAL / v3.8 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2061,9 +2061,46 @@
         .staff-status { display:inline-flex; padding:3px 7px; border-radius:999px; background:var(--success-bg); color:var(--success); font-size:8px; font-weight:900; text-transform:uppercase; }
         .staff-status.inactive { background:var(--surface3); color:var(--text3); }
         .staff-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+        .reference-hero-badge { display:inline-flex; align-items:center; gap:6px; padding:7px 11px; border:1px solid var(--border); border-radius:999px; background:var(--surface2); color:var(--text2); font-size:9px; font-weight:900; letter-spacing:.35px; text-transform:uppercase; white-space:nowrap; }
+        .reference-card { overflow:hidden; }
+        .reference-intro { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:14px; padding:13px 15px; border:1px solid #cfe2f3; border-radius:9px; background:#f1f8fe; }
+        .reference-intro strong,.reference-intro span { display:block; }
+        .reference-intro strong { color:#123b5d; font-size:12px; }
+        .reference-intro span { margin-top:3px; color:#4e6475; font-size:10px; line-height:1.45; }
+        .reference-intro-icon { width:32px; height:32px; display:grid; place-items:center; flex:0 0 32px; border-radius:8px; background:#dceefe; color:#12517d; font-size:15px; }
+        .rubric-table { min-width:660px; }
+        .rubric-table th:nth-child(1),.rubric-table td:nth-child(1),.rubric-table th:nth-child(2),.rubric-table td:nth-child(2) { width:20%; text-align:center; }
+        .rubric-table td { padding-top:11px; padding-bottom:11px; }
+        .rubric-code { display:inline-flex; min-width:72px; justify-content:center; padding:5px 9px; border-radius:6px; background:#eaf3fb; color:#124f7a; font-family:Consolas,Monaco,monospace; font-size:11px; font-weight:900; }
+        .rubric-code.informative { background:#eaf8f0; color:#147448; }
+        .rubric-description { color:var(--text); font-weight:700; }
+        .links-section { margin-top:14px; }
+        .links-section-title { margin-bottom:10px; }
+        .links-section-title h3,.links-section-title p { margin:0; }
+        .links-section-title h3 { color:var(--text); font-size:15px; }
+        .links-section-title p { margin-top:3px; color:var(--text3); font-size:10px; }
+        .course-list { display:grid; gap:8px; }
+        .course-row { display:grid; grid-template-columns:62px minmax(0,1fr) auto; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--border); border-radius:9px; background:var(--surface2); }
+        .course-date { display:grid; place-items:center; align-content:center; min-height:48px; border-radius:8px; background:#eaf3fb; color:#124f7a; font-size:13px; font-weight:900; line-height:1.1; }
+        .course-date small { margin-top:3px; color:#5f7484; font-size:8px; letter-spacing:.4px; }
+        .course-info { min-width:0; }
+        .course-info strong,.course-info span { display:block; }
+        .course-info strong { color:var(--text); font-size:11px; line-height:1.35; }
+        .course-info span { margin-top:4px; color:var(--text3); font-size:9px; }
+        .reference-link-btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:31px; padding:7px 10px; border:1px solid #bfd5e8; border-radius:7px; background:var(--surface); color:#1266a0; font-size:9px; font-weight:900; text-decoration:none; white-space:nowrap; transition:.15s ease; }
+        .reference-link-btn:hover { border-color:#4f9bd1; background:#eaf4fc; transform:translateY(-1px); }
+        .useful-links-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+        .useful-link-card { display:flex; flex-direction:column; min-height:145px; padding:14px; border:1px solid var(--border); border-radius:10px; background:var(--surface); }
+        .useful-link-card .link-label { align-self:flex-start; padding:3px 7px; border-radius:999px; background:#edf3f8; color:#52687a; font-size:8px; font-weight:900; letter-spacing:.35px; text-transform:uppercase; }
+        .useful-link-card h4 { margin:10px 0 5px; color:var(--text); font-size:13px; }
+        .useful-link-card p { flex:1; margin:0 0 13px; color:var(--text3); font-size:9px; line-height:1.45; }
+        .useful-link-card .reference-link-btn { align-self:flex-start; }
+        body.dark-mode .reference-intro { border-color:#31506a; background:#172c3e; }
+        body.dark-mode .reference-intro strong { color:#d8ecfb; }
+        body.dark-mode .reference-intro span { color:#a9bfd0; }
         @media (max-width:1200px) { .central-kpis { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
         @media (max-width:900px) { .polare-layout { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } }
-        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row { align-items:flex-start; flex-direction:column; } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } }
 
     </style>
 </head>
@@ -2098,9 +2135,13 @@
             <div class="nav-item" data-page="historico"><span class="nav-icon">◫</span> Histórico</div>
             <div class="nav-item" data-page="acoes"><span class="nav-icon">▲</span> Ações Urgentes</div>
 
+            <div class="nav-section">Referências</div>
+            <div class="nav-item" data-page="rubricas"><span class="nav-icon">≡</span> Rubricas</div>
+            <div class="nav-item" data-page="linksuteis"><span class="nav-icon">↗</span> Links Úteis</div>
+
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.7 · 2026<br>
+            UFES · v3.8 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2451,6 +2492,76 @@
                         <button class="btn btn-primary" onclick="addServidor()">Adicionar servidor</button>
                     </div>
                     <div class="staff-list" id="staffList"></div>
+                </div>
+            </div>
+
+            <!-- PAGE: RUBRICAS -->
+            <div class="page" id="page-rubricas">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">CONSULTA RÁPIDA</span>
+                        <h2>Rubricas</h2>
+                        <p>Relação das rubricas originais e informativas criadas para o tratamento no eSocial.</p>
+                    </div>
+                    <span class="reference-hero-badge">8 rubricas cadastradas</span>
+                </div>
+                <div class="card reference-card">
+                    <div class="reference-intro">
+                        <div><strong>Lista de rubricas criadas</strong><span>Use os códigos abaixo como referência para identificar a rubrica original e a correspondente rubrica informativa.</span></div>
+                        <span class="reference-intro-icon">≡</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="rubric-table">
+                            <thead><tr><th>Rubrica original</th><th>Rubrica informativa</th><th>Descrição</th></tr></thead>
+                            <tbody>
+                                <tr><td><span class="rubric-code">98018</span></td><td><span class="rubric-code informative">99018</span></td><td class="rubric-description">DEDUTORA PSS - CDT</td></tr>
+                                <tr><td><span class="rubric-code">99005</span></td><td><span class="rubric-code informative">99019</span></td><td class="rubric-description">DEDUTORA IR - CDT</td></tr>
+                                <tr><td><span class="rubric-code">99015</span></td><td><span class="rubric-code informative">99020</span></td><td class="rubric-description">DEDUTORA IR - APOSENTADOS/PENSIONISTAS</td></tr>
+                                <tr><td><span class="rubric-code">98042</span></td><td><span class="rubric-code informative">99021</span></td><td class="rubric-description">DEDUTORA PSS 13º - CDT</td></tr>
+                                <tr><td><span class="rubric-code">99003</span></td><td><span class="rubric-code informative">99022</span></td><td class="rubric-description">DEDUTORA IRRF - 13º SAL./GRAT. NATALINA</td></tr>
+                                <tr><td><span class="rubric-code">98004</span></td><td><span class="rubric-code informative">99023</span></td><td class="rubric-description">DEDUTORA CONTR. PSS - GRATIF. NATALINA</td></tr>
+                                <tr><td><span class="rubric-code">99006</span></td><td><span class="rubric-code informative">99024</span></td><td class="rubric-description">IRRF GRAT. NATAL CDT/PESSOAL</td></tr>
+                                <tr><td><span class="rubric-code">99004</span></td><td><span class="rubric-code informative">99030</span></td><td class="rubric-description">DEDUTORA IRRF - FÉRIAS</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: LINKS UTEIS -->
+            <div class="page" id="page-linksuteis">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">REFERÊNCIAS DA EQUIPE</span>
+                        <h2>Links Úteis</h2>
+                        <p>Acesso rápido às gravações dos treinamentos, sistemas e materiais de apoio.</p>
+                    </div>
+                    <span class="reference-hero-badge">10 acessos disponíveis</span>
+                </div>
+
+                <div class="card reference-card">
+                    <div class="reference-intro">
+                        <div><strong>Gravações dos treinamentos</strong><span>Treinamentos em eSocial realizados em novembro e dezembro de 2025. Os links externos abrem em uma nova guia.</span></div>
+                        <span class="reference-intro-icon">▶</span>
+                    </div>
+                    <div class="course-list">
+                        <div class="course-row"><span class="course-date">25/11<small>2025</small></span><div class="course-info"><strong>Treinamento em eSocial - Foco no Gerenciador-UFES</strong><span>13:23 · Gravação</span></div><a class="reference-link-btn" href="https://drive.google.com/file/d/1EaX4U895o5seUWezLB6nHE_p-hD_6Otb/view?usp=sharing" target="_blank" rel="noopener noreferrer">Abrir gravação ↗</a></div>
+                        <div class="course-row"><span class="course-date">27/11<small>2025</small></span><div class="course-info"><strong>Treinamento em eSocial - Foco no Gerenciador-UFES</strong><span>13:57 · Gravação</span></div><a class="reference-link-btn" href="https://drive.google.com/file/d/1a-0F7b_tCAzHtYEXTShYqQmucm3mM5qF/view?usp=sharing" target="_blank" rel="noopener noreferrer">Abrir gravação ↗</a></div>
+                        <div class="course-row"><span class="course-date">02/12<small>2025</small></span><div class="course-info"><strong>Treinamento em eSocial - Foco no Gerenciador-UFES</strong><span>13:22 · Gravação</span></div><a class="reference-link-btn" href="https://drive.google.com/file/d/1RzVjmIjrt7HqbH7rTwwaUwP9Tt8KqnA/view?usp=sharing" target="_blank" rel="noopener noreferrer">Abrir gravação ↗</a></div>
+                        <div class="course-row"><span class="course-date">04/12<small>2025</small></span><div class="course-info"><strong>Treinamento em eSocial - Foco no Gerenciador-UFES</strong><span>13:26 · Gravação</span></div><a class="reference-link-btn" href="https://drive.google.com/file/d/13zpxqZnOdGNtYk7y3tN7wrt6nUqv9Zju/view?usp=sharing" target="_blank" rel="noopener noreferrer">Abrir gravação ↗</a></div>
+                        <div class="course-row"><span class="course-date">16/12<small>2025</small></span><div class="course-info"><strong>Treinamento em eSocial - Foco no Gerenciador-UFES</strong><span>13:16 · Gravação</span></div><a class="reference-link-btn" href="https://drive.google.com/file/d/1zvtYKzjbpRlrYY-BcOOPKhGdoE4zrpog/view?usp=sharing" target="_blank" rel="noopener noreferrer">Abrir gravação ↗</a></div>
+                        <div class="course-row"><span class="course-date">17/12<small>2025</small></span><div class="course-info"><strong>Treinamento em eSocial - Foco no Gerenciador Integrador-UFES</strong><span>13:25 · Gravação</span></div><a class="reference-link-btn" href="https://drive.google.com/file/d/1iSohcd9G1SrpiOquYjZ3vmsHfZ6YexXu/view?usp=sharing" target="_blank" rel="noopener noreferrer">Abrir gravação ↗</a></div>
+                    </div>
+                </div>
+
+                <div class="links-section">
+                    <div class="links-section-title"><h3>Links úteis</h3><p>Sistemas oficiais e materiais de referência para a rotina da equipe.</p></div>
+                    <div class="useful-links-grid">
+                        <article class="useful-link-card"><span class="link-label">IA eSocial</span><h4>Assistente eSocial</h4><p>Assistente especializado para apoio às consultas relacionadas ao eSocial.</p><a class="reference-link-btn" href="https://iaesocial.com.br/" target="_blank" rel="noopener noreferrer">Acessar site ↗</a></article>
+                        <article class="useful-link-card"><span class="link-label">SIPEC</span><h4>Portal de Serviços de Gestão</h4><p>Acesso ao portal de serviços do Sistema de Pessoal Civil da Administração Federal.</p><a class="reference-link-btn" href="https://portaldeservicos.gestao.gov.br/" target="_blank" rel="noopener noreferrer">Acessar portal ↗</a></article>
+                        <article class="useful-link-card"><span class="link-label">Fale Conosco - eSocial</span><h4>Módulo Web-Geral — eSocial</h4><p>Canal oficial de atendimento e formulário para empresas no portal do eSocial.</p><a class="reference-link-btn" href="https://www.gov.br/esocial/pt-br/canais_atendimento/formularios/empresas/web-GERAL/Web-Geral" target="_blank" rel="noopener noreferrer">Abrir formulário ↗</a></article>
+                        <article class="useful-link-card"><span class="link-label">MGI</span><h4>Portaria da Receita Federal nº 632/2025</h4><p>Material sobre o Programa Receita Social Autorregularização.</p><a class="reference-link-btn" href="https://www.youtube.com/live/sIt5rOWqjRk" target="_blank" rel="noopener noreferrer">Assistir material ↗</a></article>
+                    </div>
                 </div>
             </div>
 
@@ -3241,6 +3352,9 @@
                 case 'servidores':
                     renderServidores();
                     break;
+                case 'rubricas':
+                case 'linksuteis':
+                    break;
                 default:
                     break;
             }
@@ -3252,7 +3366,8 @@
                 equipe: 'Equipe', central: 'Central eSocial', rejeicoes: 'Rejeições', retidos: 'Retidos',
                 fechamento: 'Fechamento', lepisma: 'Lepisma', polare: 'Relatório PolarE',
                 servidores: 'Cadastro de Servidores', gerencial: 'Modo Gerencial',
-                historico: 'Histórico', acoes: 'Ações Urgentes'
+                historico: 'Histórico', acoes: 'Ações Urgentes', rubricas: 'Rubricas',
+                linksuteis: 'Links Úteis'
             };
             return labels[pageName] || pageName || 'Plataforma';
         }
@@ -3432,7 +3547,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v3.7 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v3.8 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -6162,7 +6277,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores v3.7 ativos.');
+            console.log('📁 Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v3.8 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
