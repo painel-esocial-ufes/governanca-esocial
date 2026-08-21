@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.1</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.3</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -887,6 +887,55 @@
             transform: scale(1.2);
         }
 
+        /* IDENTIFICAÇÃO DE ACESSO */
+        .access-identification-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            background: linear-gradient(135deg, rgba(8, 42, 70, .97), rgba(20, 78, 117, .94));
+            backdrop-filter: blur(8px);
+        }
+        .access-identification-card {
+            width: min(440px, 100%);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, .22);
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .3);
+        }
+        .access-identification-brand { display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+        .access-identification-seal { display:grid; place-items:center; width:48px; height:48px; border-radius:13px; background:#123b5d; color:#fff; font-size:12px; font-weight:900; letter-spacing:.8px; }
+        .access-identification-brand strong,.access-identification-brand span { display:block; }
+        .access-identification-brand strong { color:var(--text); font-size:15px; }
+        .access-identification-brand span { margin-top:3px; color:var(--text3); font-size:10px; }
+        .access-identification-card h1 { margin:0; color:var(--text); font-size:22px; line-height:1.2; }
+        .access-identification-card > p { margin:8px 0 20px; color:var(--text3); font-size:11px; line-height:1.55; }
+        .access-identification-form { display:grid; gap:13px; }
+        .access-identification-field { display:grid; gap:6px; }
+        .access-identification-field label { color:var(--text2); font-size:10px; font-weight:900; letter-spacing:.35px; text-transform:uppercase; }
+        .access-identification-field input { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--border); border-radius:9px; background:var(--surface2); color:var(--text); font-size:13px; outline:0; }
+        .access-identification-field input:focus { border-color:#247ab5; box-shadow:0 0 0 3px rgba(36,122,181,.13); }
+        .access-identification-error { display:none; padding:9px 11px; border:1px solid #f1b6b6; border-radius:8px; background:#fff1f1; color:#a32323; font-size:10px; font-weight:700; }
+        .access-identification-error.visible { display:block; }
+        .access-identification-submit { min-height:44px; margin-top:3px; border:0; border-radius:9px; background:#176ca5; color:#fff; cursor:pointer; font-size:12px; font-weight:900; }
+        .access-identification-submit:hover { background:#105a8b; }
+        .access-identification-submit:disabled { opacity:.65; cursor:wait; }
+        .access-identification-privacy { display:flex; align-items:flex-start; gap:7px; margin-top:14px; color:var(--text3); font-size:9px; line-height:1.45; }
+        .access-person-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border-light); }
+        .access-person-row:last-child { border-bottom:0; }
+        .access-person-avatar { display:grid; flex:0 0 34px; place-items:center; width:34px; height:34px; border-radius:50%; background:#e4f1fa; color:#145b8a; font-size:10px; font-weight:900; }
+        .access-person-row > div { flex:1; min-width:0; }
+        .access-person-row strong,.access-person-row small { display:block; }
+        .access-person-row strong { color:var(--text); font-size:11px; }
+        .access-person-row small { margin-top:3px; color:var(--text3); font-size:9px; }
+        .access-person-meta { color:var(--text3); font-size:9px; white-space:nowrap; }
+        body.dark-mode .access-identification-error { border-color:#713d3d; background:#3a2020; color:#ffb0b0; }
+        body.dark-mode .access-person-avatar { background:#193c55; color:#b8ddf5; }
+
         /* SEARCH */
         .search-box {
             padding: 7px 13px;
@@ -1014,6 +1063,7 @@
             .hamburger,
             .add-task-row,
             .modal-overlay,
+            .access-identification-overlay,
             .search-box,
             button,
             .comp-selector {
@@ -1957,7 +2007,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.1 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.3 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2167,6 +2217,29 @@
     </style>
 </head>
 <body>
+    <div class="access-identification-overlay" id="accessIdentificationOverlay" role="dialog" aria-modal="true" aria-labelledby="accessIdentificationTitle">
+        <div class="access-identification-card">
+            <div class="access-identification-brand">
+                <span class="access-identification-seal">UFES</span>
+                <div><strong>Governança SIAPE + eSocial</strong><span>Plataforma operacional da equipe</span></div>
+            </div>
+            <h1 id="accessIdentificationTitle">Identifique seu acesso</h1>
+            <p>Informe seu nome e CPF para que a equipe saiba quem está utilizando o sistema neste momento.</p>
+            <form class="access-identification-form" id="accessIdentificationForm">
+                <div class="access-identification-field">
+                    <label for="accessPersonName">Nome</label>
+                    <input id="accessPersonName" type="text" maxlength="80" autocomplete="name" placeholder="Digite seu nome completo" required>
+                </div>
+                <div class="access-identification-field">
+                    <label for="accessPersonCpf">CPF</label>
+                    <input id="accessPersonCpf" type="text" maxlength="14" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" oninput="formatAccessCpfInput(this)" required>
+                </div>
+                <div class="access-identification-error" id="accessIdentificationError" role="alert"></div>
+                <button class="access-identification-submit" id="accessIdentificationSubmit" type="submit">Entrar no sistema</button>
+            </form>
+            <div class="access-identification-privacy"><span>🔒</span><span>O CPF completo não será exibido nem gravado. O sistema salva apenas uma identificação técnica e o CPF mascarado durante a sessão.</span></div>
+        </div>
+    </div>
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -2179,7 +2252,6 @@
             <div class="nav-item active" data-page="dashboard"><span class="nav-icon">▦</span> Visão Operacional</div>
             <div class="nav-item" data-page="calendario"><span class="nav-icon">▣</span> Calendário Operacional</div>
             <div class="nav-item" data-page="timeline"><span class="nav-icon">━</span> Linha do Tempo</div>
-            <div class="nav-item" data-page="equipe"><span class="nav-icon">●</span> Quadro de Equipe</div>
 
             <div class="nav-section">Controle eSocial</div>
             <div class="nav-item" data-page="central"><span class="nav-icon">◎</span> Central eSocial</div>
@@ -2198,7 +2270,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.1 · 2026<br>
+            UFES · v4.3 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2216,7 +2288,7 @@
             </div>
             <div class="info-pills">
                 <span class="pill pill-sync" id="syncIndicator" title="Status de sincronização">☁️ Conectado</span>
-                <span class="pill pill-online loading" id="onlineIndicator" title="Contando acessos ativos">👥 … online</span>
+                <span class="pill pill-online loading" id="onlineIndicator" title="Contando pessoas identificadas">👥 … online</span>
                 <div class="comp-selector">
                     📆 <select id="competenciaSelect" onchange="changeCompetencia(this.value)"></select>
                 </div>
@@ -2269,7 +2341,6 @@
                                 <span class="eyebrow">EQUIPE</span>
                                 <h3>Distribuição de atuação</h3>
                             </div>
-                            <button class="btn btn-sm btn-outline" onclick="navigatePublic('equipe')">Ver equipe</button>
                         </div>
                         <div id="dashboardTeam" class="dashboard-team"></div>
                     </div>
@@ -2309,12 +2380,6 @@
                     </div>
                     <div id="timelineDetailContent"></div>
                 </div>
-            </div>
-
-            <!-- PAGE: EQUIPE -->
-            <div class="page" id="page-equipe">
-                <div class="card-header" style="margin-bottom:10px;"><h3>👥 Quadro de Equipe</h3></div>
-                <div class="team-grid" id="teamGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;"></div>
             </div>
 
             <!-- PAGE: CENTRAL eSOCIAL -->
@@ -2771,6 +2836,125 @@
         const PRESENCE_HEARTBEAT_MS = 30000;
         const PRESENCE_TTL_MS = 90000;
         const PRESENCE_CLEANUP_MS = 6 * 60 * 60 * 1000;
+        const ACCESS_IDENTITY_KEY = 'governancaAccessIdentity';
+        let currentAccessIdentity = null;
+
+        function normalizeAccessCpf(value) {
+            return String(value || '').replace(/\D/g, '').slice(0, 11);
+        }
+
+        function isValidAccessCpf(value) {
+            const cpf = normalizeAccessCpf(value);
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+            const digit = length => {
+                let sum = 0;
+                for (let index = 0; index < length; index += 1) sum += Number(cpf[index]) * (length + 1 - index);
+                const remainder = (sum * 10) % 11;
+                return remainder === 10 ? 0 : remainder;
+            };
+            return digit(9) === Number(cpf[9]) && digit(10) === Number(cpf[10]);
+        }
+
+        function maskAccessCpf(value) {
+            const cpf = normalizeAccessCpf(value);
+            return cpf.length === 11 ? `***.***.***-${cpf.slice(-2)}` : 'CPF mascarado';
+        }
+
+        async function fingerprintAccessCpf(value) {
+            const cpf = normalizeAccessCpf(value);
+            const source = `governanca-esocial-ufes:${cpf}`;
+            if (window.crypto?.subtle) {
+                const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
+                return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+            let fallback = 2166136261;
+            for (let index = 0; index < source.length; index += 1) fallback = Math.imul(fallback ^ source.charCodeAt(index), 16777619);
+            return `local_${(fallback >>> 0).toString(16)}`;
+        }
+
+        window.formatAccessCpfInput = function(input) {
+            const digits = normalizeAccessCpf(input?.value);
+            let formatted = digits;
+            if (digits.length > 9) formatted = `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+            else if (digits.length > 6) formatted = `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+            else if (digits.length > 3) formatted = `${digits.slice(0, 3)}.${digits.slice(3)}`;
+            if (input) input.value = formatted;
+        };
+
+        function getStoredAccessIdentity() {
+            try {
+                const identity = JSON.parse(sessionStorage.getItem(ACCESS_IDENTITY_KEY) || 'null');
+                if (!identity?.name || !identity?.personKey || !identity?.cpfMasked) return null;
+                return {
+                    name: String(identity.name).slice(0, 80),
+                    personKey: String(identity.personKey),
+                    cpfMasked: String(identity.cpfMasked),
+                    signedInAt: Number(identity.signedInAt || Date.now())
+                };
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function setAccessIdentificationError(message = '') {
+            const error = document.getElementById('accessIdentificationError');
+            if (!error) return;
+            error.textContent = message;
+            error.classList.toggle('visible', Boolean(message));
+        }
+
+        function beginAccessIdentification() {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('accessIdentificationOverlay');
+                const storedIdentity = getStoredAccessIdentity();
+                if (storedIdentity) {
+                    currentAccessIdentity = storedIdentity;
+                    if (overlay) overlay.style.display = 'none';
+                    resolve(storedIdentity);
+                    return;
+                }
+                if (overlay) overlay.style.display = 'flex';
+                const form = document.getElementById('accessIdentificationForm');
+                const nameInput = document.getElementById('accessPersonName');
+                const cpfInput = document.getElementById('accessPersonCpf');
+                const submit = document.getElementById('accessIdentificationSubmit');
+                setTimeout(() => nameInput?.focus(), 80);
+                form?.addEventListener('submit', async event => {
+                    event.preventDefault();
+                    setAccessIdentificationError('');
+                    const name = String(nameInput?.value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+                    const cpf = normalizeAccessCpf(cpfInput?.value);
+                    if (name.length < 3 || !/[a-zà-ÿ]/i.test(name)) {
+                        setAccessIdentificationError('Informe um nome válido.');
+                        nameInput?.focus();
+                        return;
+                    }
+                    if (!isValidAccessCpf(cpf)) {
+                        setAccessIdentificationError('Informe um CPF válido.');
+                        cpfInput?.focus();
+                        return;
+                    }
+                    if (submit) { submit.disabled = true; submit.textContent = 'Entrando...'; }
+                    try {
+                        currentAccessIdentity = {
+                            name,
+                            personKey: await fingerprintAccessCpf(cpf),
+                            cpfMasked: maskAccessCpf(cpf),
+                            signedInAt: Date.now()
+                        };
+                        sessionStorage.setItem(ACCESS_IDENTITY_KEY, JSON.stringify(currentAccessIdentity));
+                        if (cpfInput) cpfInput.value = '';
+                        if (nameInput) nameInput.value = '';
+                        if (overlay) overlay.style.display = 'none';
+                        resolve(currentAccessIdentity);
+                    } catch (error) {
+                        console.error('Erro ao registrar identificação:', error);
+                        setAccessIdentificationError('Não foi possível iniciar o acesso. Tente novamente.');
+                        if (submit) { submit.disabled = false; submit.textContent = 'Entrar no sistema'; }
+                    }
+                });
+            });
+        }
 
         function getPresenceSessionId() {
             let id = sessionStorage.getItem('governancaPresenceSessionId');
@@ -3379,9 +3563,6 @@
                 case 'timeline':
                     renderTimeline();
                     break;
-                case 'equipe':
-                    renderTeam();
-                    break;
                 case 'calendario':
                     renderCalendar();
                     break;
@@ -3408,7 +3589,7 @@
         function getPageLabel(pageName) {
             const labels = {
                 dashboard: 'Visão Operacional', calendario: 'Calendário', timeline: 'Linha do Tempo',
-                equipe: 'Equipe', central: 'Central eSocial', lepisma: 'Lepisma', polare: 'Relatório PolarE',
+                central: 'Central eSocial', lepisma: 'Lepisma', polare: 'Relatório PolarE',
                 servidores: 'Cadastro de Servidores', planilha: 'Planilha da Equipe', rubricas: 'Rubricas',
                 linksuteis: 'Links Úteis'
             };
@@ -3418,8 +3599,35 @@
         function getActivePresenceSessions() {
             const now = Date.now();
             return onlinePresenceSessions
-                .filter(item => Number(item.lastSeen || 0) >= now - PRESENCE_TTL_MS)
+                .filter(item => item.personKey && item.displayName && Number(item.lastSeen || 0) >= now - PRESENCE_TTL_MS)
                 .sort((a, b) => Number(b.lastSeen || 0) - Number(a.lastSeen || 0));
+        }
+
+        function getActivePresencePeople() {
+            const people = new Map();
+            getActivePresenceSessions().forEach(session => {
+                const key = String(session.personKey);
+                const existing = people.get(key);
+                if (!existing) {
+                    people.set(key, {
+                        personKey: key,
+                        displayName: String(session.displayName || 'Pessoa identificada'),
+                        cpfMasked: String(session.cpfMasked || 'CPF mascarado'),
+                        lastSeen: Number(session.lastSeen || 0),
+                        page: session.page || 'dashboard',
+                        competencia: session.competencia || '',
+                        sessionIds: [session.id]
+                    });
+                    return;
+                }
+                existing.sessionIds.push(session.id);
+                if (Number(session.lastSeen || 0) > existing.lastSeen) {
+                    existing.lastSeen = Number(session.lastSeen || 0);
+                    existing.page = session.page || existing.page;
+                    existing.competencia = session.competencia || existing.competencia;
+                }
+            });
+            return [...people.values()].sort((a, b) => b.lastSeen - a.lastSeen);
         }
 
         function formatPresenceAgo(lastSeen) {
@@ -3433,18 +3641,22 @@
         function renderOnlineIndicator() {
             const indicator = document.getElementById('onlineIndicator');
             if (!indicator || indicator.classList.contains('unavailable')) return;
-            const active = getActivePresenceSessions();
+            const active = getActivePresencePeople();
             const count = active.length;
             indicator.classList.remove('loading');
             indicator.textContent = count === 1 ? '👤 1 online' : `👥 ${count} online`;
             indicator.title = count
-                ? 'Clique para ver os acessos ativos agora'
-                : 'Nenhum acesso ativo identificado';
+                ? `Online agora: ${active.map(item => item.displayName).join(', ')}`
+                : 'Nenhuma pessoa identificada online';
         }
 
         async function touchPresence() {
+            if (!currentAccessIdentity) return;
             await setDoc(PRESENCE_DOC, {
                 sessionId: presenceSessionId,
+                personKey: currentAccessIdentity.personKey,
+                displayName: currentAccessIdentity.name,
+                cpfMasked: currentAccessIdentity.cpfMasked,
                 lastSeen: Date.now(),
                 startedAt: Number(sessionStorage.getItem('governancaPresenceStartedAt') || Date.now()),
                 competencia: state.currentCompetencia || '',
@@ -3512,26 +3724,37 @@
                 showToast('Contador de acessos online indisponível.');
                 return;
             }
-            const active = getActivePresenceSessions();
+            const active = getActivePresencePeople();
             const overlay = document.getElementById('modalOverlay');
             const content = document.getElementById('modalContent');
             if (!overlay || !content) return;
-            const rows = active.map((item, index) => {
-                const isCurrent = item.id === presenceSessionId;
-                const label = isCurrent ? 'Este navegador' : `Acesso ${index + 1}`;
+            const rows = active.map(item => {
+                const isCurrent = item.personKey === currentAccessIdentity?.personKey;
+                const label = `${item.displayName}${isCurrent ? ' (você)' : ''}`;
                 const comp = item.competencia ? formatCompKey(item.competencia) : 'Competência não informada';
-                return `<div class="online-user-row">
-                    <span class="online-user-dot"></span>
-                    <div><strong>${label}</strong><small>${escHtml(getPageLabel(item.page))} · ${escHtml(comp)}</small></div>
-                    <span class="online-user-ago">${formatPresenceAgo(item.lastSeen)}</span>
+                const initials = item.displayName.split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase();
+                const tabs = item.sessionIds.length;
+                return `<div class="access-person-row">
+                    <span class="access-person-avatar">${escHtml(initials || 'US')}</span>
+                    <div><strong>${escHtml(label)}</strong><small>${escHtml(item.cpfMasked)} · ${escHtml(getPageLabel(item.page))} · ${escHtml(comp)}</small></div>
+                    <span class="access-person-meta">${tabs > 1 ? `${tabs} abas · ` : ''}${formatPresenceAgo(item.lastSeen)}</span>
                 </div>`;
             }).join('');
             content.innerHTML = `
                 <span class="eyebrow">PRESENÇA EM TEMPO REAL</span>
-                <h3>${active.length === 1 ? '1 acesso online' : `${active.length} acessos online`}</h3>
-                <p class="modal-intro">Sem login individual, cada navegador ou aba ativa é contabilizado como um acesso.</p>
-                <div class="online-users-list">${rows || '<div class="empty-state">Nenhum acesso ativo identificado.</div>'}</div>`;
+                <h3>${active.length === 1 ? '1 pessoa online' : `${active.length} pessoas online`}</h3>
+                <p class="modal-intro">Cada CPF é contabilizado uma única vez, mesmo quando a pessoa mantém várias abas abertas.</p>
+                <div class="online-users-list">${rows || '<div class="empty-state">Nenhuma pessoa identificada online.</div>'}</div>
+                <div class="modal-actions"><button class="btn btn-outline" onclick="resetAccessIdentity()">Alterar minha identificação</button><button class="btn btn-primary" onclick="closeModalDirect()">Fechar</button></div>`;
             overlay.style.display = 'flex';
+        };
+
+        window.resetAccessIdentity = async function() {
+            try { await deleteDoc(PRESENCE_DOC); } catch (_) {}
+            sessionStorage.removeItem(ACCESS_IDENTITY_KEY);
+            sessionStorage.removeItem('governancaPresenceSessionId');
+            sessionStorage.removeItem('governancaPresenceStartedAt');
+            window.location.reload();
         };
 
         function setupRealtimeListener() {
@@ -3592,7 +3815,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.1 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.3 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3662,7 +3885,6 @@
             renderDashboard();
             renderCentralEsocial();
             renderTimeline();
-            renderTeam();
             renderCalendar();
             renderPolareReport();
             renderServidores();
@@ -4335,79 +4557,6 @@
           `;
             detailDiv.style.display = 'block';
             detailDiv.scrollIntoView({ behavior: 'smooth' });
-        };
-
-        // ==================== TEAM ====================
-        function renderTeam() {
-            const grid = document.getElementById('teamGrid');
-            if (!grid) return;
-            const period = getOperationalContext().period;
-            const assignmentMap = Object.fromEntries(getTeamAssignments(period).map(item => [item.name.toLowerCase(), item.destination]));
-            const members = [
-                { id: 'roni', name: 'Roni', origin: 'CARP', initials: 'RO' },
-                { id: 'rafael', name: 'Rafa', origin: 'SPD', initials: 'RA' },
-                { id: 'fabianne', name: 'Fabi', origin: 'SPD', initials: 'FA' },
-            ];
-            grid.innerHTML = members.map(m => {
-                const tasks = state.teamTasks[m.id] || [];
-                const doneCount = tasks.filter(t => t.done).length;
-                const total = tasks.length;
-                const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-                const lookup = m.name.toLowerCase();
-                const destination = assignmentMap[lookup] || (m.id === 'fabianne' ? assignmentMap.fabi : assignmentMap[m.id]) || 'Não definido';
-                return `
-              <article class="team-member-card">
-                <header class="team-member-header">
-                    <span class="team-avatar">${m.initials}</span>
-                    <div><h3>${m.name}</h3><p>Setor de origem: ${m.origin}</p></div>
-                    <span class="assignment-badge">${destination}</span>
-                </header>
-                <div class="team-progress-row"><span>${doneCount} de ${total} tarefas concluídas</span><strong>${pct}%</strong></div>
-                <div class="team-progress"><i style="width:${pct}%"></i></div>
-                <ul class="team-task-list">
-                  ${tasks.map((t,i)=>`
-                    <li class="${t.done?'task-done':''}" onclick="toggleTask('${m.id}',${i})">
-                      <input type="checkbox" ${t.done?'checked':''} onclick="event.stopPropagation();toggleTask('${m.id}',${i})">
-                      <span>${escHtml(t.text)}</span>
-                      <button onclick="event.stopPropagation();deleteTask('${m.id}',${i})" title="Excluir">×</button>
-                    </li>
-                  `).join('') || '<li class="team-empty">Nenhuma tarefa cadastrada.</li>'}
-                </ul>
-                <div class="team-add-task">
-                  <input type="text" placeholder="Adicionar tarefa" id="taskInput_${m.id}" onkeydown="if(event.key==='Enter')addTask('${m.id}')">
-                  <button class="btn btn-sm btn-primary" onclick="addTask('${m.id}')">Adicionar</button>
-                </div>
-                <input class="team-note" type="text" placeholder="Observação sobre a atuação" value="${escHtml(state.teamTasks[m.id+'_obs']||'')}" onchange="updateMemberObs('${m.id}',this.value)">
-              </article>`;
-            }).join('');
-        }
-
-        window.toggleTask = function(memberId, idx) {
-            if (state.teamTasks[memberId] && state.teamTasks[memberId][idx]) {
-                state.teamTasks[memberId][idx].done = !state.teamTasks[memberId][idx].done;
-                scheduleSave();
-                renderTeam();
-            }
-        };
-        window.deleteTask = function(memberId, idx) {
-            if (state.teamTasks[memberId]) {
-                state.teamTasks[memberId].splice(idx, 1);
-                scheduleSave();
-                renderTeam();
-            }
-        };
-        window.addTask = function(memberId) {
-            const input = document.getElementById('taskInput_' + memberId);
-            if (!input || !input.value.trim()) return;
-            if (!state.teamTasks[memberId]) state.teamTasks[memberId] = [];
-            state.teamTasks[memberId].push({ text: input.value.trim(), done: false });
-            input.value = '';
-            scheduleSave();
-            renderTeam();
-        };
-        window.updateMemberObs = function(memberId, value) {
-            state.teamTasks[memberId + '_obs'] = value;
-            scheduleSave();
         };
 
         // ==================== CALENDARIO OPERACIONAL ====================
@@ -6627,13 +6776,13 @@
         window.resetLepismaFilters = resetLepismaFilters;
 
         // ==================== START ====================
-        initApp().then(() => {
+        beginAccessIdentification().then(() => initApp()).then(() => {
             setupPresenceTracking();
             console.log('🚀 Plataforma pronta.');
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Visão Operacional integrada · Planilha da Equipe com abas e formatação · Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v4.1 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Planilha da Equipe com abas e formatação · Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v4.3 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
