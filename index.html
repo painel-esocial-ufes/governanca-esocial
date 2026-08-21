@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.5</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.6</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -2029,7 +2029,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.5 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.6 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2139,6 +2139,8 @@
         .nav-chat-badge { display:none; min-width:18px; height:18px; padding:0 5px; margin-left:auto; align-items:center; justify-content:center; border-radius:999px; background:#dc2626; color:#fff; font-size:9px; font-weight:900; }
         .nav-chat-badge.visible { display:inline-flex; }
         .chat-page-heading-status { display:flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid var(--border); border-radius:999px; background:var(--surface2); color:var(--text2); font-size:9px; font-weight:800; }
+        .chat-heading-actions { display:flex; align-items:center; justify-content:flex-end; gap:7px; flex-wrap:wrap; }
+        .chat-notification-control { min-height:32px; padding:6px 9px; }
         .chat-online-dot { width:8px; height:8px; flex:0 0 8px; border-radius:50%; background:#16a34a; box-shadow:0 0 0 3px rgba(22,163,74,.12); }
         .chat-online-dot.offline { background:#94a3b8; box-shadow:none; }
         .chat-shell { display:grid; grid-template-columns:280px minmax(0,1fr); min-height:610px; padding:0; overflow:hidden; }
@@ -2181,12 +2183,48 @@
         .chat-message.deleted .chat-message-text { color:var(--text3); font-style:italic; }
         .chat-empty { margin:auto; max-width:420px; padding:28px; color:var(--text3); text-align:center; }
         .chat-empty strong { display:block; margin-bottom:5px; color:var(--text2); font-size:13px; }
-        .chat-composer-wrap { padding:10px 14px 13px; border-top:1px solid var(--border); background:var(--surface); }
+        .chat-composer-wrap { position:relative; padding:10px 14px 13px; border-top:1px solid var(--border); background:var(--surface); }
         .chat-typing { min-height:17px; padding:0 3px 4px; color:var(--text3); font-size:8px; font-style:italic; }
+        .chat-tools { display:flex; align-items:center; gap:5px; margin-bottom:7px; }
+        .chat-tool-btn { min-width:34px; height:31px; display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:0 8px; border:1px solid var(--border); border-radius:7px; background:var(--surface2); color:var(--text2); font-size:10px; font-weight:800; cursor:pointer; }
+        .chat-tool-btn:hover,.chat-tool-btn.active { border-color:#78add0; background:#e8f3fb; color:#155b87; }
+        body.dark-mode .chat-tool-btn:hover,body.dark-mode .chat-tool-btn.active { background:#17364c; color:#b7d9ef; }
+        .chat-picker { position:absolute; left:14px; bottom:103px; z-index:20; width:min(390px,calc(100% - 28px)); max-height:300px; overflow:auto; padding:11px; border:1px solid var(--border); border-radius:11px; background:var(--surface); box-shadow:0 14px 34px rgba(15,35,60,.2); }
+        .chat-picker[hidden] { display:none; }
+        .chat-emoji-tabs { display:flex; gap:4px; margin-bottom:8px; overflow-x:auto; }
+        .chat-emoji-tab { padding:5px 8px; border:1px solid var(--border); border-radius:999px; background:var(--surface2); color:var(--text2); font-size:8px; font-weight:800; cursor:pointer; white-space:nowrap; }
+        .chat-emoji-tab.active { border-color:#6fa9d0; background:#e8f3fb; color:#155b87; }
+        .chat-emoji-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:4px; }
+        .chat-emoji { height:34px; display:grid; place-items:center; border:1px solid transparent; border-radius:7px; background:transparent; font-size:20px; cursor:pointer; }
+        .chat-emoji:hover { border-color:var(--border); background:var(--surface2); transform:scale(1.08); }
+        .chat-sticker-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+        .chat-sticker-option,.chat-sticker-card { min-height:92px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:12px; border:2px solid rgba(255,255,255,.45); border-radius:16px; color:#fff; text-align:center; box-shadow:0 5px 12px rgba(15,35,60,.12); }
+        .chat-sticker-option { border-color:var(--border); cursor:pointer; }
+        .chat-sticker-option:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(15,35,60,.18); }
+        .chat-sticker-option span,.chat-sticker-card span { font-size:31px; line-height:1; }
+        .chat-sticker-option strong,.chat-sticker-card strong { font-size:12px; text-transform:uppercase; letter-spacing:.45px; text-shadow:0 1px 2px rgba(0,0,0,.2); }
+        .chat-message.sticker-message .chat-message-bubble { padding:5px; border:0; background:transparent!important; box-shadow:none; }
+        .chat-message.sticker-message .chat-message-author { padding-left:5px; }
+        .chat-sticker-card { width:180px; min-height:112px; }
+        .chat-reactions { display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-top:6px; }
+        .chat-reaction-btn { min-width:28px; height:24px; display:inline-flex; align-items:center; justify-content:center; gap:3px; padding:0 5px; border:1px solid var(--border); border-radius:999px; background:var(--surface2); color:var(--text2); font-size:12px; cursor:pointer; }
+        .chat-reaction-btn.selected { border-color:#5e9ec8; background:#dfeffc; }
+        body.dark-mode .chat-reaction-btn.selected { background:#21445e; }
+        .chat-reaction-btn small { font-size:8px; font-weight:900; }
         .chat-composer { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:8px; }
         .chat-composer textarea { width:100%; min-height:42px; max-height:120px; padding:10px 11px; resize:vertical; border:1px solid var(--border); border-radius:9px; background:var(--surface2); color:var(--text); font:inherit; font-size:11px; line-height:1.35; }
         .chat-composer .btn { min-height:42px; }
         .chat-privacy-note { margin-top:6px; color:var(--text3); font-size:8px; }
+        .chat-screen-notifications { position:fixed; top:78px; right:18px; z-index:4000; width:min(370px,calc(100vw - 32px)); display:grid; gap:9px; pointer-events:none; }
+        .chat-screen-notification { pointer-events:auto; display:grid; grid-template-columns:38px minmax(0,1fr) auto; align-items:start; gap:10px; padding:12px; border:1px solid #9ac8e5; border-left:4px solid #1769aa; border-radius:11px; background:var(--surface); color:var(--text); box-shadow:0 14px 35px rgba(15,35,60,.22); animation:chat-notification-in .2s ease-out; }
+        .chat-screen-notification strong,.chat-screen-notification small { display:block; }
+        .chat-screen-notification strong { font-size:11px; }
+        .chat-screen-notification small { margin-top:3px; color:var(--text3); font-size:9px; line-height:1.35; }
+        .chat-screen-notification-actions { display:flex; align-items:center; gap:4px; }
+        .chat-notification-open,.chat-notification-close { border:0; background:transparent; cursor:pointer; }
+        .chat-notification-open { color:#1769aa; font-size:9px; font-weight:900; white-space:nowrap; }
+        .chat-notification-close { color:var(--text3); font-size:16px; }
+        @keyframes chat-notification-in { from { opacity:0; transform:translateY(-8px) scale(.98); } to { opacity:1; transform:none; } }
         .staff-form { display:grid; grid-template-columns:minmax(220px,1fr) auto; gap:9px; margin-top:12px; }
         .staff-form input { min-height:38px; padding:8px 11px; border:1px solid var(--border); border-radius:7px; background:var(--surface2); color:var(--text); }
         .staff-list { display:grid; gap:8px; margin-top:14px; }
@@ -2290,7 +2328,7 @@
         body.dark-mode .team-sheet-tabsbar { background:#172b3b; }
         @media (max-width:1200px) { .central-kpis,.dashboard-source-grid { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
         @media (max-width:900px) { .polare-layout,.dashboard-work-grid { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } .chat-shell { grid-template-columns:220px minmax(0,1fr); } }
-        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid,.my-work-summary { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row,.closure-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } .team-sheet-toolbar { align-items:flex-start; flex-direction:column; } .team-sheet-toolbar-actions { width:100%; } .team-sheet-toolbar-actions .btn { flex:1; } .chat-shell { grid-template-columns:1fr; } .chat-sidebar { max-height:230px; border-right:0; border-bottom:1px solid var(--border); } .chat-contact-list { grid-template-columns:repeat(2,minmax(0,1fr)); } .chat-contact-section { grid-column:1/-1; } .chat-messages { max-height:48vh; } .chat-message { max-width:88%; } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid,.my-work-summary { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row,.closure-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } .team-sheet-toolbar { align-items:flex-start; flex-direction:column; } .team-sheet-toolbar-actions { width:100%; } .team-sheet-toolbar-actions .btn { flex:1; } .chat-shell { grid-template-columns:1fr; } .chat-sidebar { max-height:230px; border-right:0; border-bottom:1px solid var(--border); } .chat-contact-list { grid-template-columns:repeat(2,minmax(0,1fr)); } .chat-contact-section { grid-column:1/-1; } .chat-messages { max-height:48vh; } .chat-message { max-width:88%; } .chat-heading-actions { justify-content:flex-start; } .chat-emoji-grid { grid-template-columns:repeat(7,1fr); } .chat-screen-notifications { top:68px; right:10px; width:calc(100vw - 20px); } }
 
     </style>
 </head>
@@ -2351,7 +2389,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.5 · 2026<br>
+            UFES · v4.6 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2689,7 +2727,12 @@
                         <h2>Conversa da Equipe</h2>
                         <p>Sala geral e conversas individuais entre as pessoas identificadas no sistema.</p>
                     </div>
-                    <span class="chat-page-heading-status"><i class="chat-online-dot"></i><span id="chatOnlineCount">0 pessoas online</span></span>
+                    <div class="chat-heading-actions">
+                        <button class="btn btn-sm btn-outline chat-notification-control" id="chatNotificationButton" onclick="requestChatNotifications()">🔔 Ativar avisos</button>
+                        <button class="btn btn-sm btn-outline chat-notification-control" id="chatSoundButton" onclick="toggleChatSound()">🔊 Som ativo</button>
+                        <button class="btn btn-sm btn-danger chat-notification-control" id="chatClearButton" onclick="clearAllChatConversations()" style="display:none;">Limpar conversas</button>
+                        <span class="chat-page-heading-status"><i class="chat-online-dot"></i><span id="chatOnlineCount">0 pessoas online</span></span>
+                    </div>
                 </div>
                 <div class="card chat-shell">
                     <aside class="chat-sidebar">
@@ -2701,6 +2744,12 @@
                         <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
                         <div class="chat-composer-wrap">
                             <div class="chat-typing" id="chatTypingStatus"></div>
+                            <div class="chat-tools">
+                                <button type="button" class="chat-tool-btn" id="chatEmojiButton" onclick="toggleChatPicker('emoji')">😊 Emojis</button>
+                                <button type="button" class="chat-tool-btn" id="chatStickerButton" onclick="toggleChatPicker('sticker')">▣ Figurinhas</button>
+                            </div>
+                            <div class="chat-picker" id="chatEmojiPicker" hidden></div>
+                            <div class="chat-picker" id="chatStickerPicker" hidden></div>
                             <form class="chat-composer" onsubmit="sendChatMessage(event)">
                                 <textarea id="chatMessageInput" maxlength="1500" placeholder="Escreva uma mensagem..." aria-label="Mensagem" oninput="announceChatTyping()" onkeydown="handleChatComposerKey(event)"></textarea>
                                 <button class="btn btn-primary" id="chatSendButton" type="submit">Enviar</button>
@@ -2913,6 +2962,7 @@
 
 
     <!-- MODAL -->
+    <div class="chat-screen-notifications" id="chatScreenNotifications" aria-live="assertive"></div>
     <div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="closeModal(event)">
         <div class="modal" id="modalBox" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModalDirect()">✕</button>
@@ -2934,7 +2984,11 @@
             setDoc,
             updateDoc,
             getDoc,
+            getDocs,
             deleteDoc,
+            writeBatch,
+            arrayUnion,
+            arrayRemove,
             onSnapshot,
             query,
             orderBy,
@@ -3051,6 +3105,7 @@
                 setTimeout(() => nameInput?.focus(), 80);
                 form?.addEventListener('submit', async event => {
                     event.preventDefault();
+                    ensureChatAudioContext();
                     setAccessIdentificationError('');
                     const name = String(nameInput?.value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
                     const cpf = normalizeAccessCpf(cpfInput?.value);
@@ -3131,6 +3186,28 @@
         let chatTypingUiTimer = null;
         let chatLastTypingWrite = 0;
         let activeChatRoomId = sessionStorage.getItem('governancaActiveChatRoom') || 'geral';
+        let activeChatEmojiCategory = 'Rostos';
+        let chatAudioContext = null;
+        let chatTitleTimer = null;
+        let chatTitleResetTimer = null;
+        const CHAT_ORIGINAL_TITLE = document.title;
+        const CHAT_SOUND_KEY = 'governancaChatSoundEnabled';
+        let chatSoundEnabled = (() => { try { return localStorage.getItem(CHAT_SOUND_KEY) !== 'false'; } catch (_) { return true; } })();
+        const CHAT_REACTIONS = ['👍','❤️','😂','😮','✅'];
+        const CHAT_EMOJI_CATEGORIES = {
+            Rostos: ['😀','😃','😄','😁','😊','🙂','😉','😍','🥰','😘','😎','🤓','🤔','😅','😂','🤣','🥲','😢','😭','😤','😡','🤯','😱','😴','🥳','🤩','🫠','🙃','😬','🤭','🫡','🤝'],
+            Gestos: ['👍','👎','👏','🙌','🤝','👌','✌️','🤞','🙏','💪','👀','🫶','👋','☝️','👉','✅'],
+            Trabalho: ['💻','🖥️','📄','📊','📅','📌','📎','✏️','🔍','⚙️','📤','📥','🗂️','⏰','☕','🏛️','✅','❌','⚠️','🚨','💡','🎯','🏆','📢'],
+            Símbolos: ['❤️','💙','💚','💛','🧡','💜','✨','⭐','🔥','🎉','🎊','🚀','🔔','🔄','✔️','❗','❓','➕','➖','💬','📣','🔒','🔓','♻️']
+        };
+        const CHAT_STICKERS = {
+            resolvido: { emoji:'✅', label:'Resolvido!', colors:['#16805b','#39ad7d'] },
+            aceito: { emoji:'🎉', label:'Aceito!', colors:['#147448','#5ec08d'] },
+            reenviado: { emoji:'🔄', label:'Reenviado!', colors:['#d97706','#f2ad36'] },
+            socorro: { emoji:'😵', label:'Socorro, eSocial!', colors:['#b42318','#e45d50'] },
+            bom_trabalho: { emoji:'👏', label:'Bom trabalho!', colors:['#1769aa','#55a5d8'] },
+            finalmente: { emoji:'🙌', label:'Finalmente!', colors:['#7042a4','#a979d1'] }
+        };
 
         // ==================== LEPISMA STATE ====================
         let lepismaAllData = [];
@@ -4014,6 +4091,207 @@
             return sameDay ? date.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : date.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
         }
 
+        function chatMessagePreview(message) {
+            if (message?.kind === 'sticker') return `Figurinha: ${CHAT_STICKERS[message.stickerId]?.label || message.stickerLabel || 'Figurinha'}`;
+            return String(message?.text || 'Nova mensagem').replace(/\s+/g, ' ').trim();
+        }
+
+        function canClearAllChat() {
+            const server = normalizePersonKey(getCurrentRegisteredServer?.() || '');
+            const accessName = normalizePersonKey(currentAccessIdentity?.name || '');
+            return server === 'roni' || accessName === 'roni' || accessName.startsWith('ronielson ');
+        }
+
+        function updateChatNotificationControls() {
+            const notificationButton = document.getElementById('chatNotificationButton');
+            const soundButton = document.getElementById('chatSoundButton');
+            const clearButton = document.getElementById('chatClearButton');
+            if (soundButton) {
+                soundButton.textContent = chatSoundEnabled ? '🔊 Som ativo' : '🔇 Som desligado';
+                soundButton.classList.toggle('active', chatSoundEnabled);
+            }
+            if (notificationButton) {
+                if (!('Notification' in window)) {
+                    notificationButton.textContent = '🔕 Avisos indisponíveis';
+                    notificationButton.disabled = true;
+                } else if (Notification.permission === 'granted') {
+                    notificationButton.textContent = '🔔 Avisos ativos';
+                    notificationButton.disabled = false;
+                } else if (Notification.permission === 'denied') {
+                    notificationButton.textContent = '🔕 Avisos bloqueados';
+                    notificationButton.disabled = true;
+                    notificationButton.title = 'Libere as notificações nas configurações do navegador.';
+                } else {
+                    notificationButton.textContent = '🔔 Ativar avisos';
+                    notificationButton.disabled = false;
+                }
+            }
+            if (clearButton) clearButton.style.display = canClearAllChat() ? 'inline-flex' : 'none';
+        }
+
+        function ensureChatAudioContext() {
+            if (!chatAudioContext) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) chatAudioContext = new AudioContextClass();
+            }
+            if (chatAudioContext?.state === 'suspended') chatAudioContext.resume().catch(() => {});
+            return chatAudioContext;
+        }
+
+        function playChatNotificationSound() {
+            if (!chatSoundEnabled) return;
+            try {
+                const context = ensureChatAudioContext();
+                if (!context) return;
+                const now = context.currentTime + .015;
+                const master = context.createGain();
+                master.gain.setValueAtTime(.0001, now);
+                master.gain.exponentialRampToValueAtTime(.12, now + .018);
+                master.gain.exponentialRampToValueAtTime(.0001, now + .38);
+                master.connect(context.destination);
+                [{ frequency:784, start:0, duration:.12 }, { frequency:1174.66, start:.105, duration:.18 }].forEach(tone => {
+                    const oscillator = context.createOscillator();
+                    const gain = context.createGain();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(tone.frequency, now + tone.start);
+                    gain.gain.setValueAtTime(.0001, now + tone.start);
+                    gain.gain.exponentialRampToValueAtTime(.8, now + tone.start + .012);
+                    gain.gain.exponentialRampToValueAtTime(.0001, now + tone.start + tone.duration);
+                    oscillator.connect(gain); gain.connect(master);
+                    oscillator.start(now + tone.start); oscillator.stop(now + tone.start + tone.duration + .02);
+                });
+            } catch (error) {
+                console.warn('Som de notificação indisponível:', error);
+            }
+        }
+
+        window.toggleChatSound = function() {
+            chatSoundEnabled = !chatSoundEnabled;
+            try { localStorage.setItem(CHAT_SOUND_KEY, String(chatSoundEnabled)); } catch (_) {}
+            updateChatNotificationControls();
+            if (chatSoundEnabled) playChatNotificationSound();
+        };
+
+        window.requestChatNotifications = async function() {
+            ensureChatAudioContext();
+            if (!('Notification' in window)) { showToast('Este navegador não oferece notificações na área de trabalho.'); return; }
+            if (Notification.permission === 'granted') { showToast('As notificações já estão ativas.'); return; }
+            if (Notification.permission === 'denied') { showToast('As notificações estão bloqueadas nas configurações do navegador.'); return; }
+            const permission = await Notification.requestPermission();
+            updateChatNotificationControls();
+            showToast(permission === 'granted' ? 'Notificações da equipe ativadas.' : 'As notificações não foram autorizadas.');
+        };
+
+        function stopChatTitleAlert() {
+            clearInterval(chatTitleTimer);
+            clearTimeout(chatTitleResetTimer);
+            chatTitleTimer = null;
+            chatTitleResetTimer = null;
+            document.title = CHAT_ORIGINAL_TITLE;
+        }
+
+        function startChatTitleAlert() {
+            stopChatTitleAlert();
+            let alternate = false;
+            chatTitleTimer = setInterval(() => {
+                alternate = !alternate;
+                document.title = alternate ? '💬 Nova mensagem!' : CHAT_ORIGINAL_TITLE;
+            }, 850);
+            chatTitleResetTimer = setTimeout(() => { if (chatTitleTimer) stopChatTitleAlert(); }, 12000);
+        }
+
+        function openChatNotificationRoom(roomId) {
+            window.focus();
+            navigateTo('chat');
+            window.selectChatRoom(roomId === 'geral' ? 'geral' : encodeURIComponent(roomId));
+            stopChatTitleAlert();
+        }
+
+        window.openChatNotificationRoom = function(encodedRoomId, notificationId = '') {
+            const roomId = encodedRoomId === 'geral' ? 'geral' : decodeURIComponent(encodedRoomId || 'geral');
+            if (notificationId) document.getElementById(notificationId)?.remove();
+            openChatNotificationRoom(roomId);
+        };
+
+        function showChatScreenNotification(message) {
+            const container = document.getElementById('chatScreenNotifications');
+            if (!container) return;
+            const id = `chatNotice_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+            const preview = chatMessagePreview(message).slice(0, 110);
+            const element = document.createElement('article');
+            element.className = 'chat-screen-notification';
+            element.id = id;
+            element.innerHTML = `<span class="chat-avatar">${escHtml(chatInitials(message.senderName))}</span><div><strong>Nova mensagem de ${escHtml(message.senderName || 'Equipe')}</strong><small>${escHtml(preview)} · ${formatChatTimestamp(message.createdAt)}</small></div><div class="chat-screen-notification-actions"><button class="chat-notification-open" onclick="openChatNotificationRoom('${message.roomId === 'geral' ? 'geral' : encodeURIComponent(message.roomId)}','${id}')">Abrir</button><button class="chat-notification-close" aria-label="Fechar" onclick="document.getElementById('${id}')?.remove()">×</button></div>`;
+            container.prepend(element);
+            while (container.children.length > 4) container.lastElementChild?.remove();
+            setTimeout(() => element.remove(), 8000);
+        }
+
+        function notifyIncomingChatMessage(message) {
+            const isViewingRoom = document.visibilityState === 'visible' && currentActivePage === 'chat' && activeChatRoomId === message.roomId;
+            if (isViewingRoom) return;
+            showChatScreenNotification(message);
+            playChatNotificationSound();
+            startChatTitleAlert();
+            if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted') {
+                try {
+                    const notification = new Notification(`Mensagem de ${message.senderName || 'Equipe'}`, { body: chatMessagePreview(message).slice(0, 140), tag: `chat-${message.roomId}`, renotify: true });
+                    notification.onclick = () => { notification.close(); openChatNotificationRoom(message.roomId); };
+                } catch (error) {
+                    console.warn('Notificação do navegador indisponível:', error);
+                }
+            }
+        }
+
+        function renderChatEmojiPicker() {
+            const picker = document.getElementById('chatEmojiPicker');
+            if (!picker) return;
+            const tabs = Object.keys(CHAT_EMOJI_CATEGORIES).map(category => `<button type="button" class="chat-emoji-tab ${activeChatEmojiCategory === category ? 'active' : ''}" onclick="setChatEmojiCategory('${category}')">${category}</button>`).join('');
+            const emojis = (CHAT_EMOJI_CATEGORIES[activeChatEmojiCategory] || []).map(emoji => `<button type="button" class="chat-emoji" title="Inserir ${emoji}" onclick="insertChatEmoji('${encodeURIComponent(emoji)}')">${emoji}</button>`).join('');
+            picker.innerHTML = `<div class="chat-emoji-tabs">${tabs}</div><div class="chat-emoji-grid">${emojis}</div>`;
+        }
+
+        function renderChatStickerPicker() {
+            const picker = document.getElementById('chatStickerPicker');
+            if (!picker) return;
+            picker.innerHTML = `<div class="chat-sticker-grid">${Object.entries(CHAT_STICKERS).map(([id, sticker]) => `<button type="button" class="chat-sticker-option" style="background:linear-gradient(135deg,${sticker.colors[0]},${sticker.colors[1]});" onclick="sendChatSticker('${id}')"><span>${sticker.emoji}</span><strong>${escHtml(sticker.label)}</strong></button>`).join('')}</div>`;
+        }
+
+        function closeChatPickers() {
+            ['chatEmojiPicker','chatStickerPicker'].forEach(id => { const picker = document.getElementById(id); if (picker) picker.hidden = true; });
+            ['chatEmojiButton','chatStickerButton'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+        }
+
+        window.toggleChatPicker = function(type) {
+            const targetId = type === 'sticker' ? 'chatStickerPicker' : 'chatEmojiPicker';
+            const buttonId = type === 'sticker' ? 'chatStickerButton' : 'chatEmojiButton';
+            const picker = document.getElementById(targetId);
+            const willOpen = Boolean(picker?.hidden);
+            closeChatPickers();
+            if (!picker || !willOpen) return;
+            if (type === 'sticker') renderChatStickerPicker(); else renderChatEmojiPicker();
+            picker.hidden = false;
+            document.getElementById(buttonId)?.classList.add('active');
+        };
+
+        window.setChatEmojiCategory = function(category) {
+            if (!CHAT_EMOJI_CATEGORIES[category]) return;
+            activeChatEmojiCategory = category;
+            renderChatEmojiPicker();
+        };
+
+        window.insertChatEmoji = function(encodedEmoji) {
+            const input = document.getElementById('chatMessageInput');
+            if (!input) return;
+            const emoji = decodeURIComponent(encodedEmoji || '');
+            const start = input.selectionStart ?? input.value.length;
+            const end = input.selectionEnd ?? start;
+            input.value = input.value.slice(0, start) + emoji + input.value.slice(end);
+            input.selectionStart = input.selectionEnd = start + emoji.length;
+            input.focus();
+            window.announceChatTyping();
+        };
+
         function chatReadDocumentId(roomId) {
             return `${currentAccessIdentity?.personKey || 'pessoa'}__${roomId}`;
         }
@@ -4095,7 +4373,18 @@
             container.innerHTML = roomMessages.map(message => {
                 const mine = message.senderKey === currentAccessIdentity?.personKey;
                 const deleted = Boolean(message.deleted);
-                return `<article class="chat-message ${mine ? 'mine' : ''} ${deleted ? 'deleted' : ''}"><span class="chat-avatar">${escHtml(chatInitials(message.senderName))}</span><div class="chat-message-bubble"><span class="chat-message-author">${escHtml(mine ? 'Você' : message.senderName || 'Pessoa da equipe')}</span><div class="chat-message-text">${deleted ? 'Mensagem excluída' : escHtml(message.text || '')}</div><div class="chat-message-meta"><span>${formatChatTimestamp(message.createdAt)}</span>${mine && !deleted ? `<button class="chat-message-delete" onclick="deleteChatMessage('${encodeURIComponent(message.id)}')">Excluir</button>` : ''}</div></div></article>`;
+                const sticker = message.kind === 'sticker' ? CHAT_STICKERS[message.stickerId] : null;
+                const content = deleted
+                    ? '<div class="chat-message-text">Mensagem excluída</div>'
+                    : sticker
+                        ? `<div class="chat-sticker-card" style="background:linear-gradient(135deg,${sticker.colors[0]},${sticker.colors[1]});"><span>${sticker.emoji}</span><strong>${escHtml(sticker.label)}</strong></div>`
+                        : `<div class="chat-message-text">${escHtml(message.text || '')}</div>`;
+                const reactions = deleted ? '' : `<div class="chat-reactions">${CHAT_REACTIONS.map(emoji => {
+                    const people = Array.isArray(message.reactions?.[emoji]) ? message.reactions[emoji] : [];
+                    const selected = people.includes(currentAccessIdentity?.personKey);
+                    return `<button type="button" class="chat-reaction-btn ${selected ? 'selected' : ''}" title="Reagir com ${emoji}" onclick="toggleChatReaction('${encodeURIComponent(message.id)}','${encodeURIComponent(emoji)}')">${emoji}${people.length ? `<small>${people.length}</small>` : ''}</button>`;
+                }).join('')}</div>`;
+                return `<article class="chat-message ${mine ? 'mine' : ''} ${deleted ? 'deleted' : ''} ${sticker ? 'sticker-message' : ''}"><span class="chat-avatar">${escHtml(chatInitials(message.senderName))}</span><div class="chat-message-bubble"><span class="chat-message-author">${escHtml(mine ? 'Você' : message.senderName || 'Pessoa da equipe')}</span>${content}<div class="chat-message-meta"><span>${formatChatTimestamp(message.createdAt)}</span>${mine && !deleted ? `<button class="chat-message-delete" onclick="deleteChatMessage('${encodeURIComponent(message.id)}')">Excluir</button>` : ''}</div>${reactions}</div></article>`;
             }).join('') || `<div class="chat-empty"><strong>Comece a conversa</strong><span>${activeChatRoomId === 'geral' ? 'Envie uma mensagem para toda a equipe.' : 'Esta conversa individual ainda não possui mensagens.'}</span></div>`;
             if (shouldStick) requestAnimationFrame(() => { container.scrollTop = container.scrollHeight; });
             if (currentActivePage === 'chat') markChatRoomRead(activeChatRoomId).catch(() => {});
@@ -4116,12 +4405,17 @@
             renderChatMessages();
             renderChatTyping();
             updateChatNavBadge();
+            updateChatNotificationControls();
+            if (!document.getElementById('chatEmojiPicker')?.innerHTML) renderChatEmojiPicker();
+            if (!document.getElementById('chatStickerPicker')?.innerHTML) renderChatStickerPicker();
         }
 
         window.selectChatRoom = function(encodedRoomId) {
             const roomId = encodedRoomId === 'geral' ? 'geral' : decodeURIComponent(encodedRoomId || 'geral');
             activeChatRoomId = roomId;
             sessionStorage.setItem('governancaActiveChatRoom', roomId);
+            closeChatPickers();
+            stopChatTitleAlert();
             renderChatPage();
             document.getElementById('chatMessageInput')?.focus();
         };
@@ -4163,6 +4457,29 @@
             }
         };
 
+        function buildChatPayload(extra = {}) {
+            const meta = getChatRoomMeta();
+            return {
+                roomId: activeChatRoomId,
+                senderKey: currentAccessIdentity.personKey,
+                senderName: currentAccessIdentity.name,
+                recipientKey: meta.partnerKey || '',
+                recipientName: meta.partnerKey ? meta.title : '',
+                participantKeys: meta.partnerKey ? [currentAccessIdentity.personKey, meta.partnerKey].sort() : [],
+                text: '',
+                kind: 'text',
+                reactions: {},
+                createdAt: new Date().toISOString(),
+                deleted: false,
+                ...extra
+            };
+        }
+
+        async function persistChatPayload(extra) {
+            if (!currentAccessIdentity) throw new Error('Pessoa não identificada.');
+            await setDoc(doc(CHAT_MESSAGES_COLLECTION), buildChatPayload(extra));
+        }
+
         window.sendChatMessage = async function(event) {
             event?.preventDefault?.();
             const input = document.getElementById('chatMessageInput');
@@ -4170,22 +4487,12 @@
             const raw = String(input?.value || '').trim();
             if (!raw || !currentAccessIdentity) return;
             const text = redactCpfFromChat(raw).slice(0, 1500);
-            const meta = getChatRoomMeta();
             if (button) { button.disabled = true; button.textContent = 'Enviando…'; }
             try {
-                await setDoc(doc(CHAT_MESSAGES_COLLECTION), {
-                    roomId: activeChatRoomId,
-                    senderKey: currentAccessIdentity.personKey,
-                    senderName: currentAccessIdentity.name,
-                    recipientKey: meta.partnerKey || '',
-                    recipientName: meta.partnerKey ? meta.title : '',
-                    participantKeys: meta.partnerKey ? [currentAccessIdentity.personKey, meta.partnerKey].sort() : [],
-                    text,
-                    createdAt: new Date().toISOString(),
-                    deleted: false
-                });
+                await persistChatPayload({ text, kind:'text' });
                 if (input) input.value = '';
                 if (text !== raw) showToast('Por privacidade, um CPF identificado na mensagem foi removido.');
+                closeChatPickers();
                 await stopChatTyping();
             } catch (error) {
                 console.error('Erro ao enviar mensagem:', error);
@@ -4193,6 +4500,34 @@
             } finally {
                 if (button) { button.disabled = false; button.textContent = 'Enviar'; }
                 input?.focus();
+            }
+        };
+
+        window.sendChatSticker = async function(stickerId) {
+            const sticker = CHAT_STICKERS[stickerId];
+            if (!sticker || !currentAccessIdentity) return;
+            closeChatPickers();
+            try {
+                await persistChatPayload({ kind:'sticker', stickerId, stickerLabel:sticker.label });
+                await stopChatTyping();
+            } catch (error) {
+                console.error('Erro ao enviar figurinha:', error);
+                alert('Não foi possível enviar a figurinha.');
+            }
+        };
+
+        window.toggleChatReaction = async function(encodedId, encodedEmoji) {
+            const id = decodeURIComponent(encodedId || '');
+            const emoji = decodeURIComponent(encodedEmoji || '');
+            const message = chatMessages.find(item => item.id === id);
+            if (!message || message.deleted || !CHAT_REACTIONS.includes(emoji) || !currentAccessIdentity?.personKey) return;
+            const currentPeople = Array.isArray(message.reactions?.[emoji]) ? message.reactions[emoji] : [];
+            const operation = currentPeople.includes(currentAccessIdentity.personKey) ? arrayRemove(currentAccessIdentity.personKey) : arrayUnion(currentAccessIdentity.personKey);
+            try {
+                await setDoc(doc(CHAT_MESSAGES_COLLECTION, id), { reactions: { [emoji]: operation } }, { merge:true });
+            } catch (error) {
+                console.error('Erro ao registrar reação:', error);
+                showToast('Não foi possível registrar a reação.');
             }
         };
 
@@ -4206,6 +4541,46 @@
             } catch (error) {
                 console.error('Erro ao excluir mensagem:', error);
                 alert('Não foi possível excluir a mensagem.');
+            }
+        };
+
+        window.clearAllChatConversations = async function() {
+            if (!canClearAllChat()) {
+                alert('Somente o perfil identificado como Roni pode limpar o histórico geral de conversas.');
+                return;
+            }
+            if (!confirm('Esta ação apagará permanentemente todas as mensagens, figurinhas e reações da equipe. Deseja continuar?')) return;
+            const typed = prompt('Para confirmar a exclusão completa, digite APAGAR:');
+            if (String(typed || '').trim().toUpperCase() !== 'APAGAR') {
+                showToast('Limpeza cancelada.');
+                return;
+            }
+            const button = document.getElementById('chatClearButton');
+            if (button) { button.disabled = true; button.textContent = 'Apagando…'; }
+            let deletedCount = 0;
+            try {
+                for (let page = 0; page < 80; page += 1) {
+                    const snapshot = await getDocs(query(CHAT_MESSAGES_COLLECTION, limit(250)));
+                    if (snapshot.empty) break;
+                    const batch = writeBatch(firestore);
+                    snapshot.docs.forEach(item => batch.delete(item.ref));
+                    await batch.commit();
+                    deletedCount += snapshot.size;
+                    if (snapshot.size < 250) break;
+                }
+                chatMessages = [];
+                chatGeneralMessages = [];
+                chatDirectMessages = [];
+                chatKnownMessageIds.clear();
+                document.getElementById('chatScreenNotifications')?.replaceChildren();
+                renderChatPage();
+                recordAuditChange({ source:'Conversa da Equipe', recordId:'chat-geral', field:'Limpeza completa', detail:`${deletedCount} mensagem(ns) excluída(s) por ${currentAccessIdentity.name}.` });
+                showToast(`${deletedCount} mensagem${deletedCount === 1 ? '' : 'ns'} apagada${deletedCount === 1 ? '' : 's'}.`);
+            } catch (error) {
+                console.error('Erro ao limpar conversas:', error);
+                alert('Não foi possível concluir a limpeza das conversas.');
+            } finally {
+                if (button) { button.disabled = false; button.textContent = 'Limpar conversas'; }
             }
         };
 
@@ -4225,7 +4600,7 @@
                 renderChatPage();
                 if (newIncoming.length) {
                     const newest = newIncoming[newIncoming.length - 1];
-                    if (currentActivePage !== 'chat' || activeChatRoomId !== newest.roomId) showToast(`💬 ${newest.senderName || 'Equipe'}: ${String(newest.text || '').slice(0, 70)}`);
+                    notifyIncomingChatMessage(newest);
                 }
             };
             if (unsubscribeChatMessages) unsubscribeChatMessages();
@@ -4256,6 +4631,12 @@
 
             clearInterval(chatTypingUiTimer);
             chatTypingUiTimer = setInterval(renderChatTyping, 1000);
+            updateChatNotificationControls();
+            document.addEventListener('pointerdown', () => ensureChatAudioContext(), { once:true });
+            document.addEventListener('click', event => {
+                if (!event.target.closest('.chat-picker') && !event.target.closest('.chat-tool-btn')) closeChatPickers();
+            });
+            document.addEventListener('keydown', event => { if (event.key === 'Escape') closeChatPickers(); });
             window.addEventListener('pagehide', () => { deleteDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId)).catch(() => {}); });
         }
 
@@ -4329,7 +4710,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.5 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.6 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -7503,7 +7884,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.5 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe com emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.6 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
