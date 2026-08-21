@@ -5496,6 +5496,14 @@
                 if (!groups.has(item.responsavel)) groups.set(item.responsavel, []);
                 groups.get(item.responsavel).push(item);
             });
+            groups.forEach(activities => activities.sort((a,b) => {
+                const typeOrderA = a.tipo === 'Lepisma' ? 0 : 1;
+                const typeOrderB = b.tipo === 'Lepisma' ? 0 : 1;
+                if (typeOrderA !== typeOrderB) return typeOrderA - typeOrderB;
+                const nameOrder = String(a.pessoa || '').localeCompare(String(b.pessoa || ''), 'pt-BR', { sensitivity:'base', numeric:true });
+                if (nameOrder !== 0) return nameOrder;
+                return String(a.identificacao || '').localeCompare(String(b.identificacao || ''), 'pt-BR', { sensitivity:'base', numeric:true });
+            }));
             return [...groups.entries()].sort((a,b) => a[0].localeCompare(b[0], 'pt-BR'));
         }
 
