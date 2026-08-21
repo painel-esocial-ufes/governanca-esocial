@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.6</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.7</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -2029,7 +2029,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.6 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.7 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2389,7 +2389,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.6 · 2026<br>
+            UFES · v4.7 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2984,11 +2984,7 @@
             setDoc,
             updateDoc,
             getDoc,
-            getDocs,
             deleteDoc,
-            writeBatch,
-            arrayUnion,
-            arrayRemove,
             onSnapshot,
             query,
             orderBy,
@@ -3011,7 +3007,6 @@
         const STATE_DOC = doc(firestore, "governanca", "estadoPrincipal");
         const AUDIT_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "historicoAlteracoes");
         const POLARE_CLOSURES_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "polareFechamentos");
-        const CHAT_MESSAGES_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "mensagensEquipe");
         const CHAT_TYPING_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "digitandoEquipe");
         const CHAT_READS_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "leiturasEquipe");
 
@@ -3170,18 +3165,14 @@
         let auditEntries = [];
         let polareClosures = [];
         let unsubscribeChatMessages = null;
-        let unsubscribeChatDirectMessages = null;
         let unsubscribeChatTyping = null;
         let unsubscribeChatReads = null;
         let chatMessages = [];
-        let chatGeneralMessages = [];
-        let chatDirectMessages = [];
         let chatTypingEntries = [];
         let chatReadMap = new Map();
         let chatKnownMessageIds = new Set();
         let chatInitialLoadDone = false;
-        let chatGeneralReady = false;
-        let chatDirectReady = false;
+        let chatPollInFlight = false;
         let chatTypingTimer = null;
         let chatTypingUiTimer = null;
         let chatLastTypingWrite = 0;
@@ -4229,10 +4220,11 @@
 
         function notifyIncomingChatMessage(message) {
             const isViewingRoom = document.visibilityState === 'visible' && currentActivePage === 'chat' && activeChatRoomId === message.roomId;
-            if (isViewingRoom) return;
-            showChatScreenNotification(message);
             playChatNotificationSound();
-            startChatTitleAlert();
+            if (!isViewingRoom) {
+                showChatScreenNotification(message);
+                startChatTitleAlert();
+            }
             if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted') {
                 try {
                     const notification = new Notification(`Mensagem de ${message.senderName || 'Equipe'}`, { body: chatMessagePreview(message).slice(0, 140), tag: `chat-${message.roomId}`, renotify: true });
@@ -4432,9 +4424,9 @@
             return String(text || '').replace(/\b\d{3}[.\s-]?\d{3}[.\s-]?\d{3}[-.\s]?\d{2}\b/g, '[CPF removido]');
         }
 
-        async function stopChatTyping() {
+        function stopChatTyping() {
             clearTimeout(chatTypingTimer);
-            try { await deleteDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId)); } catch (_) {}
+            deleteDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId)).catch(() => {});
         }
 
         window.announceChatTyping = function() {
@@ -4475,9 +4467,34 @@
             };
         }
 
+        async function chatApiRequest(method, body) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            try {
+                const response = await fetch('/api/chat', {
+                    method,
+                    headers: { 'Content-Type':'application/json' },
+                    body: body === undefined ? undefined : JSON.stringify(body),
+                    cache: 'no-store',
+                    signal: controller.signal
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Falha na comunicação com o chat.');
+                return data;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
         async function persistChatPayload(extra) {
             if (!currentAccessIdentity) throw new Error('Pessoa não identificada.');
-            await setDoc(doc(CHAT_MESSAGES_COLLECTION), buildChatPayload(extra));
+            const result = await chatApiRequest('POST', buildChatPayload(extra));
+            if (result.message?.id && !chatKnownMessageIds.has(result.message.id)) {
+                chatKnownMessageIds.add(result.message.id);
+                chatMessages = [...chatMessages, result.message].sort((a,b) => String(a.createdAt || '').localeCompare(String(b.createdAt || ''))).slice(-600);
+                renderChatPage();
+            }
+            refreshChatMessagesFromApi();
         }
 
         window.sendChatMessage = async function(event) {
@@ -4493,7 +4510,7 @@
                 if (input) input.value = '';
                 if (text !== raw) showToast('Por privacidade, um CPF identificado na mensagem foi removido.');
                 closeChatPickers();
-                await stopChatTyping();
+                stopChatTyping();
             } catch (error) {
                 console.error('Erro ao enviar mensagem:', error);
                 alert('Não foi possível enviar a mensagem. Tente novamente.');
@@ -4509,7 +4526,7 @@
             closeChatPickers();
             try {
                 await persistChatPayload({ kind:'sticker', stickerId, stickerLabel:sticker.label });
-                await stopChatTyping();
+                stopChatTyping();
             } catch (error) {
                 console.error('Erro ao enviar figurinha:', error);
                 alert('Não foi possível enviar a figurinha.');
@@ -4521,10 +4538,9 @@
             const emoji = decodeURIComponent(encodedEmoji || '');
             const message = chatMessages.find(item => item.id === id);
             if (!message || message.deleted || !CHAT_REACTIONS.includes(emoji) || !currentAccessIdentity?.personKey) return;
-            const currentPeople = Array.isArray(message.reactions?.[emoji]) ? message.reactions[emoji] : [];
-            const operation = currentPeople.includes(currentAccessIdentity.personKey) ? arrayRemove(currentAccessIdentity.personKey) : arrayUnion(currentAccessIdentity.personKey);
             try {
-                await setDoc(doc(CHAT_MESSAGES_COLLECTION, id), { reactions: { [emoji]: operation } }, { merge:true });
+                await chatApiRequest('PATCH', { action:'reaction', id, emoji, actorKey:currentAccessIdentity.personKey });
+                await refreshChatMessagesFromApi();
             } catch (error) {
                 console.error('Erro ao registrar reação:', error);
                 showToast('Não foi possível registrar a reação.');
@@ -4537,7 +4553,8 @@
             if (!message || message.senderKey !== currentAccessIdentity?.personKey || message.deleted) return;
             if (!confirm('Excluir esta mensagem? O histórico indicará que ela foi excluída.')) return;
             try {
-                await updateDoc(doc(CHAT_MESSAGES_COLLECTION, id), { text: '', deleted: true, deletedAt: new Date().toISOString(), deletedBy: currentAccessIdentity.personKey });
+                await chatApiRequest('PATCH', { action:'delete', id, actorKey:currentAccessIdentity.personKey });
+                await refreshChatMessagesFromApi();
             } catch (error) {
                 console.error('Erro ao excluir mensagem:', error);
                 alert('Não foi possível excluir a mensagem.');
@@ -4557,20 +4574,10 @@
             }
             const button = document.getElementById('chatClearButton');
             if (button) { button.disabled = true; button.textContent = 'Apagando…'; }
-            let deletedCount = 0;
             try {
-                for (let page = 0; page < 80; page += 1) {
-                    const snapshot = await getDocs(query(CHAT_MESSAGES_COLLECTION, limit(250)));
-                    if (snapshot.empty) break;
-                    const batch = writeBatch(firestore);
-                    snapshot.docs.forEach(item => batch.delete(item.ref));
-                    await batch.commit();
-                    deletedCount += snapshot.size;
-                    if (snapshot.size < 250) break;
-                }
+                const result = await chatApiRequest('DELETE', { requesterName:currentAccessIdentity.name });
+                const deletedCount = Number(result.deletedCount || 0);
                 chatMessages = [];
-                chatGeneralMessages = [];
-                chatDirectMessages = [];
                 chatKnownMessageIds.clear();
                 document.getElementById('chatScreenNotifications')?.replaceChildren();
                 renderChatPage();
@@ -4584,38 +4591,43 @@
             }
         };
 
+        async function refreshChatMessagesFromApi() {
+            if (!currentAccessIdentity?.personKey || chatPollInFlight) return;
+            chatPollInFlight = true;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            try {
+                const response = await fetch(`/api/chat?personKey=${encodeURIComponent(currentAccessIdentity.personKey)}&_=${Date.now()}`, { cache:'no-store', signal:controller.signal });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Falha ao atualizar conversas.');
+                const combined = Array.isArray(data.messages) ? data.messages : [];
+                const incomingIds = new Set(combined.map(item => item.id));
+                const newIncoming = chatInitialLoadDone ? combined.filter(message => !chatKnownMessageIds.has(message.id) && message.senderKey !== currentAccessIdentity.personKey && !message.deleted) : [];
+                chatKnownMessageIds = incomingIds;
+                chatMessages = combined.slice(-600);
+                chatInitialLoadDone = true;
+                renderChatPage();
+                if (newIncoming.length) notifyIncomingChatMessage(newIncoming[newIncoming.length - 1]);
+            } catch (error) {
+                console.warn('Atualização do chat temporariamente indisponível:', error);
+            } finally {
+                clearTimeout(timeoutId);
+                chatPollInFlight = false;
+            }
+        }
+
         function setupChat() {
             if (!currentAccessIdentity?.personKey) return;
             if (activeChatRoomId !== 'geral' && !getChatPartnerKey(activeChatRoomId)) {
                 activeChatRoomId = 'geral';
                 sessionStorage.setItem('governancaActiveChatRoom', 'geral');
             }
-            const refreshMessages = () => {
-                const combined = [...chatGeneralMessages, ...chatDirectMessages].sort((a,b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')));
-                const incomingIds = new Set(combined.map(item => item.id));
-                const newIncoming = chatInitialLoadDone ? combined.filter(message => !chatKnownMessageIds.has(message.id) && message.senderKey !== currentAccessIdentity.personKey && !message.deleted) : [];
-                chatKnownMessageIds = incomingIds;
-                chatMessages = combined.slice(-600);
-                if (chatGeneralReady && chatDirectReady) chatInitialLoadDone = true;
-                renderChatPage();
-                if (newIncoming.length) {
-                    const newest = newIncoming[newIncoming.length - 1];
-                    notifyIncomingChatMessage(newest);
-                }
-            };
+            chatInitialLoadDone = false;
+            chatKnownMessageIds.clear();
             if (unsubscribeChatMessages) unsubscribeChatMessages();
-            unsubscribeChatMessages = onSnapshot(query(CHAT_MESSAGES_COLLECTION, where('roomId', '==', 'geral'), limit(300)), snapshot => {
-                chatGeneralMessages = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-                chatGeneralReady = true;
-                refreshMessages();
-            }, error => console.error('Erro ao carregar mensagens da equipe:', error));
-
-            if (unsubscribeChatDirectMessages) unsubscribeChatDirectMessages();
-            unsubscribeChatDirectMessages = onSnapshot(query(CHAT_MESSAGES_COLLECTION, where('participantKeys', 'array-contains', currentAccessIdentity.personKey), limit(300)), snapshot => {
-                chatDirectMessages = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-                chatDirectReady = true;
-                refreshMessages();
-            }, error => console.error('Erro ao carregar conversas individuais:', error));
+            const chatPollingTimer = setInterval(refreshChatMessagesFromApi, 1500);
+            unsubscribeChatMessages = () => clearInterval(chatPollingTimer);
+            refreshChatMessagesFromApi();
 
             if (unsubscribeChatTyping) unsubscribeChatTyping();
             unsubscribeChatTyping = onSnapshot(CHAT_TYPING_COLLECTION, snapshot => {
@@ -4637,6 +4649,9 @@
                 if (!event.target.closest('.chat-picker') && !event.target.closest('.chat-tool-btn')) closeChatPickers();
             });
             document.addEventListener('keydown', event => { if (event.key === 'Escape') closeChatPickers(); });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') refreshChatMessagesFromApi();
+            });
             window.addEventListener('pagehide', () => { deleteDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId)).catch(() => {}); });
         }
 
@@ -4710,7 +4725,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.6 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.7 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -7884,7 +7899,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe com emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.6 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe com emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.7 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
