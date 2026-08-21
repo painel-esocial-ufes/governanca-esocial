@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.9</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v5.0</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -2029,7 +2029,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.9 ========== */
+        /* ========== CENTRAL eSOCIAL / v5.0 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2389,7 +2389,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.9 · 2026<br>
+            UFES · v5.0 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -3013,8 +3013,9 @@
 
         // ==================== PRESENÇA ONLINE ====================
         const PRESENCE_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "presencaOnline");
-        const PRESENCE_HEARTBEAT_MS = 30000;
-        const PRESENCE_TTL_MS = 90000;
+        // Mantém o indicador online responsivo sem consumir a cota gratuita a cada 30 segundos.
+        const PRESENCE_HEARTBEAT_MS = 120000;
+        const PRESENCE_TTL_MS = 300000;
         const PRESENCE_CLEANUP_MS = 6 * 60 * 60 * 1000;
         const ACCESS_IDENTITY_KEY = 'governancaAccessIdentity';
         let currentAccessIdentity = null;
@@ -3771,7 +3772,7 @@
 
         function setupAuditListener() {
             if (unsubscribeAudit) unsubscribeAudit();
-            unsubscribeAudit = onSnapshot(query(AUDIT_COLLECTION, orderBy('timestamp', 'desc'), limit(500)), snapshot => {
+            unsubscribeAudit = onSnapshot(query(AUDIT_COLLECTION, orderBy('timestamp', 'desc'), limit(100)), snapshot => {
                 auditEntries = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
                 renderDashboardAudit();
             }, error => {
@@ -3781,7 +3782,7 @@
 
         function setupPolareClosuresListener() {
             if (unsubscribePolareClosures) unsubscribePolareClosures();
-            unsubscribePolareClosures = onSnapshot(query(POLARE_CLOSURES_COLLECTION, orderBy('closedAt', 'desc'), limit(250)), snapshot => {
+            unsubscribePolareClosures = onSnapshot(query(POLARE_CLOSURES_COLLECTION, orderBy('closedAt', 'desc'), limit(100)), snapshot => {
                 polareClosures = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
                 renderPolareClosures();
                 renderDashboardMyQueue();
@@ -3971,7 +3972,8 @@
             });
 
             if (unsubscribePresence) unsubscribePresence();
-            unsubscribePresence = onSnapshot(PRESENCE_COLLECTION, snapshot => {
+            const recentPresenceQuery = query(PRESENCE_COLLECTION, orderBy('lastSeen', 'desc'), limit(30));
+            unsubscribePresence = onSnapshot(recentPresenceQuery, snapshot => {
                 onlinePresenceSessions = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
                 renderOnlineIndicator();
                 renderChatPage();
@@ -4439,12 +4441,12 @@
             const input = document.getElementById('chatMessageInput');
             if (!String(input?.value || '').trim()) { stopChatTyping(); return; }
             const now = Date.now();
-            if (now - chatLastTypingWrite > 700) {
+            if (now - chatLastTypingWrite > 3000) {
                 chatLastTypingWrite = now;
-                setDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId), { roomId: activeChatRoomId, personKey: currentAccessIdentity.personKey, displayName: currentAccessIdentity.name, expiresAt: now + 3200 }, { merge: true }).catch(() => {});
+                setDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId), { roomId: activeChatRoomId, personKey: currentAccessIdentity.personKey, displayName: currentAccessIdentity.name, expiresAt: now + 8000 }, { merge: true }).catch(() => {});
             }
             clearTimeout(chatTypingTimer);
-            chatTypingTimer = setTimeout(() => stopChatTyping(), 2600);
+            chatTypingTimer = setTimeout(() => stopChatTyping(), 7000);
         };
 
         window.handleChatComposerKey = function(event) {
@@ -4558,6 +4560,15 @@
             }
         }
 
+        function chatFailureMessage(error, action = 'enviar a mensagem') {
+            const code = String(error?.code || '').toLowerCase();
+            const message = String(error?.message || '').toLowerCase();
+            if (code.includes('resource-exhausted') || message.includes('quota exceeded')) {
+                return `O limite diário do Firebase foi atingido. Não foi possível ${action}. O chat e a lista de pessoas online voltarão após a renovação da cota, normalmente por volta das 4h (horário de Brasília).`;
+            }
+            return `Não foi possível ${action}. Verifique a conexão e tente novamente.`;
+        }
+
         async function persistChatPayload(extra) {
             if (!currentAccessIdentity) throw new Error('Pessoa não identificada.');
             const result = await chatApiRequest('POST', buildChatPayload(extra));
@@ -4585,7 +4596,7 @@
                 stopChatTyping();
             } catch (error) {
                 console.error('Erro ao enviar mensagem:', error);
-                alert('Não foi possível enviar a mensagem. Tente novamente.');
+                alert(chatFailureMessage(error));
             } finally {
                 if (button) { button.disabled = false; button.textContent = 'Enviar'; }
                 input?.focus();
@@ -4601,7 +4612,7 @@
                 stopChatTyping();
             } catch (error) {
                 console.error('Erro ao enviar figurinha:', error);
-                alert('Não foi possível enviar a figurinha.');
+                alert(chatFailureMessage(error, 'enviar a figurinha'));
             }
         };
 
@@ -4712,13 +4723,14 @@
             }
 
             if (unsubscribeChatTyping) unsubscribeChatTyping();
-            unsubscribeChatTyping = onSnapshot(CHAT_TYPING_COLLECTION, snapshot => {
+            const recentTypingQuery = query(CHAT_TYPING_COLLECTION, orderBy('expiresAt', 'desc'), limit(20));
+            unsubscribeChatTyping = onSnapshot(recentTypingQuery, snapshot => {
                 chatTypingEntries = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
                 renderChatTyping();
             }, error => console.warn('Indicador de digitação indisponível:', error));
 
             if (unsubscribeChatReads) unsubscribeChatReads();
-            unsubscribeChatReads = onSnapshot(query(CHAT_READS_COLLECTION, where('personKey', '==', currentAccessIdentity.personKey), limit(200)), snapshot => {
+            unsubscribeChatReads = onSnapshot(query(CHAT_READS_COLLECTION, where('personKey', '==', currentAccessIdentity.personKey), limit(50)), snapshot => {
                 chatReadMap = new Map(snapshot.docs.map(item => [item.data().roomId, item.data().lastReadAt]));
                 renderChatPage();
             }, error => console.warn('Leitura de mensagens indisponível:', error));
@@ -4807,7 +4819,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.9 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v5.0 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -7981,7 +7993,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe compatível com GitHub · Emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.9 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe compatível com GitHub · Consumo otimizado do Firebase · Emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v5.0 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
