@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.9</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.0</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -1369,7 +1369,7 @@
         .member-initial { width:31px; height:31px; border-radius:7px; background:#dceaf5; color:#155b87; display:grid; place-items:center; font-weight:800; }
         .dashboard-team-member strong,.dashboard-team-member small { display:block; }
         .dashboard-team-member small { color:var(--text3); font-size:10px; margin-top:1px; }
-        .dashboard-source-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+        .dashboard-source-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
         .dashboard-source-card { min-width:0; padding:14px; border:1px solid var(--border); border-top:3px solid #1769aa; border-radius:9px; background:var(--surface2); color:var(--text); text-align:left; cursor:pointer; transition:.15s ease; }
         .dashboard-source-card:hover { transform:translateY(-2px); border-color:#7fb1d4; box-shadow:0 7px 16px rgba(15,35,60,.08); }
         .dashboard-source-card:focus-visible { outline:3px solid rgba(23,105,170,.25); outline-offset:2px; }
@@ -1381,6 +1381,7 @@
         .dashboard-source-card.lepisma { border-top-color:#6d45a4; }
         .dashboard-source-card.polare { border-top-color:#159669; }
         .dashboard-source-card.calendar { border-top-color:#d97706; }
+        .dashboard-source-card.sheet { border-top-color:#0f766e; }
         .empty-state { padding:18px; color:var(--text3); text-align:center; border:1px dashed var(--border); border-radius:8px; }
 
         .timeline-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; }
@@ -1956,7 +1957,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v3.9 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.0 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2106,9 +2107,35 @@
         body.dark-mode .reference-intro { border-color:#31506a; background:#172c3e; }
         body.dark-mode .reference-intro strong { color:#d8ecfb; }
         body.dark-mode .reference-intro span { color:#a9bfd0; }
-        @media (max-width:1200px) { .central-kpis { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
+        .team-sheet-shell { overflow:hidden; padding:0; }
+        .team-sheet-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); background:var(--surface); }
+        .team-sheet-toolbar-main,.team-sheet-toolbar-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .team-sheet-title-input { width:min(360px,70vw); min-height:36px; padding:7px 10px; border:1px solid var(--border); border-radius:7px; background:var(--surface2); color:var(--text); font-size:13px; font-weight:800; }
+        .team-sheet-status { display:inline-flex; align-items:center; gap:5px; color:var(--text3); font-size:9px; white-space:nowrap; }
+        .team-sheet-status::before { content:''; width:7px; height:7px; border-radius:50%; background:#16a34a; }
+        .team-sheet-status.saving::before { background:#d97706; }
+        .team-sheet-wrap { max-height:62vh; overflow:auto; background:var(--surface2); }
+        .team-sheet-table { width:max-content; min-width:100%; border-collapse:separate; border-spacing:0; font-size:11px; }
+        .team-sheet-table th,.team-sheet-table td { height:38px; padding:0; border-right:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--surface); }
+        .team-sheet-table thead th { position:sticky; top:0; z-index:3; min-width:180px; background:#eaf1f7; }
+        .team-sheet-table .sheet-corner { left:0; z-index:5; min-width:48px; width:48px; background:#dfeaf3; }
+        .team-sheet-table .sheet-row-number { position:sticky; left:0; z-index:2; min-width:48px; width:48px; background:#eef4f8; color:#607284; text-align:center; font-size:9px; font-weight:900; }
+        .team-sheet-head { display:flex; align-items:center; min-width:180px; height:38px; }
+        .team-sheet-head input { min-width:0; flex:1; height:100%; padding:8px 9px; border:0; background:transparent; color:var(--text); font-size:10px; font-weight:900; text-transform:uppercase; }
+        .team-sheet-head button,.sheet-row-delete { width:28px; height:28px; margin-right:4px; border:0; border-radius:6px; background:transparent; color:#8a9aa8; cursor:pointer; font-size:15px; }
+        .team-sheet-head button:hover,.sheet-row-delete:hover { background:#ffe9e9; color:#b42318; }
+        .team-sheet-cell { min-width:180px; width:180px; }
+        .team-sheet-cell input { width:100%; height:37px; padding:7px 9px; border:0; border-radius:0; background:transparent; color:var(--text); font:inherit; }
+        .team-sheet-cell input:focus,.team-sheet-head input:focus { position:relative; z-index:1; outline:2px solid #247ab5; outline-offset:-2px; background:#f5fbff; }
+        .team-sheet-table .sheet-row-actions { min-width:42px; width:42px; text-align:center; background:var(--surface2); }
+        .team-sheet-empty { padding:34px; text-align:center; color:var(--text3); }
+        body.dark-mode .team-sheet-table thead th { background:#23384a; }
+        body.dark-mode .team-sheet-table .sheet-corner { background:#294156; }
+        body.dark-mode .team-sheet-table .sheet-row-number { background:#1e3345; }
+        body.dark-mode .team-sheet-cell input:focus,body.dark-mode .team-sheet-head input:focus { background:#172f42; }
+        @media (max-width:1200px) { .central-kpis,.dashboard-source-grid { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
         @media (max-width:900px) { .polare-layout { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } }
-        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } .team-sheet-toolbar { align-items:flex-start; flex-direction:column; } .team-sheet-toolbar-actions { width:100%; } .team-sheet-toolbar-actions .btn { flex:1; } }
 
     </style>
 </head>
@@ -2136,6 +2163,7 @@
             <div class="nav-section">Gestão</div>
             <div class="nav-item" data-page="polare"><span class="nav-icon">▤</span> Relatório PolarE</div>
             <div class="nav-item" data-page="servidores"><span class="nav-icon">＋</span> Cadastro de Servidores</div>
+            <div class="nav-item" data-page="planilha"><span class="nav-icon">▦</span> Planilha da Equipe</div>
 
             <div class="nav-section">Referências</div>
             <div class="nav-item" data-page="rubricas"><span class="nav-icon">≡</span> Rubricas</div>
@@ -2143,7 +2171,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.9 · 2026<br>
+            UFES · v4.0 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2408,6 +2436,39 @@
                 </div>
             </div>
 
+            <!-- PAGE: PLANILHA DA EQUIPE -->
+            <div class="page" id="page-planilha">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">ESPAÇO COMPARTILHADO</span>
+                        <h2>Planilha da Equipe</h2>
+                        <p>Edição livre dentro do sistema, com salvamento automático e sincronização entre os usuários.</p>
+                    </div>
+                    <div class="page-heading-actions">
+                        <input type="file" id="teamSheetImportInput" accept=".xlsx,.xls,.csv" hidden onchange="handleTeamSheetImport(event)">
+                        <button class="btn btn-outline" onclick="document.getElementById('teamSheetImportInput').click()">Importar Excel</button>
+                        <button class="btn btn-outline" onclick="exportTeamSheetExcel()">Exportar Excel</button>
+                        <button class="btn btn-primary" onclick="newTeamSheet()">Nova planilha</button>
+                    </div>
+                </div>
+                <div class="central-import-note"><span>ℹ️</span><div><strong>Planilha compartilhada da equipe.</strong> As alterações são salvas automaticamente no próprio sistema. Também é possível colar blocos copiados do Excel diretamente nas células.</div></div>
+                <div class="card team-sheet-shell">
+                    <div class="team-sheet-toolbar">
+                        <div class="team-sheet-toolbar-main">
+                            <input class="team-sheet-title-input" id="teamSheetTitle" maxlength="100" aria-label="Nome da planilha" onchange="renameTeamSheet(this.value)">
+                            <span class="team-sheet-status" id="teamSheetStatus">Sincronizado</span>
+                        </div>
+                        <div class="team-sheet-toolbar-actions">
+                            <button class="btn btn-sm btn-outline" onclick="addTeamSheetRow()">＋ Linha</button>
+                            <button class="btn btn-sm btn-outline" onclick="addTeamSheetColumn()">＋ Coluna</button>
+                            <button class="btn btn-sm btn-outline" onclick="renderTeamSheet()">Atualizar</button>
+                            <button class="btn btn-sm btn-danger" onclick="clearTeamSheet()">Limpar conteúdo</button>
+                        </div>
+                    </div>
+                    <div class="team-sheet-wrap" id="teamSheetGrid"></div>
+                </div>
+            </div>
+
             <!-- PAGE: RUBRICAS -->
             <div class="page" id="page-rubricas">
                 <div class="page-heading">
@@ -2629,6 +2690,7 @@
             doc,
             collection,
             setDoc,
+            updateDoc,
             getDoc,
             deleteDoc,
             onSnapshot
@@ -2704,6 +2766,16 @@
                 desc: 'Retorno às atividades do eSocial, com foco na caixa de processos do Lepisma.' },
         ];
 
+        function createDefaultTeamSpreadsheet() {
+            const columns = Array.from({ length: 6 }, (_, index) => ({
+                id: `c${index + 1}`,
+                name: `Coluna ${String.fromCharCode(65 + index)}`
+            }));
+            const rowIds = Array.from({ length: 15 }, (_, index) => `r${index + 1}`);
+            const cells = Object.fromEntries(rowIds.map(rowId => [rowId, Object.fromEntries(columns.map(column => [column.id, '']))]));
+            return { title: 'Planilha da Equipe', columns, rowIds, cells, updatedAt: '' };
+        }
+
         const DEFAULT_STATE = {
             currentCompetencia: '2026-06',
             timeline: JSON.parse(JSON.stringify(DEFAULT_TIMELINE)),
@@ -2743,6 +2815,7 @@
                 { id: 'rafael', nome: 'Rafael', ativo: true },
                 { id: 'fabianne', nome: 'Fabianne', ativo: true }
             ],
+            teamSpreadsheet: createDefaultTeamSpreadsheet(),
             closedCompetencias: {},
         };
 
@@ -3207,8 +3280,10 @@
                     document.body.classList.remove('dark-mode');
                 }
                 const savedPage = currentActivePage;
+                const editingTeamSheet = savedPage === 'planilha' && Boolean(document.activeElement?.closest?.('#teamSheetGrid'));
                 populateCompetenciaSelect();
-                renderPageContent(savedPage);
+                if (!editingTeamSheet) renderPageContent(savedPage);
+                else setTeamSheetStatus(false, 'Atualização recebida · clique em Atualizar');
                 updatePhaseIndicator();
                 updateKPIs();
                 updateSyncIndicator('connected');
@@ -3247,6 +3322,9 @@
                 case 'servidores':
                     renderServidores();
                     break;
+                case 'planilha':
+                    renderTeamSheet();
+                    break;
                 case 'rubricas':
                 case 'linksuteis':
                     break;
@@ -3259,7 +3337,7 @@
             const labels = {
                 dashboard: 'Visão Operacional', calendario: 'Calendário', timeline: 'Linha do Tempo',
                 equipe: 'Equipe', central: 'Central eSocial', lepisma: 'Lepisma', polare: 'Relatório PolarE',
-                servidores: 'Cadastro de Servidores', rubricas: 'Rubricas',
+                servidores: 'Cadastro de Servidores', planilha: 'Planilha da Equipe', rubricas: 'Rubricas',
                 linksuteis: 'Links Úteis'
             };
             return labels[pageName] || pageName || 'Plataforma';
@@ -3440,7 +3518,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v3.9 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.0 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3512,6 +3590,7 @@
             renderCalendar();
             renderPolareReport();
             renderServidores();
+            renderTeamSheet();
             updatePhaseIndicator();
             updateKPIs();
         }
@@ -3843,12 +3922,15 @@
             const polareEsocial = monthActivities.length - polareLepisma;
             const nextMilestone = [...(getOperationalCalendar()?.milestones || [])]
                 .filter(item => item.date >= getLocalDateKey()).sort((a,b) => a.date.localeCompare(b.date))[0];
+            const teamSheet = ensureTeamSpreadsheet();
+            const filledCells = teamSheet.rowIds.reduce((total, rowId) => total + teamSheet.columns.filter(column => String(teamSheet.cells[rowId]?.[column.id] || '').trim()).length, 0);
             container.innerHTML = `<div class="card-header"><div><span class="eyebrow">PAINEL INTEGRADO</span><h3>Resumo das áreas de trabalho</h3></div><span class="badge badge-blue">${formatCompKey(state.currentCompetencia)}</span></div>
                 <div class="dashboard-source-grid">
                     <button type="button" class="dashboard-source-card central" onclick="navigatePublic('central')"><span>Central eSocial</span><strong>${open.length}</strong><small>${accepted} aceitos · ${dismissed} dispensados${unassigned ? ` · ${unassigned} sem responsável` : ''}</small></button>
                     <button type="button" class="dashboard-source-card lepisma" onclick="navigatePublic('lepisma')"><span>Controle Lepisma</span><strong>${inBox}</strong><small>Processos na caixa · ${overdue} atrasados · ${lepismaAllData.length} no total</small></button>
                     <button type="button" class="dashboard-source-card polare" onclick="navigatePublic('polare')"><span>Relatório PolarE</span><strong>${monthActivities.length}</strong><small>${polareLepisma} processos · ${polareEsocial} eventos eSocial no mês</small></button>
                     <button type="button" class="dashboard-source-card calendar" onclick="navigatePublic('calendario')"><span>Próximo marco</span><strong>${nextMilestone ? formatDateBR(nextMilestone.date) : '—'}</strong><small>${nextMilestone ? escHtml(nextMilestone.title) : 'Nenhum marco futuro no calendário'}</small></button>
+                    <button type="button" class="dashboard-source-card sheet" onclick="navigatePublic('planilha')"><span>Planilha da Equipe</span><strong>${filledCells}</strong><small>Células preenchidas · ${teamSheet.rowIds.length} linhas · ${teamSheet.columns.length} colunas</small></button>
                 </div>`;
         }
 
@@ -4859,6 +4941,315 @@
             window.addEventListener('keydown', keyHandler);
         }
 
+        // ==================== PLANILHA DA EQUIPE ====================
+        const teamSheetCellSaveTimers = new Map();
+
+        function excelColumnLabel(index) {
+            let value = Number(index) + 1;
+            let label = '';
+            while (value > 0) {
+                value -= 1;
+                label = String.fromCharCode(65 + (value % 26)) + label;
+                value = Math.floor(value / 26);
+            }
+            return label;
+        }
+
+        function makeSheetId(prefix) {
+            return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        }
+
+        function ensureTeamSpreadsheet() {
+            const fallback = createDefaultTeamSpreadsheet();
+            const sheet = state.teamSpreadsheet && typeof state.teamSpreadsheet === 'object' ? state.teamSpreadsheet : fallback;
+            if (!Array.isArray(sheet.columns) || !sheet.columns.length) sheet.columns = fallback.columns;
+            sheet.columns = sheet.columns.slice(0, 50).map((column, index) => ({
+                id: String(column?.id || makeSheetId('c')).replace(/[^a-zA-Z0-9_-]/g, '_'),
+                name: String(column?.name || `Coluna ${excelColumnLabel(index)}`).slice(0, 80)
+            }));
+            if (!Array.isArray(sheet.rowIds) || !sheet.rowIds.length) sheet.rowIds = fallback.rowIds;
+            sheet.rowIds = sheet.rowIds.slice(0, 500).map(rowId => String(rowId || makeSheetId('r')).replace(/[^a-zA-Z0-9_-]/g, '_'));
+            if (!sheet.cells || typeof sheet.cells !== 'object' || Array.isArray(sheet.cells)) sheet.cells = {};
+            sheet.rowIds.forEach(rowId => {
+                if (!sheet.cells[rowId] || typeof sheet.cells[rowId] !== 'object') sheet.cells[rowId] = {};
+                sheet.columns.forEach(column => {
+                    if (sheet.cells[rowId][column.id] === undefined || sheet.cells[rowId][column.id] === null) sheet.cells[rowId][column.id] = '';
+                    else sheet.cells[rowId][column.id] = String(sheet.cells[rowId][column.id]);
+                });
+            });
+            sheet.title = String(sheet.title || 'Planilha da Equipe').slice(0, 100);
+            sheet.updatedAt = String(sheet.updatedAt || '');
+            state.teamSpreadsheet = sheet;
+            return sheet;
+        }
+
+        function setTeamSheetStatus(saving = false, message = '') {
+            const status = document.getElementById('teamSheetStatus');
+            if (!status) return;
+            status.classList.toggle('saving', saving);
+            if (message) {
+                status.textContent = message;
+                return;
+            }
+            const updatedAt = ensureTeamSpreadsheet().updatedAt;
+            const date = updatedAt ? new Date(updatedAt) : null;
+            status.textContent = date && !Number.isNaN(date.getTime())
+                ? `Sincronizado · ${date.toLocaleDateString('pt-BR')} ${date.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })}`
+                : 'Sincronizado';
+        }
+
+        function renderTeamSheet() {
+            const grid = document.getElementById('teamSheetGrid');
+            const titleInput = document.getElementById('teamSheetTitle');
+            if (!grid || !titleInput) return;
+            const sheet = ensureTeamSpreadsheet();
+            titleInput.value = sheet.title;
+            setTeamSheetStatus(false);
+            const header = sheet.columns.map(column => `
+                <th><div class="team-sheet-head"><input value="${escHtml(column.name)}" maxlength="80" aria-label="Nome da coluna ${escHtml(column.name)}" onchange="renameTeamSheetColumn('${column.id}',this.value)"><button type="button" title="Excluir coluna" aria-label="Excluir coluna ${escHtml(column.name)}" onclick="removeTeamSheetColumn('${column.id}')">×</button></div></th>`).join('');
+            const rows = sheet.rowIds.map((rowId, rowIndex) => `
+                <tr>
+                    <th class="sheet-row-number">${rowIndex + 1}</th>
+                    ${sheet.columns.map((column, columnIndex) => `<td class="team-sheet-cell"><input data-sheet-cell="${rowId}:${column.id}" value="${escHtml(sheet.cells[rowId]?.[column.id] || '')}" aria-label="Linha ${rowIndex + 1}, ${escHtml(column.name)}" oninput="updateTeamSheetCell('${rowId}','${column.id}',this.value)" onpaste="handleTeamSheetPaste(event,'${rowId}','${column.id}')" onkeydown="moveTeamSheetCell(event,${rowIndex},${columnIndex})"></td>`).join('')}
+                    <td class="sheet-row-actions"><button type="button" class="sheet-row-delete" title="Excluir linha" aria-label="Excluir linha ${rowIndex + 1}" onclick="removeTeamSheetRow('${rowId}')">×</button></td>
+                </tr>`).join('');
+            grid.innerHTML = `<table class="team-sheet-table"><thead><tr><th class="sheet-corner">#</th>${header}<th class="sheet-row-actions"></th></tr></thead><tbody>${rows}</tbody></table>`;
+        }
+        window.renderTeamSheet = renderTeamSheet;
+
+        async function saveTeamSpreadsheetFull(message = 'Planilha sincronizada.') {
+            const sheet = ensureTeamSpreadsheet();
+            sheet.updatedAt = new Date().toISOString();
+            setTeamSheetStatus(true, 'Salvando...');
+            try {
+                await updateDoc(STATE_DOC, {
+                    'state.teamSpreadsheet': JSON.parse(JSON.stringify(sheet)),
+                    updatedAt: sheet.updatedAt
+                });
+                setTeamSheetStatus(false);
+                updateSyncIndicator('saved');
+                renderDashboardDailyWork();
+                if (message) showToast(message);
+            } catch (error) {
+                console.error('Erro ao salvar a planilha da equipe:', error);
+                scheduleSave();
+                setTeamSheetStatus(true, 'Aguardando sincronização');
+            }
+        }
+
+        function queueTeamSheetCellSave(rowId, columnId, value) {
+            const key = `${rowId}:${columnId}`;
+            clearTimeout(teamSheetCellSaveTimers.get(key));
+            teamSheetCellSaveTimers.set(key, setTimeout(async () => {
+                const sheet = ensureTeamSpreadsheet();
+                const updatedAt = new Date().toISOString();
+                sheet.updatedAt = updatedAt;
+                setTeamSheetStatus(true, 'Salvando...');
+                try {
+                    await updateDoc(STATE_DOC, {
+                        [`state.teamSpreadsheet.cells.${rowId}.${columnId}`]: String(value ?? ''),
+                        'state.teamSpreadsheet.updatedAt': updatedAt,
+                        updatedAt
+                    });
+                    setTeamSheetStatus(false);
+                    updateSyncIndicator('saved');
+                } catch (error) {
+                    console.error('Erro ao salvar célula da planilha:', error);
+                    scheduleSave();
+                    setTeamSheetStatus(true, 'Aguardando sincronização');
+                } finally {
+                    teamSheetCellSaveTimers.delete(key);
+                }
+            }, 450));
+        }
+
+        window.updateTeamSheetCell = function(rowId, columnId, value) {
+            const sheet = ensureTeamSpreadsheet();
+            if (!sheet.cells[rowId] || !sheet.columns.some(column => column.id === columnId)) return;
+            sheet.cells[rowId][columnId] = String(value ?? '');
+            queueTeamSheetCellSave(rowId, columnId, value);
+        };
+
+        window.renameTeamSheet = function(value) {
+            ensureTeamSpreadsheet().title = String(value || 'Planilha da Equipe').trim().slice(0, 100) || 'Planilha da Equipe';
+            saveTeamSpreadsheetFull('Nome da planilha atualizado.');
+        };
+
+        window.renameTeamSheetColumn = function(columnId, value) {
+            const sheet = ensureTeamSpreadsheet();
+            const index = sheet.columns.findIndex(column => column.id === columnId);
+            if (index < 0) return;
+            sheet.columns[index].name = String(value || `Coluna ${excelColumnLabel(index)}`).trim().slice(0, 80) || `Coluna ${excelColumnLabel(index)}`;
+            saveTeamSpreadsheetFull('Nome da coluna atualizado.');
+        };
+
+        window.addTeamSheetRow = function() {
+            const sheet = ensureTeamSpreadsheet();
+            if (sheet.rowIds.length >= 500) { alert('A planilha atingiu o limite de 500 linhas.'); return; }
+            const rowId = makeSheetId('r');
+            sheet.rowIds.push(rowId);
+            sheet.cells[rowId] = Object.fromEntries(sheet.columns.map(column => [column.id, '']));
+            renderTeamSheet();
+            saveTeamSpreadsheetFull('Linha adicionada.');
+        };
+
+        window.removeTeamSheetRow = function(rowId) {
+            const sheet = ensureTeamSpreadsheet();
+            if (sheet.rowIds.length <= 1) { alert('A planilha precisa manter pelo menos uma linha.'); return; }
+            const rowNumber = sheet.rowIds.indexOf(rowId) + 1;
+            if (!confirm(`Excluir a linha ${rowNumber}?`)) return;
+            sheet.rowIds = sheet.rowIds.filter(id => id !== rowId);
+            delete sheet.cells[rowId];
+            renderTeamSheet();
+            saveTeamSpreadsheetFull('Linha excluída.');
+        };
+
+        window.addTeamSheetColumn = function() {
+            const sheet = ensureTeamSpreadsheet();
+            if (sheet.columns.length >= 50) { alert('A planilha atingiu o limite de 50 colunas.'); return; }
+            const column = { id: makeSheetId('c'), name: `Coluna ${excelColumnLabel(sheet.columns.length)}` };
+            sheet.columns.push(column);
+            sheet.rowIds.forEach(rowId => { sheet.cells[rowId][column.id] = ''; });
+            renderTeamSheet();
+            saveTeamSpreadsheetFull('Coluna adicionada.');
+        };
+
+        window.removeTeamSheetColumn = function(columnId) {
+            const sheet = ensureTeamSpreadsheet();
+            if (sheet.columns.length <= 1) { alert('A planilha precisa manter pelo menos uma coluna.'); return; }
+            const column = sheet.columns.find(item => item.id === columnId);
+            if (!column || !confirm(`Excluir a coluna “${column.name}”?`)) return;
+            sheet.columns = sheet.columns.filter(item => item.id !== columnId);
+            sheet.rowIds.forEach(rowId => { delete sheet.cells[rowId][columnId]; });
+            renderTeamSheet();
+            saveTeamSpreadsheetFull('Coluna excluída.');
+        };
+
+        window.clearTeamSheet = function() {
+            const sheet = ensureTeamSpreadsheet();
+            if (!confirm('Limpar todo o conteúdo da planilha? Os nomes das colunas serão mantidos.')) return;
+            sheet.rowIds.forEach(rowId => sheet.columns.forEach(column => { sheet.cells[rowId][column.id] = ''; }));
+            renderTeamSheet();
+            saveTeamSpreadsheetFull('Conteúdo da planilha limpo.');
+        };
+
+        window.newTeamSheet = function() {
+            if (!confirm('Criar uma nova planilha? O conteúdo atual será substituído.')) return;
+            state.teamSpreadsheet = createDefaultTeamSpreadsheet();
+            renderTeamSheet();
+            saveTeamSpreadsheetFull('Nova planilha criada.');
+        };
+
+        window.moveTeamSheetCell = function(event, rowIndex, columnIndex) {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            const sheet = ensureTeamSpreadsheet();
+            const nextRowId = sheet.rowIds[Math.min(rowIndex + 1, sheet.rowIds.length - 1)];
+            const columnId = sheet.columns[columnIndex]?.id;
+            document.querySelector(`[data-sheet-cell="${nextRowId}:${columnId}"]`)?.focus();
+        };
+
+        window.handleTeamSheetPaste = function(event, startRowId, startColumnId) {
+            const text = event.clipboardData?.getData('text/plain') || '';
+            if (!text.includes('\t') && !/[\r\n]/.test(text)) return;
+            event.preventDefault();
+            const matrix = text.replace(/\r/g, '').split('\n').filter((row, index, rows) => row || index < rows.length - 1).map(row => row.split('\t'));
+            if (!matrix.length) return;
+            const sheet = ensureTeamSpreadsheet();
+            const startRow = Math.max(0, sheet.rowIds.indexOf(startRowId));
+            const startColumn = Math.max(0, sheet.columns.findIndex(column => column.id === startColumnId));
+            const requiredRows = Math.min(500, startRow + matrix.length);
+            const requiredColumns = Math.min(50, startColumn + Math.max(...matrix.map(row => row.length)));
+            while (sheet.rowIds.length < requiredRows) {
+                const rowId = makeSheetId('r');
+                sheet.rowIds.push(rowId);
+                sheet.cells[rowId] = Object.fromEntries(sheet.columns.map(column => [column.id, '']));
+            }
+            while (sheet.columns.length < requiredColumns) {
+                const column = { id: makeSheetId('c'), name: `Coluna ${excelColumnLabel(sheet.columns.length)}` };
+                sheet.columns.push(column);
+                sheet.rowIds.forEach(rowId => { sheet.cells[rowId][column.id] = ''; });
+            }
+            matrix.forEach((row, rowOffset) => row.forEach((value, columnOffset) => {
+                const rowId = sheet.rowIds[startRow + rowOffset];
+                const column = sheet.columns[startColumn + columnOffset];
+                if (rowId && column) sheet.cells[rowId][column.id] = String(value ?? '');
+            }));
+            renderTeamSheet();
+            saveTeamSpreadsheetFull('Bloco colado na planilha.');
+        };
+
+        function applyTeamSheetImport(workbook, sheetName) {
+            const XLSXLib = window.XLSX;
+            const worksheet = workbook.Sheets[sheetName];
+            let rows = XLSXLib.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false })
+                .map(row => row.map(value => String(value ?? '')));
+            while (rows.length && rows[rows.length - 1].every(value => !String(value).trim())) rows.pop();
+            if (!rows.length) { alert('A guia selecionada está vazia.'); return; }
+            let columnCount = Math.min(50, Math.max(1, ...rows.map(row => row.length)));
+            while (columnCount > 1 && rows.every(row => !String(row[columnCount - 1] || '').trim())) columnCount -= 1;
+            const stamp = Date.now();
+            const columns = Array.from({ length: columnCount }, (_, index) => ({
+                id: `c_${stamp}_${index}`,
+                name: String(rows[0]?.[index] || `Coluna ${excelColumnLabel(index)}`).trim().slice(0, 80) || `Coluna ${excelColumnLabel(index)}`
+            }));
+            const dataRows = rows.slice(1, 501);
+            const totalRows = Math.max(1, dataRows.length);
+            const rowIds = Array.from({ length: totalRows }, (_, index) => `r_${stamp}_${index}`);
+            const cells = Object.fromEntries(rowIds.map((rowId, rowIndex) => [rowId,
+                Object.fromEntries(columns.map((column, columnIndex) => [column.id, String(dataRows[rowIndex]?.[columnIndex] || '')]))
+            ]));
+            state.teamSpreadsheet = { title: sheetName || 'Planilha importada', columns, rowIds, cells, updatedAt: '' };
+            window.pendingTeamSheetWorkbook = null;
+            closeModalDirect();
+            renderTeamSheet();
+            saveTeamSpreadsheetFull(`Guia “${sheetName}” importada.`);
+        }
+
+        window.handleTeamSheetImport = async function(event) {
+            const input = event.target;
+            const file = input.files?.[0];
+            input.value = '';
+            if (!file) return;
+            const XLSXLib = window.XLSX;
+            if (!XLSXLib) { alert('A leitura de Excel não está disponível no momento. Tente novamente.'); return; }
+            try {
+                const workbook = XLSXLib.read(await file.arrayBuffer(), { type: 'array' });
+                if (!workbook.SheetNames.length) throw new Error('Arquivo sem guias');
+                if (workbook.SheetNames.length === 1) {
+                    applyTeamSheetImport(workbook, workbook.SheetNames[0]);
+                    return;
+                }
+                window.pendingTeamSheetWorkbook = workbook;
+                const overlay = document.getElementById('modalOverlay');
+                const content = document.getElementById('modalContent');
+                content.innerHTML = `<span class="eyebrow">IMPORTAR EXCEL</span><h3>Escolha a guia do arquivo</h3><p class="modal-intro">A primeira linha será usada como nome das colunas.</p><select id="teamSheetImportTab" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);">${workbook.SheetNames.map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join('')}</select><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Cancelar</button><button class="btn btn-primary" onclick="confirmTeamSheetImport()">Importar guia</button></div>`;
+                overlay.style.display = 'flex';
+            } catch (error) {
+                console.error('Erro ao importar planilha:', error);
+                alert('Não foi possível ler o arquivo. Verifique se é um Excel ou CSV válido.');
+            }
+        };
+
+        window.confirmTeamSheetImport = function() {
+            const workbook = window.pendingTeamSheetWorkbook;
+            const sheetName = document.getElementById('teamSheetImportTab')?.value;
+            if (workbook && sheetName) applyTeamSheetImport(workbook, sheetName);
+        };
+
+        window.exportTeamSheetExcel = function() {
+            const XLSXLib = window.XLSX;
+            if (!XLSXLib) { alert('A exportação para Excel não está disponível no momento.'); return; }
+            const sheet = ensureTeamSpreadsheet();
+            const data = [sheet.columns.map(column => column.name), ...sheet.rowIds.map(rowId => sheet.columns.map(column => sheet.cells[rowId]?.[column.id] || ''))];
+            const workbook = XLSXLib.utils.book_new();
+            const worksheet = XLSXLib.utils.aoa_to_sheet(data);
+            const safeName = (sheet.title || 'Planilha da Equipe').replace(/[\\/?*\[\]:]/g, ' ').slice(0, 31) || 'Planilha';
+            XLSXLib.utils.book_append_sheet(workbook, worksheet, safeName);
+            XLSXLib.writeFile(workbook, `${safeName.replace(/\s+/g, '_')}.xlsx`);
+            showToast('Planilha exportada para Excel.');
+        };
+
         // ==================== CADASTRO DE SERVIDORES ====================
         function renderServidores() {
             const list = document.getElementById('staffList');
@@ -5738,7 +6129,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Visão Operacional integrada · Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v3.9 ativos.');
+            console.log('📁 Visão Operacional integrada · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v4.0 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
