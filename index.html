@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.6</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v3.6.1</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -2046,7 +2046,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.6 · 2026<br>
+            UFES · v3.6.1 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -3247,7 +3247,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v3.6 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v3.6.1 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3594,9 +3594,28 @@
         }
 
         function valueByKey(row, tests) {
-            for (const [key, value] of Object.entries(row || {})) {
-                const k = normalizeImportKey(key);
-                if (tests.some(test => typeof test === 'string' ? k === test || k.includes(test) : test.test(k))) return String(value ?? '').trim();
+            const entries = Object.entries(row || {}).map(([key, value]) => ({
+                key: normalizeImportKey(key),
+                value
+            }));
+            for (const test of tests) {
+                if (typeof test !== 'string') continue;
+                const expected = normalizeImportKey(test);
+                const exact = entries.find(entry => entry.key === expected);
+                if (exact) return String(exact.value ?? '').trim();
+            }
+            for (const test of tests) {
+                if (typeof test === 'string') {
+                    const expected = normalizeImportKey(test);
+                    const partial = entries.find(entry => entry.key.includes(expected));
+                    if (partial) return String(partial.value ?? '').trim();
+                } else {
+                    const match = entries.find(entry => {
+                        test.lastIndex = 0;
+                        return test.test(entry.key);
+                    });
+                    if (match) return String(match.value ?? '').trim();
+                }
             }
             return '';
         }
@@ -3656,7 +3675,10 @@
                     });
                 }
                 const parsed=parseEsocialImportRows(rows);
-                if (!parsed.length) throw new Error('Nenhum evento S-1210 rejeitado ou retido foi identificado na planilha.');
+                if (!parsed.length) {
+                    const headers = rows[0] ? Object.keys(rows[0]).filter(key => key !== '__sheetName').join(', ') : 'nenhuma coluna identificada';
+                    throw new Error('Nenhum evento S-1210 rejeitado ou retido foi identificado na planilha. Colunas encontradas: ' + headers + '.');
+                }
                 window.pendingEsocialImport={parsed, filename:file.name};
                 const rej=parsed.filter(x=>x.type==='rejeicao').length, ret=parsed.filter(x=>x.type==='retido').length;
                 const months=[...new Set(parsed.map(x=>x.competencia))].sort().reverse();
@@ -5595,7 +5617,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Módulo Controle Lepisma ativo · Central eSocial S-1210 v3.6 ativa · Presença online v3.6.');
+            console.log('📁 Módulo Controle Lepisma ativo · Central eSocial S-1210 v3.6.1 ativa · Presença online v3.6.1.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
