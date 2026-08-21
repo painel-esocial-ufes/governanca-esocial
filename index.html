@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.4</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v3.6</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -321,6 +321,59 @@
             color: var(--danger);
             border-color: var(--danger-light);
         }
+        .pill-online {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid var(--success-light);
+            font-size: 0.68rem;
+            cursor: pointer;
+            min-width: 88px;
+            justify-content: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .pill-online:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--success);
+        }
+        .pill-online.loading {
+            background: var(--surface2);
+            color: var(--text3);
+            border-color: var(--border);
+            cursor: default;
+        }
+        .pill-online.unavailable {
+            background: var(--surface2);
+            color: var(--text3);
+            border-color: var(--border);
+        }
+        .online-users-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .online-user-row {
+            display: grid;
+            grid-template-columns: 10px minmax(120px, 1fr) auto;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface2);
+        }
+        .online-user-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 3px var(--success-bg);
+        }
+        .online-user-row strong,
+        .online-user-row small { display: block; }
+        .online-user-row small { color: var(--text3); font-size: 10px; margin-top: 2px; }
+        .online-user-ago { color: var(--text3); font-size: 10px; white-space: nowrap; }
         @keyframes pulse-warn {
             0%,
             100% {
@@ -1895,7 +1948,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v3.4 ========== */
+        /* ========== CENTRAL eSOCIAL / v3.6 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -1933,8 +1986,32 @@
         .import-preview-list { max-height:220px; overflow:auto; margin-top:10px; border:1px solid var(--border); border-radius:7px; }
         .import-preview-item { display:grid; grid-template-columns:70px 120px 1fr 90px; gap:8px; padding:7px 9px; border-bottom:1px solid var(--border-light); font-size:10px; }
         .import-preview-item:last-child { border-bottom:0; }
+        .central-import-note { display:flex; align-items:flex-start; gap:9px; margin-bottom:14px; padding:11px 13px; border:1px solid var(--info-light); border-radius:8px; background:var(--info-bg); color:var(--text2); font-size:10px; line-height:1.45; }
+        .central-import-note strong { color:var(--text); }
+        .monthly-board { margin-top:14px; border:1px solid var(--border); border-radius:10px; background:var(--surface); overflow:hidden; box-shadow:var(--shadow-sm); }
+        .monthly-board:first-child { margin-top:0; }
+        .monthly-board-header { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:13px 15px; border-bottom:1px solid var(--border); background:var(--surface2); }
+        .monthly-board-title { display:flex; align-items:center; gap:9px; }
+        .monthly-board-title strong { font-size:14px; }
+        .monthly-board-title span { color:var(--text3); font-size:10px; }
+        .monthly-board .table-wrap { margin:0; max-height:none; }
+        .monthly-board table { min-width:1120px; }
+        .monthly-board th:nth-child(1) { width:245px; }
+        .monthly-board th:nth-child(2) { width:135px; }
+        .monthly-board th:nth-child(3) { width:225px; }
+        .monthly-board th:nth-child(4) { width:145px; }
+        .monthly-board th:nth-child(5) { width:220px; }
+        .event-id { display:block; font-family:var(--font-mono); font-size:9px; line-height:1.35; overflow-wrap:anywhere; color:var(--text); }
+        .event-origin { display:inline-flex; margin-top:5px; padding:2px 6px; border-radius:4px; font-size:8px; font-weight:800; text-transform:uppercase; }
+        .event-origin.rejeicao { background:#fff0f0; color:#b42318; }
+        .event-origin.retido { background:#fff7e6; color:#9a5a00; }
+        .server-data { display:block; line-height:1.35; color:var(--text); }
+        .situation-stack { display:grid; gap:6px; min-width:205px; }
+        .situation-stack input { width:100%; }
+        .central-observation { min-width:270px; min-height:52px; resize:vertical; }
+        .central-empty { padding:28px; text-align:center; color:var(--text3); border:1px dashed var(--border); border-radius:9px; background:var(--surface2); }
         @media (max-width:1200px) { .central-kpis { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
-        @media (max-width:700px) { .central-kpis,.daily-work-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } }
 
     </style>
 </head>
@@ -1967,12 +2044,9 @@
             <div class="nav-item" data-page="historico"><span class="nav-icon">◫</span> Histórico</div>
             <div class="nav-item" data-page="acoes"><span class="nav-icon">▲</span> Ações Urgentes</div>
 
-            <div class="nav-section">Administração</div>
-            <div class="nav-item" data-page="gerador"><span class="nav-icon">＋</span> Gerar Cronograma</div>
-            <div class="nav-item" data-page="importar"><span class="nav-icon">⇩</span> Importar Cronograma</div>
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.4 · 2026<br>
+            UFES · v3.6 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -1990,6 +2064,7 @@
             </div>
             <div class="info-pills">
                 <span class="pill pill-sync" id="syncIndicator" title="Status de sincronização">☁️ Conectado</span>
+                <span class="pill pill-online loading" id="onlineIndicator" title="Contando acessos ativos">👥 … online</span>
                 <div class="comp-selector">
                     📆 <select id="competenciaSelect" onchange="changeCompetencia(this.value)"></select>
                 </div>
@@ -2096,32 +2171,28 @@
                     <div>
                         <span class="eyebrow">TRATAMENTO MENSAL</span>
                         <h2>Central eSocial</h2>
-                        <p>Visão unificada de eventos rejeitados e retidos da competência.</p>
+                        <p>Importação e distribuição mensal dos eventos S-1210 rejeitados ou retidos.</p>
                     </div>
                     <div class="page-heading-actions">
                         <input type="file" id="esocialImportInput" accept=".xlsx,.xls,.csv" hidden onchange="handleEsocialImport(event)">
-                        <button class="btn btn-primary" onclick="document.getElementById('esocialImportInput').click()">Importar Excel/CSV</button>
+                        <button class="btn btn-primary" onclick="document.getElementById('esocialImportInput').click()">Importar planilha S-1210</button>
                         <button class="btn btn-outline" onclick="navigatePublic('fechamento')">Fechamento</button>
                     </div>
                 </div>
                 <div class="central-kpis" id="centralKpis"></div>
                 <div class="card">
+                    <div class="central-import-note"><span>ℹ️</span><div><strong>Leitura automática do relatório do eSocial.</strong> O sistema considera somente eventos S-1210 rejeitados ou retidos, separa os quadros pelo mês da Data/Hora de Criação e distribui os novos registros de forma aleatória e equilibrada entre Fabianne, Rafael e Roni.</div></div>
                     <div class="central-toolbar">
                         <div class="central-filters">
-                            <input type="text" class="search-box" id="centralSearch" placeholder="Buscar CPF, nome, evento ou erro" oninput="renderCentralEsocial()" style="width:260px;">
-                            <select id="centralType" onchange="renderCentralEsocial()"><option value="">Rejeitados + Retidos</option><option value="rejeicao">Rejeitados</option><option value="retido">Retidos</option></select>
-                            <select id="centralStatus" onchange="renderCentralEsocial()"><option value="">Todos os status</option><option value="pendente">Pendentes</option><option value="andamento">Em tratamento</option><option value="resolvido">Resolvidos</option></select>
+                            <input type="text" class="search-box" id="centralSearch" placeholder="Buscar ID, CPF, nome ou observação" oninput="renderCentralEsocial()" style="width:260px;">
+                            <select id="centralMonth" onchange="renderCentralEsocial()"><option value="">Todos os meses</option></select>
+                            <select id="centralSituation" onchange="renderCentralEsocial()"><option value="">Todas as situações</option><option>Reenviado</option><option>Aceito</option><option>Dispensado Automaticamente</option><option>Rejeitado</option><option>Outro</option><option value="__SEM__">Sem situação</option></select>
                             <select id="centralResp" onchange="renderCentralEsocial()"><option value="">Todos responsáveis</option><option value="__SEM__">Sem responsável</option><option>Roni</option><option>Rafael</option><option>Fabianne</option></select>
                             <button class="btn btn-sm btn-outline" onclick="resetCentralFilters()">Limpar filtros</button>
                         </div>
-                        <span class="competence-lock" id="centralCompetenceStatus"></span>
+                        <span class="competence-lock" id="centralCompetenceStatus">Quadros separados por mês</span>
                     </div>
-                    <div class="table-wrap" style="margin-top:12px;max-height:63vh;overflow:auto;">
-                        <table id="centralTable" style="min-width:1180px;">
-                            <thead><tr><th>Tipo</th><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód. erro</th><th>Status</th><th>Responsável</th><th>Observação / solução</th><th>Ação</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
+                    <div id="centralMonthlyBoards" style="margin-top:12px;"></div>
                 </div>
             </div>
 
@@ -2275,36 +2346,6 @@
                 </div>
             </div>
 
-            <!-- PAGE: GERADOR -->
-            <div class="page" id="page-gerador">
-                <div class="card">
-                    <div class="card-header"><h3>🔧 Gerador de Cronograma Operacional</h3></div>
-                    <div style="display:grid;gap:10px;">
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                            <label>Competência:</label>
-                            <input type="month" id="geradorCompetencia" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);">
-                            <button class="btn btn-primary" onclick="gerarCronograma()">🚀 Gerar Timeline</button>
-                        </div>
-                        <label>Cole os períodos (um por linha):</label>
-                        <textarea id="geradorTexto" placeholder="01/07 a 04/07 | Transmissão S-1210 | eSocial Exclusivo | Crítico&#10;05/07 | Fechamento S-1299 | eSocial Crítico | Crítico&#10;..."></textarea>
-                        <small style="color:var(--text3);">Formato: data(s) | título | foco operacional | criticidade (Crítico/Alto/Médio/Baixo)</small>
-                    </div>
-                </div>
-                <div class="card" id="geradorPreview" style="display:none;">
-                    <div class="card-header"><h3>👁️ Prévia do Cronograma</h3></div>
-                    <div id="geradorPreviewContent"></div>
-                </div>
-            </div>
-
-            <!-- PAGE: IMPORTAR -->
-            <div class="page" id="page-importar">
-                <div class="card">
-                    <div class="card-header"><h3>📥 Importar Cronograma</h3></div>
-                    <textarea id="importarTexto" placeholder="Cole aqui o texto do cronograma...&#10;&#10;Exemplo:&#10;01/07 a 04/07 | Transmissão S-1210 | eSocial Exclusivo | Crítico&#10;05/07 | Fechamento S-1299 | eSocial Crítico | Crítico"></textarea>
-                    <button class="btn btn-primary" style="margin-top:8px;" onclick="importarCronograma()">📥 Importar e Aplicar</button>
-                </div>
-            </div>
-
             <!-- ========== NOVA PÁGINA: CONTROLE LEPISMA ========== -->
             <div class="page" id="page-lepisma">
                 <div class="lepisma-loading" id="lepismaLoading">
@@ -2454,8 +2495,10 @@
         import {
             getFirestore,
             doc,
+            collection,
             setDoc,
             getDoc,
+            deleteDoc,
             onSnapshot
         } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
@@ -2472,6 +2515,30 @@
         const app = initializeApp(firebaseConfig);
         const firestore = getFirestore(app);
         const STATE_DOC = doc(firestore, "governanca", "estadoPrincipal");
+
+        // ==================== PRESENÇA ONLINE ====================
+        const PRESENCE_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "presencaOnline");
+        const PRESENCE_HEARTBEAT_MS = 30000;
+        const PRESENCE_TTL_MS = 90000;
+        const PRESENCE_CLEANUP_MS = 6 * 60 * 60 * 1000;
+
+        function getPresenceSessionId() {
+            let id = sessionStorage.getItem('governancaPresenceSessionId');
+            if (!id) {
+                id = (window.crypto?.randomUUID?.() || ('sess_' + Date.now() + '_' + Math.random().toString(36).slice(2)));
+                sessionStorage.setItem('governancaPresenceSessionId', id);
+                sessionStorage.setItem('governancaPresenceStartedAt', String(Date.now()));
+            }
+            return id;
+        }
+
+        const presenceSessionId = getPresenceSessionId();
+        const PRESENCE_DOC = doc(PRESENCE_COLLECTION, presenceSessionId);
+        let unsubscribePresence = null;
+        let presenceHeartbeatTimer = null;
+        let presenceUiTimer = null;
+        let presenceCleanupDone = false;
+        let onlinePresenceSessions = [];
 
         // ==================== SYNC FLAGS ====================
         let isSyncingFromFirebase = false;
@@ -2809,7 +2876,7 @@
             `).join('');
         }
 
-        function ensureCompetencia(key) {
+        function ensureCompetenciaData(key) {
             if (!allCompetencias[key]) {
                 allCompetencias[key] = {
                     timeline: JSON.parse(JSON.stringify(DEFAULT_TIMELINE)),
@@ -2820,6 +2887,11 @@
                     fechamentoStatus: JSON.parse(JSON.stringify(DEFAULT_STATE.fechamentoStatus)),
                 };
             }
+            return allCompetencias[key];
+        }
+
+        function ensureCompetencia(key) {
+            ensureCompetenciaData(key);
             state.currentCompetencia = key;
         }
 
@@ -2990,6 +3062,135 @@
             }
         }
 
+        function getPageLabel(pageName) {
+            const labels = {
+                dashboard: 'Visão Operacional', calendario: 'Calendário', timeline: 'Linha do Tempo',
+                equipe: 'Equipe', central: 'Central eSocial', rejeicoes: 'Rejeições', retidos: 'Retidos',
+                fechamento: 'Fechamento', lepisma: 'Lepisma', gerencial: 'Modo Gerencial',
+                historico: 'Histórico', acoes: 'Ações Urgentes'
+            };
+            return labels[pageName] || pageName || 'Plataforma';
+        }
+
+        function getActivePresenceSessions() {
+            const now = Date.now();
+            return onlinePresenceSessions
+                .filter(item => Number(item.lastSeen || 0) >= now - PRESENCE_TTL_MS)
+                .sort((a, b) => Number(b.lastSeen || 0) - Number(a.lastSeen || 0));
+        }
+
+        function formatPresenceAgo(lastSeen) {
+            const seconds = Math.max(0, Math.floor((Date.now() - Number(lastSeen || Date.now())) / 1000));
+            if (seconds < 5) return 'agora';
+            if (seconds < 60) return `há ${seconds}s`;
+            const minutes = Math.floor(seconds / 60);
+            return `há ${minutes} min`;
+        }
+
+        function renderOnlineIndicator() {
+            const indicator = document.getElementById('onlineIndicator');
+            if (!indicator || indicator.classList.contains('unavailable')) return;
+            const active = getActivePresenceSessions();
+            const count = active.length;
+            indicator.classList.remove('loading');
+            indicator.textContent = count === 1 ? '👤 1 online' : `👥 ${count} online`;
+            indicator.title = count
+                ? 'Clique para ver os acessos ativos agora'
+                : 'Nenhum acesso ativo identificado';
+        }
+
+        async function touchPresence() {
+            await setDoc(PRESENCE_DOC, {
+                sessionId: presenceSessionId,
+                lastSeen: Date.now(),
+                startedAt: Number(sessionStorage.getItem('governancaPresenceStartedAt') || Date.now()),
+                competencia: state.currentCompetencia || '',
+                page: currentActivePage || 'dashboard'
+            }, { merge: true });
+        }
+
+        async function cleanupOldPresenceDocs(snapshot) {
+            if (presenceCleanupDone) return;
+            presenceCleanupDone = true;
+            const cutoff = Date.now() - PRESENCE_CLEANUP_MS;
+            const stale = snapshot.docs
+                .filter(item => Number(item.data()?.lastSeen || 0) < cutoff)
+                .slice(0, 50);
+            if (!stale.length) return;
+            await Promise.allSettled(stale.map(item => deleteDoc(item.ref)));
+        }
+
+        function setupPresenceTracking() {
+            const indicator = document.getElementById('onlineIndicator');
+            if (indicator) {
+                indicator.classList.add('loading');
+                indicator.classList.remove('unavailable');
+                indicator.textContent = '👥 … online';
+                indicator.onclick = () => window.showOnlineUsers();
+            }
+
+            touchPresence().catch(error => {
+                console.warn('Presença online indisponível:', error);
+            });
+
+            if (unsubscribePresence) unsubscribePresence();
+            unsubscribePresence = onSnapshot(PRESENCE_COLLECTION, snapshot => {
+                onlinePresenceSessions = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                renderOnlineIndicator();
+                cleanupOldPresenceDocs(snapshot).catch(() => {});
+            }, error => {
+                console.warn('Não foi possível acompanhar presença online:', error);
+                if (indicator) {
+                    indicator.classList.remove('loading');
+                    indicator.classList.add('unavailable');
+                    indicator.textContent = '👥 — online';
+                    indicator.title = 'Contador online indisponível';
+                }
+            });
+
+            clearInterval(presenceHeartbeatTimer);
+            presenceHeartbeatTimer = setInterval(() => touchPresence().catch(() => {}), PRESENCE_HEARTBEAT_MS);
+
+            clearInterval(presenceUiTimer);
+            presenceUiTimer = setInterval(renderOnlineIndicator, 10000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') touchPresence().catch(() => {});
+            });
+
+            window.addEventListener('pagehide', () => {
+                deleteDoc(PRESENCE_DOC).catch(() => {});
+            });
+        }
+
+        window.showOnlineUsers = function() {
+            const indicator = document.getElementById('onlineIndicator');
+            if (indicator?.classList.contains('unavailable')) {
+                showToast('Contador de acessos online indisponível.');
+                return;
+            }
+            const active = getActivePresenceSessions();
+            const overlay = document.getElementById('modalOverlay');
+            const content = document.getElementById('modalContent');
+            if (!overlay || !content) return;
+            const rows = active.map((item, index) => {
+                const isCurrent = item.id === presenceSessionId;
+                const label = isCurrent ? 'Este navegador' : `Acesso ${index + 1}`;
+                const comp = item.competencia ? formatCompKey(item.competencia) : 'Competência não informada';
+                return `<div class="online-user-row">
+                    <span class="online-user-dot"></span>
+                    <div><strong>${label}</strong><small>${escHtml(getPageLabel(item.page))} · ${escHtml(comp)}</small></div>
+                    <span class="online-user-ago">${formatPresenceAgo(item.lastSeen)}</span>
+                </div>`;
+            }).join('');
+            content.innerHTML = `
+                <span class="eyebrow">PRESENÇA EM TEMPO REAL</span>
+                <h3>${active.length === 1 ? '1 acesso online' : `${active.length} acessos online`}</h3>
+                <p class="modal-intro">Sem login individual, cada navegador ou aba ativa é contabilizado como um acesso.</p>
+                <div class="online-users-list">${rows || '<div class="empty-state">Nenhum acesso ativo identificado.</div>'}</div>`;
+            overlay.style.display = 'flex';
+        };
+
         function setupRealtimeListener() {
             if (unsubscribeFirestore) {
                 unsubscribeFirestore();
@@ -3046,7 +3247,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v3.4 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v3.6 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3102,6 +3303,7 @@
             const [selectedYear, selectedMonth] = key.split('-').map(Number);
             state.calYear = selectedYear;
             state.calMonth = selectedMonth - 1;
+            touchPresence().catch(() => {});
             saveAllState();
             renderAll();
             populateCompetenciaSelect();
@@ -3199,81 +3401,175 @@
             return candidates.length ? candidates[candidates.length - 1] : '';
         }
 
+        const CENTRAL_SITUATIONS = ['Reenviado', 'Aceito', 'Dispensado Automaticamente', 'Rejeitado', 'Outro'];
+
+        function isS1210Case(item) {
+            return String(item?.evento || '').toUpperCase().includes('S-1210') || Boolean(item?.idEvento);
+        }
+
+        function getCentralCasesAllMonths() {
+            const currentData = ensureCompetenciaData(state.currentCompetencia);
+            currentData.rejeicoes = state.rejeicoes;
+            currentData.retidos = state.retidos;
+            return Object.keys(allCompetencias).sort().reverse().flatMap(competencia => {
+                const comp = allCompetencias[competencia] || {};
+                return [
+                    ...(comp.rejeicoes || []).map((item, idx) => ({ ...item, _type: 'rejeicao', _idx: idx, _competencia: competencia, _arrName: 'rejeicoes' })),
+                    ...(comp.retidos || []).map((item, idx) => ({ ...item, _type: 'retido', _idx: idx, _competencia: competencia, _arrName: 'retidos' }))
+                ].filter(isS1210Case);
+            });
+        }
+
+        function getCentralSituation(item) {
+            return CENTRAL_SITUATIONS.includes(item?.situacao) ? item.situacao : '';
+        }
+
+        function situationToLegacyStatus(situacao) {
+            if (situacao === 'Aceito' || situacao === 'Dispensado Automaticamente') return 'resolvido';
+            if (situacao) return 'andamento';
+            return 'pendente';
+        }
+
+        function formatMonthBoardTitle(key) {
+            const [year, month] = String(key || '').split('-').map(Number);
+            if (!year || !month) return key || 'Mês não identificado';
+            const label = new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            return label.charAt(0).toUpperCase() + label.slice(1);
+        }
+
+        function populateCentralMonthFilter(all) {
+            const select = document.getElementById('centralMonth');
+            if (!select) return;
+            const selected = select.value;
+            const months = [...new Set(all.map(item => item._competencia))].sort().reverse();
+            select.innerHTML = '<option value="">Todos os meses</option>' + months.map(key =>
+                `<option value="${key}">${formatMonthBoardTitle(key)}</option>`
+            ).join('');
+            if (months.includes(selected)) select.value = selected;
+        }
+
         function renderCentralEsocial() {
-            const tbody = document.querySelector('#centralTable tbody');
+            const boards = document.getElementById('centralMonthlyBoards');
             const kpis = document.getElementById('centralKpis');
-            if (!tbody || !kpis) return;
-            const all = getCentralCases();
-            const pending = all.filter(x => x.status === 'pendente').length;
-            const progress = all.filter(x => x.status === 'andamento').length;
-            const solved = all.filter(x => x.status === 'resolvido').length;
-            const unassigned = all.filter(x => !String(x.responsavel || '').trim()).length;
-            const rejected = all.filter(x => x._type === 'rejeicao').length;
-            const retained = all.filter(x => x._type === 'retido').length;
+            if (!boards || !kpis) return;
+            const all = getCentralCasesAllMonths();
+            populateCentralMonthFilter(all);
+
+            const withoutSituation = all.filter(x => !getCentralSituation(x)).length;
+            const resent = all.filter(x => getCentralSituation(x) === 'Reenviado').length;
+            const accepted = all.filter(x => getCentralSituation(x) === 'Aceito').length;
+            const dismissed = all.filter(x => getCentralSituation(x) === 'Dispensado Automaticamente').length;
+            const rejected = all.filter(x => getCentralSituation(x) === 'Rejeitado').length;
             kpis.innerHTML = `
-                <div class="central-kpi central-kpi-danger"><span>Pendentes</span><strong>${pending}</strong><small>Exigem tratamento</small></div>
-                <div class="central-kpi central-kpi-warning"><span>Em tratamento</span><strong>${progress}</strong><small>Com atuação iniciada</small></div>
-                <div class="central-kpi central-kpi-success"><span>Resolvidos</span><strong>${solved}</strong><small>Concluídos na competência</small></div>
-                <div class="central-kpi central-kpi-info"><span>Rejeitados</span><strong>${rejected}</strong><small>Eventos rejeitados</small></div>
-                <div class="central-kpi"><span>Retidos</span><strong>${retained}</strong><small>Eventos retidos</small></div>
-                <div class="central-kpi ${unassigned ? 'central-kpi-warning' : 'central-kpi-success'}"><span>Sem responsável</span><strong>${unassigned}</strong><small>Precisam de distribuição</small></div>`;
+                <div class="central-kpi central-kpi-info"><span>Total S-1210</span><strong>${all.length}</strong><small>Todos os meses</small></div>
+                <div class="central-kpi ${withoutSituation ? 'central-kpi-warning' : 'central-kpi-success'}"><span>Sem situação</span><strong>${withoutSituation}</strong><small>Aguardando atualização</small></div>
+                <div class="central-kpi"><span>Reenviados</span><strong>${resent}</strong><small>Enviados novamente</small></div>
+                <div class="central-kpi central-kpi-success"><span>Aceitos</span><strong>${accepted}</strong><small>Processados com sucesso</small></div>
+                <div class="central-kpi central-kpi-success"><span>Dispensados</span><strong>${dismissed}</strong><small>Dispensa automática</small></div>
+                <div class="central-kpi central-kpi-danger"><span>Rejeitados</span><strong>${rejected}</strong><small>Ainda exigem análise</small></div>`;
 
             const q = (document.getElementById('centralSearch')?.value || '').trim().toLowerCase();
-            const type = document.getElementById('centralType')?.value || '';
-            const status = document.getElementById('centralStatus')?.value || '';
+            const month = document.getElementById('centralMonth')?.value || '';
+            const situation = document.getElementById('centralSituation')?.value || '';
             const resp = document.getElementById('centralResp')?.value || '';
-            let rows = all.filter(item => {
-                if (type && item._type !== type) return false;
-                if (status && item.status !== status) return false;
+            const filtered = all.filter(item => {
+                const itemSituation = getCentralSituation(item);
+                if (month && item._competencia !== month) return false;
+                if (situation === '__SEM__' && itemSituation) return false;
+                if (situation && situation !== '__SEM__' && itemSituation !== situation) return false;
                 if (resp === '__SEM__' && String(item.responsavel || '').trim()) return false;
                 if (resp && resp !== '__SEM__' && item.responsavel !== resp) return false;
                 if (q) {
-                    const hay = [item.cpf,item.nome,item.evento,item.codErro,item.obs,item.responsavel].join(' ').toLowerCase();
+                    const hay = [item.idEvento, item.cpf, item.nome, item.responsavel, itemSituation, item.situacaoOutro, item.obs].join(' ').toLowerCase();
                     if (!hay.includes(q)) return false;
                 }
                 return true;
             });
+
+            const grouped = filtered.reduce((acc, item) => {
+                (acc[item._competencia] ||= []).push(item);
+                return acc;
+            }, {});
+            const monthKeys = Object.keys(grouped).sort().reverse();
             const lock = document.getElementById('centralCompetenceStatus');
             if (lock) {
-                const closed = isCompetenciaClosed();
-                lock.className = 'competence-lock' + (closed ? ' closed' : '');
-                lock.textContent = closed ? '🔒 Competência encerrada' : '🔓 Competência aberta';
+                lock.className = 'competence-lock';
+                lock.textContent = monthKeys.length === 1 ? '1 quadro mensal' : `${monthKeys.length} quadros mensais`;
             }
-            tbody.innerHTML = rows.map(item => {
-                const known = getKnownSolution(item);
-                const arrName = item._type === 'rejeicao' ? 'rejeicoes' : 'retidos';
-                return `<tr>
-                    <td><span class="case-type case-${item._type}">${item._type === 'rejeicao' ? 'Rejeitado' : 'Retido'}</span></td>
-                    <td><input value="${escHtml(item.cpf||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'cpf',this.value)"></td>
-                    <td><input value="${escHtml(item.nome||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'nome',this.value)"></td>
-                    <td><input value="${escHtml(item.evento||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'evento',this.value)"></td>
-                    <td><input value="${escHtml(item.codErro||'')}" onchange="updateCentralCase('${arrName}',${item._idx},'codErro',this.value)"></td>
-                    <td><select onchange="updateCentralCase('${arrName}',${item._idx},'status',this.value)"><option value="pendente" ${item.status==='pendente'?'selected':''}>🔴 Pendente</option><option value="andamento" ${item.status==='andamento'?'selected':''}>🟡 Em tratamento</option><option value="resolvido" ${item.status==='resolvido'?'selected':''}>🟢 Resolvido</option></select></td>
-                    <td><select onchange="updateCentralCase('${arrName}',${item._idx},'responsavel',this.value)"><option value="" ${!item.responsavel?'selected':''}>Não atribuído</option><option ${item.responsavel==='Roni'?'selected':''}>Roni</option><option ${item.responsavel==='Rafael'?'selected':''}>Rafael</option><option ${item.responsavel==='Fabianne'?'selected':''}>Fabianne</option></select></td>
-                    <td class="case-solution"><textarea onchange="updateCentralCase('${arrName}',${item._idx},'obs',this.value)" placeholder="Providência adotada / solução">${escHtml(item.obs||'')}</textarea>${known && known !== item.obs ? `<span class="known-solution" title="Solução já registrada para este evento e código de erro">💡 Solução anterior: ${escHtml(known)}</span>` : ''}</td>
-                    <td><button class="btn btn-sm btn-danger" onclick="deleteCentralCase('${arrName}',${item._idx})">🗑️</button></td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:22px;">Nenhum evento encontrado com os filtros atuais.</td></tr>';
+
+            boards.innerHTML = monthKeys.map(compKey => {
+                const rows = grouped[compKey].sort((a, b) =>
+                    String(a.dataCriacao || '').localeCompare(String(b.dataCriacao || '')) ||
+                    String(a.idEvento || '').localeCompare(String(b.idEvento || ''))
+                );
+                const closed = isCompetenciaClosed(compKey);
+                const body = rows.map(item => {
+                    const currentSituation = getCentralSituation(item);
+                    const situationOptions = '<option value="">Selecionar...</option>' + CENTRAL_SITUATIONS.map(option =>
+                        `<option value="${option}" ${currentSituation === option ? 'selected' : ''}>${option}</option>`
+                    ).join('');
+                    const otherInput = currentSituation === 'Outro'
+                        ? `<input value="${escHtml(item.situacaoOutro || '')}" placeholder="Descreva a situação" onchange="updateCentralOther('${compKey}','${item._arrName}',${item._idx},this.value)">`
+                        : '';
+                    return `<tr>
+                        <td><span class="event-id">${escHtml(item.idEvento || 'ID não informado')}</span><span class="event-origin ${item._type}">${item._type === 'rejeicao' ? 'Rejeitado' : 'Retido'}</span></td>
+                        <td><span class="server-data">${escHtml(item.cpf || '—')}</span></td>
+                        <td><span class="server-data"><strong>${escHtml(item.nome || '—')}</strong></span></td>
+                        <td><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'responsavel',this.value)"><option value="" ${!item.responsavel ? 'selected' : ''}>Não atribuído</option><option ${item.responsavel === 'Fabianne' ? 'selected' : ''}>Fabianne</option><option ${item.responsavel === 'Rafael' ? 'selected' : ''}>Rafael</option><option ${item.responsavel === 'Roni' ? 'selected' : ''}>Roni</option></select></td>
+                        <td><div class="situation-stack"><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'situacao',this.value)">${situationOptions}</select>${otherInput}</div></td>
+                        <td><textarea class="central-observation" onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'obs',this.value)" placeholder="Escreva uma observação sobre o evento">${escHtml(item.obs || '')}</textarea></td>
+                    </tr>`;
+                }).join('');
+                return `<section class="monthly-board">
+                    <div class="monthly-board-header">
+                        <div class="monthly-board-title"><strong>${formatMonthBoardTitle(compKey)}</strong><span>${rows.length} evento${rows.length === 1 ? '' : 's'} S-1210</span></div>
+                        <span class="competence-lock${closed ? ' closed' : ''}">${closed ? '🔒 Mês encerrado' : '🔓 Mês aberto'}</span>
+                    </div>
+                    <div class="table-wrap"><table><thead><tr><th>ID Evento</th><th>CPF Servidor</th><th>Nome do Servidor</th><th>Servidor Responsável</th><th>Situação</th><th>Observação</th></tr></thead><tbody>${body}</tbody></table></div>
+                </section>`;
+            }).join('') || '<div class="central-empty">Nenhum evento S-1210 encontrado com os filtros atuais. Importe a planilha gerada pelo eSocial para iniciar o tratamento.</div>';
         }
         window.renderCentralEsocial = renderCentralEsocial;
 
         window.resetCentralFilters = function() {
-            ['centralSearch','centralType','centralStatus','centralResp'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+            ['centralSearch','centralMonth','centralSituation','centralResp'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
             renderCentralEsocial();
         };
 
-        window.updateCentralCase = function(arrName, idx, field, value) {
-            if (!ensureCompetenciaWritable()) { renderCentralEsocial(); return; }
-            const arr = state[arrName];
+        function getCentralCaseArray(compKey, arrName) {
+            const comp = ensureCompetenciaData(compKey);
+            if (compKey === state.currentCompetencia) {
+                comp.rejeicoes = state.rejeicoes;
+                comp.retidos = state.retidos;
+                return state[arrName];
+            }
+            return comp[arrName] || (comp[arrName] = []);
+        }
+
+        window.updateCentralCase = function(compKey, arrName, idx, field, value) {
+            if (!ensureCompetenciaWritable(compKey)) { renderCentralEsocial(); return; }
+            const arr = getCentralCaseArray(compKey, arrName);
             if (!arr?.[idx]) return;
             arr[idx][field] = value;
+            if (field === 'situacao') {
+                if (value !== 'Outro') arr[idx].situacaoOutro = '';
+                arr[idx].status = situationToLegacyStatus(value);
+            }
             scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork();
         };
 
-        window.deleteCentralCase = function(arrName, idx) {
-            if (!ensureCompetenciaWritable()) return;
+        window.updateCentralOther = function(compKey, arrName, idx, value) {
+            if (!ensureCompetenciaWritable(compKey)) { renderCentralEsocial(); return; }
+            const arr = getCentralCaseArray(compKey, arrName);
+            if (!arr?.[idx]) return;
+            arr[idx].situacaoOutro = value;
+            scheduleSave();
+        };
+
+        window.deleteCentralCase = function(compKey, arrName, idx) {
+            if (!ensureCompetenciaWritable(compKey)) return;
             if (!confirm('Remover este evento da competência?')) return;
-            state[arrName]?.splice(idx, 1);
+            getCentralCaseArray(compKey, arrName)?.splice(idx, 1);
             scheduleSave(); renderCentralEsocial(); renderRejeicoes(); renderRetidos(); updateKPIs(); renderDashboardDailyWork();
         };
 
@@ -3309,25 +3605,36 @@
             const parsed = [];
             rows.forEach(row => {
                 const rowText = Object.values(row || {}).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-                const sheetText = String(row.__sheetName || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+                const evento = valueByKey(row,['tipo','tipo evento','evento']);
+                if (!String(evento).toUpperCase().includes('S-1210')) return;
+                const sourceSituation = valueByKey(row,['situacao','status']);
+                const sourceText = String(sourceSituation || rowText).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
                 let type = '';
-                if (/rejeitad|rejeicao|rejeitado/.test(rowText) || /rejeitad|rejeicao/.test(sheetText)) type = 'rejeicao';
-                else if (/retid|retencao|retido/.test(rowText) || /retid|retencao/.test(sheetText)) type = 'retido';
+                if (/rejeitad|rejeicao|rejeitado/.test(sourceText)) type = 'rejeicao';
+                else if (/retid|retencao|retido/.test(sourceText)) type = 'retido';
                 if (!type) return;
-                const cpf = valueByKey(row,['cpf']);
-                const nome = valueByKey(row,['nome','trabalhador','servidor']);
-                const evento = valueByKey(row,['evento','tipo evento']);
-                const codErro = valueByKey(row,['codigo erro','cod erro','erro codigo','codigo','cod']);
-                const mensagem = valueByKey(row,['mensagem','descricao erro','descricao','motivo','erro']);
-                if (!cpf && !nome && !evento) return;
-                parsed.push({ type, cpf, nome, evento, codErro, mensagem });
+                const idEvento = valueByKey(row,['id evento','identificador evento','id do evento']);
+                const cpf = valueByKey(row,['cpf servidor','cpf']);
+                const nome = valueByKey(row,['nome servidor','nome','trabalhador','servidor']);
+                const dataCriacao = valueByKey(row,['data hora criacao','data criacao','criacao']);
+                const competencia = competenciaFromEventDate(dataCriacao) || state.currentCompetencia;
+                if (!idEvento && !cpf && !nome) return;
+                parsed.push({ type, idEvento, cpf, nome, evento: 'S-1210', dataCriacao, competencia, sourceSituation });
             });
             return parsed;
         }
 
+        function competenciaFromEventDate(value) {
+            const text = String(value || '').trim();
+            let match = text.match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);
+            if (match) return `${match[3]}-${String(Number(match[2])).padStart(2,'0')}`;
+            match = text.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (match) return `${match[1]}-${String(Number(match[2])).padStart(2,'0')}`;
+            return '';
+        }
+
         window.handleEsocialImport = async function(event) {
             const file = event.target.files?.[0]; event.target.value=''; if (!file) return;
-            if (!ensureCompetenciaWritable()) return;
             try {
                 let rows=[];
                 const XLSXLib = window.XLSX;
@@ -3337,44 +3644,119 @@
                     const text=await file.text();
                     const wb=XLSXLib.read(text,{type:'string'});
                     wb.SheetNames.forEach(sheetName => {
-                        const parsedRows=XLSXLib.utils.sheet_to_json(wb.Sheets[sheetName],{defval:''});
+                        const parsedRows=XLSXLib.utils.sheet_to_json(wb.Sheets[sheetName],{defval:'',raw:false,dateNF:'dd/mm/yyyy hh:mm:ss'});
                         parsedRows.forEach(row => rows.push({...row,__sheetName:sheetName}));
                     });
                 } else {
                     const data=await file.arrayBuffer();
                     const wb=XLSXLib.read(data,{type:'array'});
                     wb.SheetNames.forEach(sheetName => {
-                        const parsedRows=XLSXLib.utils.sheet_to_json(wb.Sheets[sheetName],{defval:''});
+                        const parsedRows=XLSXLib.utils.sheet_to_json(wb.Sheets[sheetName],{defval:'',raw:false,dateNF:'dd/mm/yyyy hh:mm:ss'});
                         parsedRows.forEach(row => rows.push({...row,__sheetName:sheetName}));
                     });
                 }
                 const parsed=parseEsocialImportRows(rows);
-                if (!parsed.length) throw new Error('Nenhuma linha identificada como rejeitada ou retida. A planilha precisa conter essas indicações em alguma coluna.');
+                if (!parsed.length) throw new Error('Nenhum evento S-1210 rejeitado ou retido foi identificado na planilha.');
                 window.pendingEsocialImport={parsed, filename:file.name};
                 const rej=parsed.filter(x=>x.type==='rejeicao').length, ret=parsed.filter(x=>x.type==='retido').length;
+                const months=[...new Set(parsed.map(x=>x.competencia))].sort().reverse();
                 const overlay=document.getElementById('modalOverlay'), content=document.getElementById('modalContent');
-                content.innerHTML=`<span class="eyebrow">IMPORTAÇÃO DA COMPETÊNCIA</span><h3>Conferir eventos do eSocial</h3><p class="modal-intro">Arquivo: <strong>${escHtml(file.name)}</strong></p><div class="report-preview-grid"><div><span>Total identificado</span><strong>${parsed.length}</strong></div><div><span>Rejeitados</span><strong>${rej}</strong></div><div><span>Retidos</span><strong>${ret}</strong></div><div><span>Competência</span><strong>${formatCompKey(state.currentCompetencia)}</strong></div></div><div class="import-preview-list">${parsed.slice(0,12).map(x=>`<div class="import-preview-item"><span>${x.type==='rejeicao'?'Rejeitado':'Retido'}</span><span>${escHtml(x.cpf||'Sem CPF')}</span><strong>${escHtml(x.nome||'Sem nome')}</strong><span>${escHtml(x.evento||'—')}</span></div>`).join('')}</div><p class="modal-intro" style="margin-top:9px;">Eventos já existentes serão atualizados sem apagar responsável, status ou solução já registrados.</p><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Cancelar</button><button class="btn btn-primary" onclick="confirmEsocialImport()">Confirmar importação</button></div>`;
+                content.innerHTML=`<span class="eyebrow">IMPORTAÇÃO S-1210</span><h3>Conferir eventos do eSocial</h3><p class="modal-intro">Arquivo: <strong>${escHtml(file.name)}</strong></p><div class="report-preview-grid"><div><span>Total identificado</span><strong>${parsed.length}</strong></div><div><span>Rejeitados</span><strong>${rej}</strong></div><div><span>Retidos</span><strong>${ret}</strong></div><div><span>Meses</span><strong>${months.length}</strong></div></div><div class="import-preview-list">${parsed.slice(0,12).map(x=>`<div class="import-preview-item"><span>${x.type==='rejeicao'?'Rejeitado':'Retido'}</span><span>${escHtml(x.cpf||'Sem CPF')}</span><strong>${escHtml(x.nome||'Sem nome')}</strong><span>${formatCompKey(x.competencia)}</span></div>`).join('')}</div><p class="modal-intro" style="margin-top:9px;">Os registros serão separados por mês. Novos eventos receberão responsável automaticamente; eventos já existentes manterão a situação e a observação registradas.</p><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Cancelar</button><button class="btn btn-primary" onclick="confirmEsocialImport()">Confirmar importação</button></div>`;
                 overlay.style.display='flex';
             } catch(err) { console.error(err); alert('Não foi possível importar o arquivo. '+err.message); }
         };
 
+        function getBalancedRandomAssignee(compKey, countsByMonth) {
+            if (!countsByMonth[compKey]) {
+                const data = ensureCompetenciaData(compKey);
+                countsByMonth[compKey] = { Fabianne: 0, Rafael: 0, Roni: 0 };
+                [...(data.rejeicoes || []), ...(data.retidos || [])].forEach(item => {
+                    if (Object.prototype.hasOwnProperty.call(countsByMonth[compKey], item.responsavel)) {
+                        countsByMonth[compKey][item.responsavel]++;
+                    }
+                });
+            }
+            const counts = countsByMonth[compKey];
+            const minimum = Math.min(...Object.values(counts));
+            const candidates = Object.keys(counts).filter(name => counts[name] === minimum);
+            const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+            counts[chosen]++;
+            return chosen;
+        }
+
         window.confirmEsocialImport = function() {
             const payload=window.pendingEsocialImport; if(!payload) return;
-            if (!ensureCompetenciaWritable()) return;
+            const lockedMonths=[...new Set(payload.parsed.map(x=>x.competencia))].filter(isCompetenciaClosed);
+            if(lockedMonths.length){
+                alert('Não foi possível importar porque estes meses estão encerrados: '+lockedMonths.map(formatCompKey).join(', ')+'. Reabra-os no Painel Gerencial antes de importar.');
+                return;
+            }
+            const currentData=ensureCompetenciaData(state.currentCompetencia);
+            currentData.rejeicoes=state.rejeicoes;
+            currentData.retidos=state.retidos;
             let added=0, updated=0;
+            const countsByMonth={};
             payload.parsed.forEach(item=>{
-                const arrName=item.type==='rejeicao'?'rejeicoes':'retidos'; const arr=state[arrName];
-                const key=x=>[x.cpf,x.evento,x.codErro].map(v=>String(v||'').trim().toLowerCase()).join('|');
-                const targetKey=key(item); const existing=arr.find(x=>key(x)===targetKey && targetKey!=='||');
+                const comp=ensureCompetenciaData(item.competencia);
+                const arrName=item.type==='rejeicao'?'rejeicoes':'retidos';
+                const arr=comp[arrName] || (comp[arrName]=[]);
+                const otherArrName=arrName==='rejeicoes'?'retidos':'rejeicoes';
+                const otherArr=comp[otherArrName] || (comp[otherArrName]=[]);
+                const sameId=x=>item.idEvento && String(x.idEvento||'').trim()===String(item.idEvento).trim();
+                const fallbackKey=x=>[x.cpf,x.evento,x.dataCriacao].map(v=>String(v||'').trim().toLowerCase()).join('|');
+                let existing=arr.find(x=>sameId(x) || (!item.idEvento && fallbackKey(x)===fallbackKey(item)));
+                if(!existing){
+                    const otherIndex=otherArr.findIndex(x=>sameId(x) || (!item.idEvento && fallbackKey(x)===fallbackKey(item)));
+                    if(otherIndex>=0){
+                        existing=otherArr.splice(otherIndex,1)[0];
+                        arr.push(existing);
+                    }
+                }
                 if(existing){
-                    existing.cpf=item.cpf||existing.cpf; existing.nome=item.nome||existing.nome; existing.evento=item.evento||existing.evento; existing.codErro=item.codErro||existing.codErro;
-                    if(!existing.obs && item.mensagem) existing.obs=item.mensagem;
-                    existing.competencia=state.currentCompetencia; existing.importedAt=new Date().toISOString(); updated++;
+                    existing.idEvento=item.idEvento||existing.idEvento;
+                    existing.cpf=item.cpf||existing.cpf;
+                    existing.nome=item.nome||existing.nome;
+                    existing.evento='S-1210';
+                    existing.dataCriacao=item.dataCriacao||existing.dataCriacao;
+                    existing.competencia=item.competencia;
+                    if(!existing.responsavel) existing.responsavel=getBalancedRandomAssignee(item.competencia,countsByMonth);
+                    if(!CENTRAL_SITUATIONS.includes(existing.situacao)) existing.situacao='';
+                    existing.status=situationToLegacyStatus(existing.situacao);
+                    existing.importedAt=new Date().toISOString();
+                    updated++;
                 } else {
-                    arr.push({cpf:item.cpf,nome:item.nome,evento:item.evento,codErro:item.codErro,status:'pendente',responsavel:'',competencia:state.currentCompetencia,obs:item.mensagem||'',importedAt:new Date().toISOString()}); added++;
+                    arr.push({
+                        idEvento:item.idEvento,
+                        cpf:item.cpf,
+                        nome:item.nome,
+                        evento:'S-1210',
+                        dataCriacao:item.dataCriacao,
+                        status:'pendente',
+                        situacao:'',
+                        situacaoOutro:'',
+                        responsavel:getBalancedRandomAssignee(item.competencia,countsByMonth),
+                        competencia:item.competencia,
+                        obs:'',
+                        importedAt:new Date().toISOString()
+                    });
+                    added++;
                 }
             });
-            window.pendingEsocialImport=null; closeModalDirect(); scheduleSave(); renderAll(); showToast(`Importação concluída: ${added} novos · ${updated} atualizados`);
+            [...new Set(payload.parsed.map(item=>item.competencia))].forEach(compKey=>{
+                const comp=ensureCompetenciaData(compKey);
+                if(!comp.historicoEntry) comp.historicoEntry={ rejeicoes:0, retidos:0, retificacoes:0, multasDCTF:0, s1299Reabertos:0, vinculosReg:0, admissoes:0, desligamentos:0 };
+                comp.historicoEntry.rejeicoes=(comp.rejeicoes||[]).length;
+                comp.historicoEntry.retidos=(comp.retidos||[]).length;
+            });
+            const refreshedCurrent=ensureCompetenciaData(state.currentCompetencia);
+            state.rejeicoes=refreshedCurrent.rejeicoes || [];
+            state.retidos=refreshedCurrent.retidos || [];
+            window.pendingEsocialImport=null;
+            closeModalDirect();
+            populateCompetenciaSelect();
+            scheduleSave();
+            renderAll();
+            showToast(`Importação concluída: ${added} novos · ${updated} atualizados`);
         };
 
         function updateKPIs() {
@@ -4232,28 +4614,27 @@
         };
 
         function buildMonthlyReportData() {
-            const all=getCentralCases();
+            const all=getCentralCases().filter(isS1210Case);
             const resolved=all.filter(x=>x.status==='resolvido').length;
             const open=all.length-resolved;
             const byResp=['Roni','Rafael','Fabianne'].map(name=>({name,total:all.filter(x=>x.responsavel===name).length,resolved:all.filter(x=>x.responsavel===name&&x.status==='resolvido').length}));
-            const errors={}; all.forEach(x=>{ const k=x.codErro||'Sem código'; errors[k]=(errors[k]||0)+1; });
-            const topErrors=Object.entries(errors).sort((a,b)=>b[1]-a[1]).slice(0,6);
-            return {all,resolved,open,byResp,topErrors};
+            const situations={}; all.forEach(x=>{ const k=getCentralSituation(x)||'Sem situação'; situations[k]=(situations[k]||0)+1; });
+            return {all,resolved,open,byResp,situations:Object.entries(situations).sort((a,b)=>b[1]-a[1])};
         }
 
         window.openMonthlyReport = function() {
             const d=buildMonthlyReportData();
             const closed=isCompetenciaClosed();
             const content=document.getElementById('modalContent'), overlay=document.getElementById('modalOverlay');
-            content.innerHTML=`<span class="eyebrow">RELATÓRIO GERENCIAL</span><h3>Competência ${formatCompKey(state.currentCompetencia)}</h3><div class="report-preview-grid"><div><span>Total de ocorrências</span><strong>${d.all.length}</strong></div><div><span>Resolvidas</span><strong>${d.resolved}</strong></div><div><span>Pendentes</span><strong>${d.open}</strong></div><div><span>Situação</span><strong>${closed?'Encerrada':'Aberta'}</strong></div></div><h4 style="margin-top:12px;">Distribuição da equipe</h4><div class="milestone-list" style="margin-top:7px;">${d.byResp.map(x=>`<div class="milestone-item"><div class="milestone-date">${x.total}</div><div><strong>${x.name}</strong><small>${x.resolved} resolvido(s)</small></div></div>`).join('')}</div><h4 style="margin-top:12px;">Erros mais frequentes</h4><div class="milestone-list" style="margin-top:7px;">${d.topErrors.map(([code,count])=>`<div class="milestone-item"><div class="milestone-date">${count}</div><div><strong>${escHtml(code)}</strong><small>ocorrência(s)</small></div></div>`).join('') || '<div class="empty-state">Sem ocorrências.</div>'}</div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Fechar</button><button class="btn btn-primary" onclick="printMonthlyReport()">Imprimir / salvar PDF</button></div>`;
+            content.innerHTML=`<span class="eyebrow">RELATÓRIO GERENCIAL S-1210</span><h3>Competência ${formatCompKey(state.currentCompetencia)}</h3><div class="report-preview-grid"><div><span>Total de eventos</span><strong>${d.all.length}</strong></div><div><span>Concluídos</span><strong>${d.resolved}</strong></div><div><span>Em aberto</span><strong>${d.open}</strong></div><div><span>Mês</span><strong>${closed?'Encerrado':'Aberto'}</strong></div></div><h4 style="margin-top:12px;">Distribuição da equipe</h4><div class="milestone-list" style="margin-top:7px;">${d.byResp.map(x=>`<div class="milestone-item"><div class="milestone-date">${x.total}</div><div><strong>${x.name}</strong><small>${x.resolved} concluído(s)</small></div></div>`).join('')}</div><h4 style="margin-top:12px;">Situações registradas</h4><div class="milestone-list" style="margin-top:7px;">${d.situations.map(([label,count])=>`<div class="milestone-item"><div class="milestone-date">${count}</div><div><strong>${escHtml(label)}</strong><small>evento(s)</small></div></div>`).join('') || '<div class="empty-state">Sem eventos S-1210.</div>'}</div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Fechar</button><button class="btn btn-primary" onclick="printMonthlyReport()">Imprimir / salvar PDF</button></div>`;
             overlay.style.display='flex';
         };
 
         window.printMonthlyReport = function() {
             const d=buildMonthlyReportData();
             const win=window.open('','_blank'); if(!win){ alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.'); return; }
-            const rows=d.all.map(x=>`<tr><td>${x._type==='rejeicao'?'Rejeitado':'Retido'}</td><td>${escHtml(x.cpf||'')}</td><td>${escHtml(x.nome||'')}</td><td>${escHtml(x.evento||'')}</td><td>${escHtml(x.codErro||'')}</td><td>${x.status==='resolvido'?'Resolvido':x.status==='andamento'?'Em tratamento':'Pendente'}</td><td>${escHtml(x.responsavel||'Não atribuído')}</td><td>${escHtml(x.obs||'')}</td></tr>`).join('');
-            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório ${formatCompKey(state.currentCompetencia)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:28px}h1{color:#123b5d;margin-bottom:4px}p{color:#5c6875}.k{display:flex;gap:10px;margin:18px 0}.k div{border:1px solid #ccd6df;padding:10px 14px;min-width:120px}.k strong{display:block;font-size:22px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7dee5;padding:6px;text-align:left;vertical-align:top}th{background:#123b5d;color:white}@page{size:A4 landscape;margin:10mm}</style></head><body><h1>Relatório Operacional eSocial</h1><p>Universidade Federal do Espírito Santo · Competência ${formatCompKey(state.currentCompetencia)} · ${isCompetenciaClosed()?'Competência encerrada':'Competência aberta'}</p><div class="k"><div><span>Total</span><strong>${d.all.length}</strong></div><div><span>Resolvidos</span><strong>${d.resolved}</strong></div><div><span>Pendentes</span><strong>${d.open}</strong></div></div><table><thead><tr><th>Tipo</th><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód. erro</th><th>Status</th><th>Responsável</th><th>Providência / solução</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print();<\/script></body></html>`); win.document.close();
+            const rows=d.all.filter(isS1210Case).map(x=>`<tr><td>${escHtml(x.idEvento||'')}</td><td>${escHtml(x.cpf||'')}</td><td>${escHtml(x.nome||'')}</td><td>${escHtml(x.responsavel||'Não atribuído')}</td><td>${escHtml(getCentralSituation(x)==='Outro'?(x.situacaoOutro||'Outro'):(getCentralSituation(x)||'Sem situação'))}</td><td>${escHtml(x.obs||'')}</td></tr>`).join('');
+            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório ${formatCompKey(state.currentCompetencia)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:28px}h1{color:#123b5d;margin-bottom:4px}p{color:#5c6875}.k{display:flex;gap:10px;margin:18px 0}.k div{border:1px solid #ccd6df;padding:10px 14px;min-width:120px}.k strong{display:block;font-size:22px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7dee5;padding:6px;text-align:left;vertical-align:top}th{background:#123b5d;color:white}@page{size:A4 landscape;margin:10mm}</style></head><body><h1>Relatório Operacional eSocial S-1210</h1><p>Universidade Federal do Espírito Santo · Competência ${formatCompKey(state.currentCompetencia)} · ${isCompetenciaClosed()?'Competência encerrada':'Competência aberta'}</p><div class="k"><div><span>Total</span><strong>${d.all.filter(isS1210Case).length}</strong></div><div><span>Concluídos</span><strong>${d.resolved}</strong></div><div><span>Em aberto</span><strong>${d.open}</strong></div></div><table><thead><tr><th>ID Evento</th><th>CPF Servidor</th><th>Nome do Servidor</th><th>Servidor Responsável</th><th>Situação</th><th>Observação</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print();<\/script></body></html>`); win.document.close();
         };
 
 
@@ -4302,104 +4683,6 @@
                 scheduleSave();
                 renderUrgentActions(); }
         };
-
-        // ==================== GERADOR DE CRONOGRAMA ====================
-        window.gerarCronograma = function() {
-            const texto = document.getElementById('geradorTexto')?.value.trim();
-            const competencia = document.getElementById('geradorCompetencia')?.value;
-            if (!texto) { alert('Cole os períodos do cronograma.'); return; }
-            if (!competencia) { alert('Selecione a competência.'); return; }
-            const newTimeline = parseCronogramaTexto(texto, competencia);
-            if (newTimeline.length === 0) { alert('Formato inválido. Verifique.'); return; }
-            state.timeline = newTimeline;
-            state.currentCompetencia = competencia;
-            ensureCompetencia(competencia);
-            allCompetencias[competencia].timeline = newTimeline;
-            scheduleSave();
-            populateCompetenciaSelect();
-            renderAll();
-            const preview = document.getElementById('geradorPreview');
-            const previewContent = document.getElementById('geradorPreviewContent');
-            if (preview && previewContent) {
-                preview.style.display = 'block';
-                previewContent.innerHTML = newTimeline.map(p =>
-                    `<p>📅 ${formatDateBR(p.start)}→${formatDateBR(p.end)} | <strong>${p.title}</strong> | 🎯 ${p.foco} | ⚡ ${p.criticity} | Setores: ${p.disponibilidadeSetores}</p>`
-                    ).join('');
-            }
-            showToast('✅ Cronograma gerado para ' + formatCompKey(competencia));
-        };
-
-        window.importarCronograma = function() {
-            const texto = document.getElementById('importarTexto')?.value.trim();
-            if (!texto) { alert('Cole o texto do cronograma.'); return; }
-            const newTimeline = parseCronogramaTexto(texto, state.currentCompetencia);
-            if (newTimeline.length === 0) { alert('Formato inválido.'); return; }
-            state.timeline = newTimeline;
-            const compData = getCompData();
-            compData.timeline = newTimeline;
-            allCompetencias[state.currentCompetencia] = compData;
-            scheduleSave();
-            renderAll();
-            showToast('📥 Cronograma importado!');
-        };
-
-        function parseCronogramaTexto(texto, competencia) {
-            const lines = texto.split('\n').filter(l => l.trim());
-            const result = [];
-            const [compYear, compMonth] = (competencia || '2026-06').split('-').map(Number);
-            const colorMap = { 'Crítico': 'tl-red', 'Alto': 'tl-orange', 'Médio': 'tl-yellow', 'Baixo': 'tl-green',
-                'Monitoramento': 'tl-blue', 'Preventivo': 'tl-purple' };
-            const dispMap = { 'eSocial Exclusivo': 'Não', 'eSocial Crítico': 'Não', 'eSocial Prioritário': 'Parcial',
-                'CARP/SPD Prioritário': 'Parcial', 'Homologação da Folha': 'Parcial',
-                'Preventivo Integrado': 'Sim', 'Monitoramento Crítico': 'Sim', 'Atuação Híbrida': 'Parcial',
-                'Setores Prioritários': 'Sim' };
-            lines.forEach((line, idx) => {
-                const parts = line.split('|').map(p => p.trim());
-                if (parts.length < 2) return;
-                const datePart = parts[0];
-                const title = parts[1] || 'Período';
-                const foco = parts[2] || 'Monitoramento';
-                const criticity = parts[3] || 'Médio';
-                let start, end;
-                const rangeMatch = datePart.match(/(\d{1,2}\/\d{1,2})\s*a\s*(\d{1,2}\/\d{1,2})/i);
-                if (rangeMatch) {
-                    const [sDay, sMonth] = rangeMatch[1].split('/').map(Number);
-                    const [eDay, eMonth] = rangeMatch[2].split('/').map(Number);
-                    start =
-                        `${compYear}-${String(sMonth||compMonth).padStart(2,'0')}-${String(sDay).padStart(2,'0')}`;
-                    end =
-                        `${compYear}-${String(eMonth||compMonth).padStart(2,'0')}-${String(eDay).padStart(2,'0')}`;
-                } else {
-                    const singleMatch = datePart.match(/(\d{1,2})\/(\d{1,2})/);
-                    if (singleMatch) {
-                        const [day, month] = [Number(singleMatch[1]), Number(singleMatch[2])];
-                        const dateStr =
-                            `${compYear}-${String(month||compMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                        start = dateStr;
-                        end = dateStr;
-                    } else { return; }
-                }
-                const disponibilidade = dispMap[foco] || 'Parcial';
-                const impactoMap = { 'eSocial Exclusivo': 'Fechamento em andamento',
-                    'eSocial Crítico': 'Fechamento em andamento',
-                    'CARP/SPD Prioritário': 'Evitar alterações estruturais',
-                    'Homologação da Folha': 'Período seguro', 'Preventivo Integrado': 'Período seguro',
-                    'Monitoramento Crítico': 'Pode gerar retificação' };
-                result.push({
-                    id: 'p_' + Date.now() + '_' + idx,
-                    start,
-                    end,
-                    title,
-                    foco,
-                    criticity,
-                    cor: colorMap[criticity] || 'tl-blue',
-                    disponibilidadeSetores: disponibilidade,
-                    impactoESocial: impactoMap[foco] || 'Monitorar',
-                    desc: `Período: ${title}. Foco: ${foco}. Criticidade: ${criticity}.`
-                });
-            });
-            return result;
-        }
 
         // ==================== CHARTS ====================
         function drawProgressChart() {
@@ -4607,7 +4890,7 @@
         window.exportExcel = function() {
             const XLSXLib = window.XLSX;
             if (!XLSXLib) { alert('Biblioteca de Excel não carregada. Verifique a conexão e tente novamente.'); return; }
-            const clean = rows => rows.map(r => ({ CPF:r.cpf||'', Nome:r.nome||'', Evento:r.evento||'', 'Código do erro':r.codErro||'', Status:r.status||'', Responsável:r.responsavel||'', Competência:r.competencia||state.currentCompetencia, 'Observação / solução':r.obs||'' }));
+            const clean = rows => rows.filter(isS1210Case).map(r => ({ 'ID Evento':r.idEvento||'', 'CPF Servidor':r.cpf||'', 'Nome do Servidor':r.nome||'', 'Servidor Responsável':r.responsavel||'', Situação:getCentralSituation(r)==='Outro'?(r.situacaoOutro||'Outro'):(getCentralSituation(r)||''), Observação:r.obs||'', Mês:r.competencia||state.currentCompetencia }));
             const wb = XLSXLib.utils.book_new();
             XLSXLib.utils.book_append_sheet(wb, XLSXLib.utils.json_to_sheet(clean(state.rejeicoes)), 'Rejeitados');
             XLSXLib.utils.book_append_sheet(wb, XLSXLib.utils.json_to_sheet(clean(state.retidos)), 'Retidos');
@@ -4661,6 +4944,7 @@
         // ==================== NAVIGATION ====================
         function navigateTo(pageName) {
             currentActivePage = pageName;
+            touchPresence().catch(() => {});
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             const page = document.getElementById('page-' + pageName);
@@ -5306,11 +5590,12 @@
 
         // ==================== START ====================
         initApp().then(() => {
+            setupPresenceTracking();
             console.log('🚀 Plataforma pronta.');
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Módulo Controle Lepisma ativo · Central eSocial v3.4 ativa.');
+            console.log('📁 Módulo Controle Lepisma ativo · Central eSocial S-1210 v3.6 ativa · Presença online v3.6.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
