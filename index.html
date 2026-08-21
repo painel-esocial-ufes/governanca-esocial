@@ -2419,7 +2419,7 @@
                         <div class="polare-filter"><label for="polareServer">Servidor responsável</label><select id="polareServer" onchange="renderPolareReport()"><option value="">Todos os servidores</option></select></div>
                         <button class="btn btn-sm btn-outline" onclick="resetPolareFilters()">Mês atual e todos</button>
                     </div>
-                    <div class="central-import-note" style="margin-top:12px;margin-bottom:0;"><span>ℹ️</span><div>O mês considera a <strong>Data de Saída</strong> do Lepisma e a data em que a situação do evento foi alterada para <strong>Aceito</strong> ou <strong>Dispensado Automaticamente</strong>. No detalhamento, o Lepisma mostra o número do processo e a Central eSocial mostra o ID do evento.</div></div>
+                    <div class="central-import-note" style="margin-top:12px;margin-bottom:0;"><span>ℹ️</span><div>Para o <strong>Lepisma</strong>, o mês considera a Data de Saída. Para a <strong>Central eSocial</strong>, considera o mês do quadro em que o evento está registrado. No detalhamento, o Lepisma mostra o número do processo e a Central mostra o ID do evento.</div></div>
                 </div>
                 <div class="polare-kpis" id="polareKpis"></div>
                 <div class="polare-layout">
@@ -5431,10 +5431,12 @@
                 detalhe: item.resumo || item.observacao || 'Processo despachado no Lepisma'
             }));
             const esocialHistory = (Array.isArray(state.esocialHistorico) ? state.esocialHistorico : []).map(item => {
-                const dateKey = activityDateKey(item.data || item.registradoEm, item.competenciaOrigem);
+                const completionDate = activityDateKey(item.data || item.registradoEm, item.competenciaOrigem);
+                const centralMonth = /^\d{4}-\d{2}$/.test(String(item.competenciaOrigem || '')) ? item.competenciaOrigem : completionDate.slice(0,7);
+                const dateKey = centralMonth ? `${centralMonth}-01` : completionDate;
                 return {
                     data: dateKey,
-                    mes: dateKey.slice(0,7),
+                    mes: centralMonth,
                     responsavel: resolveServerName(item.responsavel),
                     tipo: item.situacao,
                     identificacao: item.idEvento || 'S-1210',
@@ -5448,11 +5450,12 @@
                 if (!['Aceito','Dispensado Automaticamente'].includes(situation)) return false;
                 return !historicalOutcomes.has(`${centralActivityIdentity(item, item._competencia)}|${situation}`);
             }).map(item => {
-                const dateKey = activityDateKey(item.situacaoAtualizadaEm || item.importedAt || item.dataCriacao, item._competencia);
+                const centralMonth = /^\d{4}-\d{2}$/.test(String(item._competencia || '')) ? item._competencia : competenciaFromEventDate(item.dataCriacao);
+                const dateKey = activityDateKey(item.dataCriacao, centralMonth) || (centralMonth ? `${centralMonth}-01` : '');
                 const situation = getCentralSituation(item);
                 return {
                     data: dateKey,
-                    mes: dateKey.slice(0,7),
+                    mes: centralMonth || dateKey.slice(0,7),
                     responsavel: resolveServerName(item.situacaoAtualizadaPor || item.responsavel),
                     tipo: situation,
                     identificacao: item.idEvento || 'S-1210',
