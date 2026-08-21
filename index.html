@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.8</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v3.9</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -1369,6 +1369,18 @@
         .member-initial { width:31px; height:31px; border-radius:7px; background:#dceaf5; color:#155b87; display:grid; place-items:center; font-weight:800; }
         .dashboard-team-member strong,.dashboard-team-member small { display:block; }
         .dashboard-team-member small { color:var(--text3); font-size:10px; margin-top:1px; }
+        .dashboard-source-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+        .dashboard-source-card { min-width:0; padding:14px; border:1px solid var(--border); border-top:3px solid #1769aa; border-radius:9px; background:var(--surface2); color:var(--text); text-align:left; cursor:pointer; transition:.15s ease; }
+        .dashboard-source-card:hover { transform:translateY(-2px); border-color:#7fb1d4; box-shadow:0 7px 16px rgba(15,35,60,.08); }
+        .dashboard-source-card:focus-visible { outline:3px solid rgba(23,105,170,.25); outline-offset:2px; }
+        .dashboard-source-card span,.dashboard-source-card strong,.dashboard-source-card small { display:block; }
+        .dashboard-source-card span { color:var(--text3); font-size:8px; font-weight:900; letter-spacing:.55px; text-transform:uppercase; }
+        .dashboard-source-card strong { margin:6px 0 3px; font-size:23px; }
+        .dashboard-source-card small { color:var(--text3); font-size:9px; line-height:1.35; }
+        .dashboard-source-card.central { border-top-color:#1769aa; }
+        .dashboard-source-card.lepisma { border-top-color:#6d45a4; }
+        .dashboard-source-card.polare { border-top-color:#159669; }
+        .dashboard-source-card.calendar { border-top-color:#d97706; }
         .empty-state { padding:18px; color:var(--text3); text-align:center; border:1px dashed var(--border); border-radius:8px; }
 
         .timeline-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; }
@@ -1484,10 +1496,6 @@
         .exec-success { border-top-color:#159669; }
 
         /* Tabelas e formulários: melhor leitura sem alterar as funções */
-        #page-rejeicoes .card,#page-retidos .card,#page-historico .card,#page-fechamento .card { padding:20px; }
-        #page-rejeicoes table,#page-retidos table,#page-historico table { font-size:12px; }
-        #page-rejeicoes table th,#page-retidos table th,#page-historico table th { font-size:9px; padding:10px; }
-        #page-rejeicoes table td,#page-retidos table td,#page-historico table td { padding:8px 10px; }
         .status-grid { grid-template-columns:repeat(3,minmax(180px,1fr)); gap:10px; }
         .status-item { min-height:68px; padding:13px; font-size:12px; border-radius:8px; }
 
@@ -1504,7 +1512,7 @@
             .ops-hero,.calendar-toolbar,.page-heading { flex-direction:column; align-items:stretch; }
             .ops-hero-action { min-width:0; align-items:flex-start; gap:15px; }
             .ops-kpi-grid,.executive-grid { grid-template-columns:repeat(2,1fr); }
-            .dashboard-team { grid-template-columns:1fr; }
+            .dashboard-team,.dashboard-source-grid { grid-template-columns:1fr; }
             .calendar-overview { overflow-x:auto; }
             .overview-period { flex:0 0 240px!important; }
             .calendar-main-card { overflow-x:auto; }
@@ -1948,7 +1956,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v3.8 ========== */
+        /* ========== CENTRAL eSOCIAL / v3.9 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2121,9 +2129,6 @@
 
             <div class="nav-section">Controle eSocial</div>
             <div class="nav-item" data-page="central"><span class="nav-icon">◎</span> Central eSocial</div>
-            <div class="nav-item" data-page="rejeicoes"><span class="nav-icon">!</span> Rejeições</div>
-            <div class="nav-item" data-page="retidos"><span class="nav-icon">◆</span> Retidos</div>
-            <div class="nav-item" data-page="fechamento"><span class="nav-icon">✓</span> Fechamento eSocial</div>
 
             <div class="nav-section">Processos</div>
             <div class="nav-item" data-page="lepisma"><span class="nav-icon">▰</span> Controle Lepisma</div>
@@ -2131,9 +2136,6 @@
             <div class="nav-section">Gestão</div>
             <div class="nav-item" data-page="polare"><span class="nav-icon">▤</span> Relatório PolarE</div>
             <div class="nav-item" data-page="servidores"><span class="nav-icon">＋</span> Cadastro de Servidores</div>
-            <div class="nav-item" data-page="gerencial"><span class="nav-icon">↗</span> Modo Gerencial</div>
-            <div class="nav-item" data-page="historico"><span class="nav-icon">◫</span> Histórico</div>
-            <div class="nav-item" data-page="acoes"><span class="nav-icon">▲</span> Ações Urgentes</div>
 
             <div class="nav-section">Referências</div>
             <div class="nav-item" data-page="rubricas"><span class="nav-icon">≡</span> Rubricas</div>
@@ -2141,7 +2143,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.8 · 2026<br>
+            UFES · v3.9 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2271,7 +2273,6 @@
                     <div class="page-heading-actions">
                         <input type="file" id="esocialImportInput" accept=".xlsx,.xls,.csv" hidden onchange="handleEsocialImport(event)">
                         <button class="btn btn-primary" onclick="document.getElementById('esocialImportInput').click()">Importar planilha S-1210</button>
-                        <button class="btn btn-outline" onclick="navigatePublic('fechamento')">Fechamento</button>
                     </div>
                 </div>
                 <div class="central-kpis" id="centralKpis"></div>
@@ -2288,54 +2289,6 @@
                         <span class="competence-lock" id="centralCompetenceStatus">Quadros separados por mês</span>
                     </div>
                     <div id="centralMonthlyBoards" style="margin-top:12px;"></div>
-                </div>
-            </div>
-
-            <!-- PAGE: REJEICOES -->
-            <div class="page" id="page-rejeicoes">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>🚫 Rejeições eSocial</h3>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                            <input type="text" class="search-box" id="searchRejeicoes" placeholder="🔍 Buscar...">
-                            <select id="filterRejEvento" onchange="renderRejeicoes()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
-                                <option value="">Todos eventos</option>
-                                <option>S-1200</option><option>S-1210</option><option>S-1299</option><option>S-2200</option><option>S-2299</option><option>S-2300</option>
-                            </select>
-                            <button class="btn btn-sm btn-primary" onclick="addRejeicao()">+ Nova</button>
-                        </div>
-                    </div>
-                    <div class="table-wrap"><table id="rejeicoesTable"><thead><tr><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód.Erro</th><th>Status</th><th>Resp.</th><th>Competência</th><th>Obs.</th><th>Ação</th></tr></thead><tbody></tbody></table></div>
-                </div>
-            </div>
-
-            <!-- PAGE: RETIDOS -->
-            <div class="page" id="page-retidos">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>🔒 Eventos Retidos</h3>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                            <input type="text" class="search-box" id="searchRetidos" placeholder="🔍 Buscar...">
-                            <select id="filterRetEvento" onchange="renderRetidos()" style="padding:6px 10px;border-radius:14px;border:1px solid var(--border);font-size:0.7rem;background:var(--surface2);color:var(--text);">
-                                <option value="">Todos eventos</option>
-                                <option>S-1200</option><option>S-1210</option><option>S-1299</option><option>S-2200</option><option>S-2299</option>
-                            </select>
-                            <button class="btn btn-sm btn-primary" onclick="addRetido()">+ Novo</button>
-                        </div>
-                    </div>
-                    <div class="table-wrap"><table id="retidosTable"><thead><tr><th>CPF</th><th>Nome</th><th>Evento</th><th>Cód.Erro</th><th>Status</th><th>Resp.</th><th>Competência</th><th>Obs.</th><th>Ação</th></tr></thead><tbody></tbody></table></div>
-                </div>
-            </div>
-
-            <!-- PAGE: FECHAMENTO -->
-            <div class="page" id="page-fechamento">
-                <div class="card">
-                    <div class="card-header"><h3>📝 Painel de Fechamento eSocial</h3></div>
-                    <div class="status-grid" id="fechamentoGrid"></div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><h3>📊 Status por Evento</h3></div>
-                    <div class="chart-container"><canvas id="chartFechamento"></canvas></div>
                 </div>
             </div>
 
@@ -2398,46 +2351,6 @@
                 <div class="card" id="calDayDetail" style="display:none;">
                     <div class="card-header"><h3>Detalhes do dia</h3><button class="btn btn-sm btn-outline" onclick="document.getElementById('calDayDetail').style.display='none'">Fechar</button></div>
                     <div id="calDayDetailContent"></div>
-                </div>
-            </div>
-
-            <!-- PAGE: GERENCIAL -->
-            <div class="page" id="page-gerencial">
-                <div class="page-heading">
-                    <div><span class="eyebrow">VISÃO EXECUTIVA</span><h2>Painel Gerencial</h2><p>Síntese operacional da competência para acompanhamento da chefia.</p></div>
-                    <div class="page-heading-actions">
-                        <button class="btn btn-primary" onclick="printOperationalCalendar()">Calendário em PDF</button>
-                        <button class="btn btn-outline" onclick="openMonthlyReport()">Relatório mensal</button>
-                        <button class="btn btn-outline" id="competenciaCloseBtn" onclick="toggleCompetenciaClosed()">Encerrar competência</button>
-                        <button class="btn btn-outline" onclick="exportExcel()">Exportar XLSX</button>
-                        <button class="btn btn-outline" onclick="exportJSON()">Backup JSON</button>
-                        <button class="btn btn-outline" onclick="importJSONPrompt()">Restaurar</button>
-                    </div>
-                </div>
-                <div class="executive-grid" id="gerencialCards"></div>
-                <div class="dashboard-layout">
-                    <div class="card ops-panel"><div class="card-header"><div><span class="eyebrow">PENDÊNCIAS</span><h3>Rejeições por situação</h3></div></div><div class="chart-container"><canvas id="chartRejeicoes"></canvas></div></div>
-                    <div class="card ops-panel"><div class="card-header"><div><span class="eyebrow">PLANEJAMENTO</span><h3>Próximos marcos</h3></div></div><div id="gerencialMilestones" class="milestone-list"></div></div>
-                </div>
-            </div>
-
-            <!-- PAGE: HISTORICO -->
-            <div class="page" id="page-historico">
-                <div class="card">
-                    <div class="card-header"><h3>📚 Histórico Operacional por Competência</h3></div>
-                    <div class="table-wrap"><table id="historicoTable"><thead><tr><th>Competência</th><th>Rejeições</th><th>Retidos</th><th>Retificações</th><th>Multas DCTFWeb</th><th>S-1299 Reabertos</th><th>Vínculos Reg.</th><th>Admissões</th><th>Desligamentos</th></tr></thead><tbody></tbody></table></div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><h3>📈 Evolução Histórica</h3></div>
-                    <div class="chart-container"><canvas id="chartHistorico"></canvas></div>
-                </div>
-            </div>
-
-            <!-- PAGE: ACOES -->
-            <div class="page" id="page-acoes">
-                <div class="card">
-                    <div class="card-header"><h3>🚨 Ações Urgentes</h3><button class="btn btn-sm btn-primary" onclick="addUrgentAction()">+ Nova</button></div>
-                    <div id="acoesUrgentesList"></div>
                 </div>
             </div>
 
@@ -3322,26 +3235,8 @@
                 case 'equipe':
                     renderTeam();
                     break;
-                case 'rejeicoes':
-                    renderRejeicoes();
-                    break;
-                case 'retidos':
-                    renderRetidos();
-                    break;
-                case 'fechamento':
-                    renderFechamento();
-                    break;
                 case 'calendario':
                     renderCalendar();
-                    break;
-                case 'gerencial':
-                    renderGerencial();
-                    break;
-                case 'historico':
-                    renderHistorico();
-                    break;
-                case 'acoes':
-                    renderUrgentActions();
                     break;
                 case 'lepisma':
                     renderLepismaPage();
@@ -3363,10 +3258,8 @@
         function getPageLabel(pageName) {
             const labels = {
                 dashboard: 'Visão Operacional', calendario: 'Calendário', timeline: 'Linha do Tempo',
-                equipe: 'Equipe', central: 'Central eSocial', rejeicoes: 'Rejeições', retidos: 'Retidos',
-                fechamento: 'Fechamento', lepisma: 'Lepisma', polare: 'Relatório PolarE',
-                servidores: 'Cadastro de Servidores', gerencial: 'Modo Gerencial',
-                historico: 'Histórico', acoes: 'Ações Urgentes', rubricas: 'Rubricas',
+                equipe: 'Equipe', central: 'Central eSocial', lepisma: 'Lepisma', polare: 'Relatório PolarE',
+                servidores: 'Cadastro de Servidores', rubricas: 'Rubricas',
                 linksuteis: 'Links Úteis'
             };
             return labels[pageName] || pageName || 'Plataforma';
@@ -3547,7 +3440,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v3.8 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v3.9 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3616,13 +3509,7 @@
             renderCentralEsocial();
             renderTimeline();
             renderTeam();
-            renderRejeicoes();
-            renderRetidos();
-            renderFechamento();
             renderCalendar();
-            renderGerencial();
-            renderHistorico();
-            renderUrgentActions();
             renderPolareReport();
             renderServidores();
             updatePhaseIndicator();
@@ -3637,6 +3524,14 @@
             renderMilestoneList('dashboardMilestones');
             renderAlerts();
             drawProgressChart();
+            if (!lepismaAllData.length && !lepismaIsLoading) {
+                loadLepismaData({ silent: true }).then(() => {
+                    updateKPIs();
+                    renderDashboardTeam();
+                    renderDashboardDailyWork();
+                    renderAlerts();
+                });
+            }
         }
 
         function renderDashboardToday() {
@@ -3671,12 +3566,19 @@
             const container = document.getElementById('dashboardTeam');
             if (!container) return;
             const period = getOperationalContext().period;
-            container.innerHTML = getTeamAssignments(period).map(member => `
+            const assignments = new Map(getTeamAssignments(period).map(member => [resolveServerName(member.name), member.destination]));
+            const openCases = getCentralCases().filter(item => item.status !== 'resolvido');
+            const monthActivities = getPolareActivities().filter(item => item.mes === state.currentCompetencia);
+            const names = getServerNames(false);
+            container.innerHTML = names.map(name => {
+                const pending = openCases.filter(item => resolveServerName(item.responsavel) === name).length;
+                const completed = monthActivities.filter(item => item.responsavel === name).length;
+                return `
                 <div class="dashboard-team-member">
-                    <span class="member-initial">${member.name.charAt(0)}</span>
-                    <div><strong>${member.name}</strong><small>${member.destination}</small></div>
-                </div>
-            `).join('');
+                    <span class="member-initial">${escHtml(name.charAt(0))}</span>
+                    <div><strong>${escHtml(name)}</strong><small>${pending} pendente${pending === 1 ? '' : 's'} · ${completed} atividade${completed === 1 ? '' : 's'} no mês</small><small>${escHtml(assignments.get(name) || 'Atuação não definida no calendário')}</small></div>
+                </div>`;
+            }).join('') || '<div class="empty-state">Nenhum servidor ativo cadastrado.</div>';
         }
 
 
@@ -3908,7 +3810,7 @@
                 arr[idx].situacaoAtualizadaPor = value;
                 updateLatestEsocialActivityResponsible(arr[idx], compKey, value);
             }
-            scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork(); renderPolareReport();
+            scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork(); renderDashboardTeam(); renderAlerts(); renderPolareReport();
         };
 
         window.updateCentralOther = function(compKey, arrName, idx, value) {
@@ -3923,21 +3825,30 @@
             if (!ensureCompetenciaWritable(compKey)) return;
             if (!confirm('Remover este evento da competência?')) return;
             getCentralCaseArray(compKey, arrName)?.splice(idx, 1);
-            scheduleSave(); renderCentralEsocial(); renderRejeicoes(); renderRetidos(); updateKPIs(); renderDashboardDailyWork(); renderPolareReport();
+            scheduleSave(); renderCentralEsocial(); updateKPIs(); renderDashboardDailyWork(); renderDashboardTeam(); renderAlerts(); renderPolareReport();
         };
 
         function renderDashboardDailyWork() {
             const container = document.getElementById('dashboardDailyWork');
             if (!container) return;
-            const open = getCentralCases().filter(x => x.status !== 'resolvido');
-            const countFor = name => open.filter(x => x.responsavel === name).length;
+            const cases = getCentralCases().filter(isS1210Case);
+            const open = cases.filter(item => item.status !== 'resolvido');
             const unassigned = open.filter(x => !String(x.responsavel || '').trim()).length;
-            const staffCards = getServerNames(false).map(name => `<div class="daily-work-person"><strong>${countFor(name)}</strong><span>${escHtml(name)}</span></div>`).join('');
-            container.innerHTML = `<div class="card-header"><div><span class="eyebrow">EXECUÇÃO DO DIA</span><h3>O que ainda precisa de atenção</h3></div><button class="btn btn-sm btn-outline" onclick="navigatePublic('central')">Abrir Central eSocial</button></div>
-                <div class="daily-work-grid">
-                    <div class="daily-work-main"><strong>${open.length} pendência${open.length===1?'':'s'} em aberto</strong><span>${unassigned ? `${unassigned} ainda sem responsável. ` : ''}${isCompetenciaClosed() ? 'Competência encerrada para edição.' : 'Distribua e trate os eventos até o fechamento.'}</span></div>
-                    ${staffCards}
-                    <div class="daily-work-person"><strong>${unassigned}</strong><span>Sem responsável</span></div>
+            const accepted = cases.filter(item => getCentralSituation(item) === 'Aceito').length;
+            const dismissed = cases.filter(item => getCentralSituation(item) === 'Dispensado Automaticamente').length;
+            const inBox = lepismaAllData.filter(item => normalizeStatusOperacional(item.statusOperacional) === 'Caixa').length;
+            const overdue = lepismaAllData.filter(item => normalizeImportKey(item.situacao) === 'atrasado').length;
+            const monthActivities = getPolareActivities().filter(item => item.mes === state.currentCompetencia);
+            const polareLepisma = monthActivities.filter(item => item.tipo === 'Lepisma').length;
+            const polareEsocial = monthActivities.length - polareLepisma;
+            const nextMilestone = [...(getOperationalCalendar()?.milestones || [])]
+                .filter(item => item.date >= getLocalDateKey()).sort((a,b) => a.date.localeCompare(b.date))[0];
+            container.innerHTML = `<div class="card-header"><div><span class="eyebrow">PAINEL INTEGRADO</span><h3>Resumo das áreas de trabalho</h3></div><span class="badge badge-blue">${formatCompKey(state.currentCompetencia)}</span></div>
+                <div class="dashboard-source-grid">
+                    <button type="button" class="dashboard-source-card central" onclick="navigatePublic('central')"><span>Central eSocial</span><strong>${open.length}</strong><small>${accepted} aceitos · ${dismissed} dispensados${unassigned ? ` · ${unassigned} sem responsável` : ''}</small></button>
+                    <button type="button" class="dashboard-source-card lepisma" onclick="navigatePublic('lepisma')"><span>Controle Lepisma</span><strong>${inBox}</strong><small>Processos na caixa · ${overdue} atrasados · ${lepismaAllData.length} no total</small></button>
+                    <button type="button" class="dashboard-source-card polare" onclick="navigatePublic('polare')"><span>Relatório PolarE</span><strong>${monthActivities.length}</strong><small>${polareLepisma} processos · ${polareEsocial} eventos eSocial no mês</small></button>
+                    <button type="button" class="dashboard-source-card calendar" onclick="navigatePublic('calendario')"><span>Próximo marco</span><strong>${nextMilestone ? formatDateBR(nextMilestone.date) : '—'}</strong><small>${nextMilestone ? escHtml(nextMilestone.title) : 'Nenhum marco futuro no calendário'}</small></button>
                 </div>`;
         }
 
@@ -4138,20 +4049,20 @@
         function updateKPIs() {
             const grid = document.getElementById('kpiGrid');
             if (!grid) return;
-            const rejPend = state.rejeicoes.filter(r => r.status === 'pendente').length;
-            const retPend = state.retidos.filter(r => r.status === 'pendente').length;
-            const resolvidos = state.rejeicoes.filter(r => r.status === 'resolvido').length;
-            const totalRej = state.rejeicoes.length;
-            const progresso = totalRej > 0 ? Math.round((resolvidos / totalRej) * 100) : 100;
-            const fechOk = Object.values(state.fechamentoStatus).filter(s => s.status === 'ok').length;
-            const fechTotal = Object.keys(state.fechamentoStatus).length;
+            const cases = getCentralCases().filter(isS1210Case);
+            const open = cases.filter(item => item.status !== 'resolvido').length;
+            const resolved = cases.length - open;
+            const progress = cases.length ? Math.round((resolved / cases.length) * 100) : 0;
+            const inBox = lepismaAllData.filter(item => normalizeStatusOperacional(item.statusOperacional) === 'Caixa').length;
+            const overdue = lepismaAllData.filter(item => normalizeImportKey(item.situacao) === 'atrasado').length;
+            const monthActivities = getPolareActivities().filter(item => item.mes === state.currentCompetencia).length;
             const nextMilestone = [...(getOperationalCalendar()?.milestones || [])]
                 .filter(item => item.date >= getLocalDateKey()).sort((a,b)=>a.date.localeCompare(b.date))[0];
             grid.innerHTML = `
-            <div class="kpi-card ops-kpi ops-kpi-danger"><span class="kpi-label">Rejeições pendentes</span><h2>${rejPend}</h2><small>Exigem tratamento</small></div>
-            <div class="kpi-card ops-kpi ops-kpi-warning"><span class="kpi-label">Eventos retidos</span><h2>${retPend}</h2><small>Aguardando liberação</small></div>
-            <div class="kpi-card ops-kpi ops-kpi-success"><span class="kpi-label">Rejeições resolvidas</span><h2>${resolvidos}</h2><small>${progresso}% do total tratado</small></div>
-            <div class="kpi-card ops-kpi ops-kpi-info"><span class="kpi-label">Fechamento</span><h2>${fechOk}/${fechTotal}</h2><small>Eventos transmitidos</small></div>
+            <div class="kpi-card ops-kpi ops-kpi-info"><span class="kpi-label">Central eSocial</span><h2>${cases.length}</h2><small>Eventos S-1210 na competência</small></div>
+            <div class="kpi-card ops-kpi ops-kpi-warning"><span class="kpi-label">Pendências eSocial</span><h2>${open}</h2><small>${resolved} concluídos · ${progress}% tratado</small></div>
+            <div class="kpi-card ops-kpi ${overdue ? 'ops-kpi-danger' : 'ops-kpi-success'}"><span class="kpi-label">Lepisma na caixa</span><h2>${inBox}</h2><small>${overdue} atrasado${overdue === 1 ? '' : 's'} · ${lepismaAllData.length} processos</small></div>
+            <div class="kpi-card ops-kpi ops-kpi-success"><span class="kpi-label">Atividades PolarE</span><h2>${monthActivities}</h2><small>Realizadas em ${formatCompKey(state.currentCompetencia)}</small></div>
             <div class="kpi-card ops-kpi"><span class="kpi-label">Próximo marco</span><h2 class="kpi-date">${nextMilestone ? formatDateBR(nextMilestone.date) : '—'}</h2><small>${nextMilestone ? escHtml(nextMilestone.title) : 'Sem marco futuro'}</small></div>
           `;
         }
@@ -4161,6 +4072,13 @@
             if (!container) return;
             const phase = getCurrentPhase();
             const alerts = [];
+            const openCases = getCentralCases().filter(item => item.status !== 'resolvido');
+            const unassigned = openCases.filter(item => !String(item.responsavel || '').trim()).length;
+            const rejected = openCases.filter(item => getCentralSituation(item) === 'Rejeitado').length;
+            const overdue = lepismaAllData.filter(item => normalizeImportKey(item.situacao) === 'atrasado').length;
+            if (unassigned) alerts.push({ type: 'warning', text: `⚠️ Central eSocial: ${unassigned} evento${unassigned === 1 ? '' : 's'} ainda sem responsável.` });
+            if (rejected) alerts.push({ type: 'critical', text: `🔴 Central eSocial: ${rejected} evento${rejected === 1 ? '' : 's'} marcado${rejected === 1 ? '' : 's'} como rejeitado${rejected === 1 ? '' : 's'}.` });
+            if (overdue) alerts.push({ type: 'critical', text: `⏱️ Lepisma: ${overdue} processo${overdue === 1 ? '' : 's'} atrasado${overdue === 1 ? '' : 's'}.` });
             if (phase && phase.criticity === 'Crítico') {
                 alerts.push({ type: 'critical',
                     text: '🚨 Período Crítico! Foco: ' + (phase.foco || 'eSocial') +
@@ -4330,187 +4248,6 @@
         window.updateMemberObs = function(memberId, value) {
             state.teamTasks[memberId + '_obs'] = value;
             scheduleSave();
-        };
-
-        // ==================== REJEICOES ====================
-        function renderRejeicoes() {
-            const tbody = document.querySelector('#rejeicoesTable tbody');
-            if (!tbody) return;
-            const searchText = (document.getElementById('searchRejeicoes')?.value || '').toLowerCase();
-            const filtroEvento = document.getElementById('filterRejEvento')?.value || '';
-            let filtered = state.rejeicoes;
-            if (searchText) filtered = filtered.filter(r => (r.cpf + r.nome + r.evento + r.responsavel).toLowerCase()
-                .includes(searchText));
-            if (filtroEvento) filtered = filtered.filter(r => r.evento === filtroEvento);
-            tbody.innerHTML = filtered.map((r) => {
-                const realIdx = state.rejeicoes.indexOf(r);
-                return `
-              <tr>
-                <td><input value="${escHtml(r.cpf||'')}" onchange="updateRejeicao(${realIdx},'cpf',this.value)"></td>
-                <td><input value="${escHtml(r.nome||'')}" onchange="updateRejeicao(${realIdx},'nome',this.value)"></td>
-                <td><input value="${escHtml(r.evento||'')}" onchange="updateRejeicao(${realIdx},'evento',this.value)"></td>
-                <td><input value="${escHtml(r.codErro||'')}" onchange="updateRejeicao(${realIdx},'codErro',this.value)"></td>
-                <td><select onchange="updateRejeicao(${realIdx},'status',this.value)">
-                  <option value="pendente" ${r.status==='pendente'?'selected':''}>🔴 Pendente</option>
-                  <option value="andamento" ${r.status==='andamento'?'selected':''}>🟡 Andamento</option>
-                  <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Resolvido</option>
-                </select></td>
-                <td><select onchange="updateRejeicao(${realIdx},'responsavel',this.value)">
-                  ${responsibleOptions(r.responsavel)}
-                </select></td>
-                <td><input value="${escHtml(r.competencia||'')}" onchange="updateRejeicao(${realIdx},'competencia',this.value)"></td>
-                <td><input value="${escHtml(r.obs||'')}" onchange="updateRejeicao(${realIdx},'obs',this.value)"></td>
-                <td><button class="btn btn-sm btn-danger" onclick="deleteRejeicao(${realIdx})">🗑️</button></td>
-              </tr>`;
-            }).join('');
-        }
-
-        window.updateRejeicao = function(idx, field, value) {
-            if (!ensureCompetenciaWritable()) { renderRejeicoes(); return; }
-            if (idx >= 0 && idx < state.rejeicoes.length) {
-                state.rejeicoes[idx][field] = value;
-                scheduleSave();
-                updateKPIs();
-                renderCentralEsocial();
-                renderDashboardDailyWork();
-                renderPolareReport();
-            }
-        };
-        window.deleteRejeicao = function(idx) {
-            if (!ensureCompetenciaWritable()) return;
-            if (confirm('Remover?')) {
-                state.rejeicoes.splice(idx, 1);
-                scheduleSave();
-                renderRejeicoes();
-                renderCentralEsocial();
-                renderDashboardDailyWork();
-                renderPolareReport();
-                updateKPIs();
-            }
-        };
-        window.addRejeicao = function() {
-            if (!ensureCompetenciaWritable()) return;
-            state.rejeicoes.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
-                responsavel: getServerNames(false)[0] || '', competencia: state.currentCompetencia, obs: '' });
-            scheduleSave();
-            renderRejeicoes();
-            renderCentralEsocial();
-            renderDashboardDailyWork();
-            renderPolareReport();
-            updateKPIs();
-        };
-
-        // ==================== RETIDOS ====================
-        function renderRetidos() {
-            const tbody = document.querySelector('#retidosTable tbody');
-            if (!tbody) return;
-            const searchText = (document.getElementById('searchRetidos')?.value || '').toLowerCase();
-            const filtroEvento = document.getElementById('filterRetEvento')?.value || '';
-            let filtered = state.retidos;
-            if (searchText) filtered = filtered.filter(r => (r.cpf + r.nome + r.evento + r.responsavel).toLowerCase()
-                .includes(searchText));
-            if (filtroEvento) filtered = filtered.filter(r => r.evento === filtroEvento);
-            tbody.innerHTML = filtered.map((r) => {
-                const realIdx = state.retidos.indexOf(r);
-                return `
-              <tr>
-                <td><input value="${escHtml(r.cpf||'')}" onchange="updateRetido(${realIdx},'cpf',this.value)"></td>
-                <td><input value="${escHtml(r.nome||'')}" onchange="updateRetido(${realIdx},'nome',this.value)"></td>
-                <td><input value="${escHtml(r.evento||'')}" onchange="updateRetido(${realIdx},'evento',this.value)"></td>
-                <td><input value="${escHtml(r.codErro||'')}" onchange="updateRetido(${realIdx},'codErro',this.value)"></td>
-                <td><select onchange="updateRetido(${realIdx},'status',this.value)">
-                  <option value="pendente" ${r.status==='pendente'?'selected':''}>🔴 Pendente</option>
-                  <option value="andamento" ${r.status==='andamento'?'selected':''}>🟡 Andamento</option>
-                  <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Liberado</option>
-                </select></td>
-                <td><select onchange="updateRetido(${realIdx},'responsavel',this.value)">
-                  ${responsibleOptions(r.responsavel)}
-                </select></td>
-                <td><input value="${escHtml(r.competencia||'')}" onchange="updateRetido(${realIdx},'competencia',this.value)"></td>
-                <td><input value="${escHtml(r.obs||'')}" onchange="updateRetido(${realIdx},'obs',this.value)"></td>
-                <td><button class="btn btn-sm btn-danger" onclick="deleteRetido(${realIdx})">🗑️</button></td>
-              </tr>`;
-            }).join('');
-        }
-
-        window.updateRetido = function(idx, field, value) {
-            if (!ensureCompetenciaWritable()) { renderRetidos(); return; }
-            if (idx >= 0 && idx < state.retidos.length) {
-                state.retidos[idx][field] = value;
-                scheduleSave();
-                updateKPIs();
-                renderCentralEsocial();
-                renderDashboardDailyWork();
-                renderPolareReport();
-            }
-        };
-        window.deleteRetido = function(idx) {
-            if (!ensureCompetenciaWritable()) return;
-            if (confirm('Remover?')) {
-                state.retidos.splice(idx, 1);
-                scheduleSave();
-                renderRetidos();
-                renderCentralEsocial();
-                renderDashboardDailyWork();
-                renderPolareReport();
-                updateKPIs();
-            }
-        };
-        window.addRetido = function() {
-            if (!ensureCompetenciaWritable()) return;
-            state.retidos.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
-                responsavel: getServerNames(false)[0] || '', competencia: state.currentCompetencia, obs: '' });
-            scheduleSave();
-            renderRetidos();
-            renderCentralEsocial();
-            renderDashboardDailyWork();
-            renderPolareReport();
-            updateKPIs();
-        };
-
-        // ==================== FECHAMENTO ====================
-        function renderFechamento() {
-            const grid = document.getElementById('fechamentoGrid');
-            if (!grid) return;
-            const eventos = ['S-1200', 'S-1210', 'S-1299', 'S-2200', 'S-2299', 'S-2300'];
-            const statusMap = { ok: '✅ Transmitido', pendente: '⚠️ Pendências', nao_fechado: '🔴 Não fechado',
-                rejeicoes: '⚠️ Rejeições' };
-            const statusEmoji = { ok: '🟢', pendente: '🟡', nao_fechado: '🔴', rejeicoes: '🟠' };
-            grid.innerHTML = eventos.map(ev => {
-                const s = state.fechamentoStatus[ev] || { status: 'pendente', obs: '' };
-                return `
-              <div class="status-item" onclick="toggleFechamentoStatus('${ev}')" title="Clique para alternar">
-                <span style="font-size:1.2rem;">${statusEmoji[s.status]||'⚪'}</span>
-                <div>
-                  <strong>${ev}</strong>
-                  <div style="font-size:0.65rem;color:var(--text3);">${statusMap[s.status]||s.status}</div>
-                  ${s.obs?`<div style="font-size:0.6rem;opacity:0.7;">📝 ${s.obs}</div>`:''}
-                </div>
-              </div>`;
-            }).join('');
-            drawFechamentoChart();
-        }
-
-        window.toggleFechamentoStatus = function(evento) {
-            if (!ensureCompetenciaWritable()) { renderFechamento(); return; }
-            const statuses = ['ok', 'pendente', 'nao_fechado', 'rejeicoes'];
-            const current = state.fechamentoStatus[evento]?.status || 'pendente';
-            const nextIdx = (statuses.indexOf(current) + 1) % statuses.length;
-            const nextStatus = statuses[nextIdx];
-            if (evento === 'S-1299' && nextStatus === 'ok') {
-                const abertos = getCentralCases().filter(item => item.status !== 'resolvido');
-                if (abertos.length) {
-                    const proceed = confirm(`Existem ${abertos.length} evento(s) rejeitado(s)/retido(s) ainda não resolvido(s). Confirmar o S-1299 como transmitido mesmo assim?`);
-                    if (!proceed) return;
-                }
-            }
-            if (!state.fechamentoStatus[evento]) state.fechamentoStatus[evento] = { status: 'pendente', obs: '' };
-            state.fechamentoStatus[evento].status = nextStatus;
-            const obs = prompt('Observação (opcional):', state.fechamentoStatus[evento].obs || '');
-            if (obs !== null) state.fechamentoStatus[evento].obs = obs;
-            scheduleSave();
-            renderFechamento();
-            updateKPIs();
         };
 
         // ==================== CALENDARIO OPERACIONAL ====================
@@ -4937,129 +4674,6 @@
         };
 
 
-        // ==================== GERENCIAL ====================
-        function renderGerencial() {
-            const container = document.getElementById('gerencialCards');
-            if (!container) return;
-            const phase = getCurrentPhase();
-            const context = getOperationalContext();
-            const pendencias = state.rejeicoes.filter(r => r.status === 'pendente').length;
-            const retidos = state.retidos.filter(r => r.status === 'pendente').length;
-            const fechOk = Object.values(state.fechamentoStatus).filter(s => s.status === 'ok').length;
-            const fechTotal = Object.keys(state.fechamentoStatus).length;
-            const riskClass = phase?.criticity === 'Crítico' ? 'exec-danger' : phase?.criticity === 'Alto' ? 'exec-warning' : 'exec-success';
-            const closed = isCompetenciaClosed();
-            const closeBtn = document.getElementById('competenciaCloseBtn');
-            if (closeBtn) { closeBtn.textContent = closed ? 'Reabrir competência' : 'Encerrar competência'; closeBtn.className = 'btn btn-outline'; }
-            container.innerHTML = `
-                <div class="executive-card ${closed?'exec-danger':'exec-success'}"><span>Competência</span><strong>${formatCompKey(state.currentCompetencia)}</strong><small>${closed?'🔒 Encerrada':'🔓 Aberta para tratamento'}</small></div>
-                <div class="executive-card"><span>Atuação programada</span><strong>${escHtml(context.period?.shortTitle || context.period?.title || 'Não definida')}</strong><small>${context.period ? formatDateBR(context.period.start)+' a '+formatDateBR(context.period.end) : 'Importe o relatório'}</small></div>
-                <div class="executive-card ${riskClass}"><span>Criticidade</span><strong>${phase?.criticity||'N/D'}</strong><small>${phase?.title||'Sem fase ativa'}</small></div>
-                <div class="executive-card"><span>Pendências eSocial</span><strong>${pendencias + retidos}</strong><small>${pendencias} rejeições · ${retidos} retidos</small></div>
-                <div class="executive-card"><span>Fechamento</span><strong>${fechOk}/${fechTotal}</strong><small>Eventos transmitidos</small></div>`;
-            renderMilestoneList('gerencialMilestones');
-            drawRejeicoesChart();
-        }
-
-
-        window.toggleCompetenciaClosed = function() {
-            if (!state.closedCompetencias) state.closedCompetencias = {};
-            const key = state.currentCompetencia;
-            const existing = state.closedCompetencias[key];
-            if (existing?.closedAt) {
-                const reason = prompt(`A competência ${formatCompKey(key)} está encerrada. Informe a justificativa para reabertura:`);
-                if (!reason?.trim()) return;
-                state.closedCompetencias[key] = { ...existing, closedAt: null, reopenedAt: new Date().toISOString(), reopenReason: reason.trim() };
-                scheduleSave(); renderAll(); showToast('🔓 Competência reaberta.');
-                return;
-            }
-            const openItems = getCentralCases().filter(x => x.status !== 'resolvido').length;
-            const msg = openItems ? `Ainda existem ${openItems} pendência(s) não resolvida(s). Encerrar a competência mesmo assim?` : `Encerrar a competência ${formatCompKey(key)}?`;
-            if (!confirm(msg)) return;
-            state.closedCompetencias[key] = {
-                closedAt: new Date().toISOString(),
-                snapshot: {
-                    rejeicoes: state.rejeicoes.length,
-                    retidos: state.retidos.length,
-                    resolvidos: getCentralCases().filter(x => x.status === 'resolvido').length,
-                    pendentes: openItems,
-                    fechamento: JSON.parse(JSON.stringify(state.fechamentoStatus))
-                }
-            };
-            scheduleSave(); renderAll(); showToast('🔒 Competência encerrada e protegida contra alterações.');
-        };
-
-        function buildMonthlyReportData() {
-            const all=getCentralCases().filter(isS1210Case);
-            const resolved=all.filter(x=>x.status==='resolvido').length;
-            const open=all.length-resolved;
-            const byResp=getServerNames(true).map(name=>({name,total:all.filter(x=>x.responsavel===name).length,resolved:all.filter(x=>x.responsavel===name&&x.status==='resolvido').length}));
-            const situations={}; all.forEach(x=>{ const k=getCentralSituation(x)||'Sem situação'; situations[k]=(situations[k]||0)+1; });
-            return {all,resolved,open,byResp,situations:Object.entries(situations).sort((a,b)=>b[1]-a[1])};
-        }
-
-        window.openMonthlyReport = function() {
-            const d=buildMonthlyReportData();
-            const closed=isCompetenciaClosed();
-            const content=document.getElementById('modalContent'), overlay=document.getElementById('modalOverlay');
-            content.innerHTML=`<span class="eyebrow">RELATÓRIO GERENCIAL S-1210</span><h3>Competência ${formatCompKey(state.currentCompetencia)}</h3><div class="report-preview-grid"><div><span>Total de eventos</span><strong>${d.all.length}</strong></div><div><span>Concluídos</span><strong>${d.resolved}</strong></div><div><span>Em aberto</span><strong>${d.open}</strong></div><div><span>Mês</span><strong>${closed?'Encerrado':'Aberto'}</strong></div></div><h4 style="margin-top:12px;">Distribuição da equipe</h4><div class="milestone-list" style="margin-top:7px;">${d.byResp.map(x=>`<div class="milestone-item"><div class="milestone-date">${x.total}</div><div><strong>${x.name}</strong><small>${x.resolved} concluído(s)</small></div></div>`).join('')}</div><h4 style="margin-top:12px;">Situações registradas</h4><div class="milestone-list" style="margin-top:7px;">${d.situations.map(([label,count])=>`<div class="milestone-item"><div class="milestone-date">${count}</div><div><strong>${escHtml(label)}</strong><small>evento(s)</small></div></div>`).join('') || '<div class="empty-state">Sem eventos S-1210.</div>'}</div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModalDirect()">Fechar</button><button class="btn btn-primary" onclick="printMonthlyReport()">Imprimir / salvar PDF</button></div>`;
-            overlay.style.display='flex';
-        };
-
-        window.printMonthlyReport = function() {
-            const d=buildMonthlyReportData();
-            const win=window.open('','_blank'); if(!win){ alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.'); return; }
-            const rows=d.all.filter(isS1210Case).map(x=>`<tr><td>${escHtml(x.idEvento||'')}</td><td>${escHtml(x.cpf||'')}</td><td>${escHtml(x.nome||'')}</td><td>${escHtml(x.responsavel||'Não atribuído')}</td><td>${escHtml(getCentralSituation(x)==='Outro'?(x.situacaoOutro||'Outro'):(getCentralSituation(x)||'Sem situação'))}</td><td>${escHtml(x.obs||'')}</td></tr>`).join('');
-            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório ${formatCompKey(state.currentCompetencia)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:28px}h1{color:#123b5d;margin-bottom:4px}p{color:#5c6875}.k{display:flex;gap:10px;margin:18px 0}.k div{border:1px solid #ccd6df;padding:10px 14px;min-width:120px}.k strong{display:block;font-size:22px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7dee5;padding:6px;text-align:left;vertical-align:top}th{background:#123b5d;color:white}@page{size:A4 landscape;margin:10mm}</style></head><body><h1>Relatório Operacional eSocial S-1210</h1><p>Universidade Federal do Espírito Santo · Competência ${formatCompKey(state.currentCompetencia)} · ${isCompetenciaClosed()?'Competência encerrada':'Competência aberta'}</p><div class="k"><div><span>Total</span><strong>${d.all.filter(isS1210Case).length}</strong></div><div><span>Concluídos</span><strong>${d.resolved}</strong></div><div><span>Em aberto</span><strong>${d.open}</strong></div></div><table><thead><tr><th>ID Evento</th><th>CPF Servidor</th><th>Nome do Servidor</th><th>Servidor Responsável</th><th>Situação</th><th>Observação</th></tr></thead><tbody>${rows}</tbody></table><script>window.onload=()=>window.print();<\/script></body></html>`); win.document.close();
-        };
-
-
-        // ==================== HISTORICO ====================
-        function renderHistorico() {
-            const tbody = document.querySelector('#historicoTable tbody');
-            if (!tbody) return;
-            const compKeys = Object.keys(allCompetencias).sort();
-            tbody.innerHTML = compKeys.map(key => {
-                const h = allCompetencias[key]?.historicoEntry || {};
-                return `
-              <tr>
-                <td><strong>${formatCompKey(key)}</strong></td>
-                <td>${h.rejeicoes||0}</td><td>${h.retidos||0}</td><td>${h.retificacoes||0}</td>
-                <td>R$ ${(h.multasDCTF||0).toFixed(2)}</td><td>${h.s1299Reabertos||0}</td>
-                <td>${h.vinculosReg||0}</td><td>${h.admissoes||0}</td><td>${h.desligamentos||0}</td>
-              </tr>`;
-            }).join('');
-            drawHistoricoChart();
-        }
-
-        // ==================== ACOES URGENTES ====================
-        function renderUrgentActions() {
-            const container = document.getElementById('acoesUrgentesList');
-            if (!container) return;
-            container.innerHTML = state.urgentActions.map((a, i) => `
-            <div class="alert-item alert-${a.priority}" style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="${a.done?'text-decoration:line-through;opacity:0.5;':''}">${a.text}</span>
-              <div style="display:flex;gap:4px;">
-                <button class="btn btn-sm ${a.done?'btn-outline':'btn-success'}" onclick="toggleUrgent(${i})">${a.done?'✅':'✔'}</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteUrgent(${i})">🗑️</button>
-              </div>
-            </div>`).join('');
-        }
-        window.toggleUrgent = function(i) {
-            if (state.urgentActions[i]) { state.urgentActions[i].done = !state.urgentActions[i].done;
-                scheduleSave();
-                renderUrgentActions(); }
-        };
-        window.deleteUrgent = function(i) { state.urgentActions.splice(i, 1);
-            scheduleSave();
-            renderUrgentActions(); };
-        window.addUrgentAction = function() {
-            const text = prompt('Ação urgente:');
-            if (text?.trim()) { state.urgentActions.push({ text: text.trim(), done: false, priority: 'warning' });
-                scheduleSave();
-                renderUrgentActions(); }
-        };
-
         // ==================== CHARTS ====================
         function drawProgressChart() {
             const canvas = document.getElementById('chartProgress');
@@ -5121,145 +4735,6 @@
             ctx.fillText('Distribuição proporcional aos dias de cada período operacional.', left, 158);
         }
 
-
-        function drawRejeicoesChart() {
-            if (window.chartRejeicoesInstance) {
-                window.chartRejeicoesInstance.destroy = function() {};
-                window.chartRejeicoesInstance = null;
-            }
-            const canvas = document.getElementById('chartRejeicoes');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.parentElement.getBoundingClientRect();
-            const w = rect.width || 400;
-            const h = 200;
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            canvas.style.width = w + 'px';
-            canvas.style.height = h + 'px';
-            ctx.scale(dpr, dpr);
-            ctx.clearRect(0, 0, w, h);
-            const pend = state.rejeicoes.filter(r => r.status === 'pendente').length;
-            const and = state.rejeicoes.filter(r => r.status === 'andamento').length;
-            const res = state.rejeicoes.filter(r => r.status === 'resolvido').length;
-            const data = [{ label: 'Pendentes', v: pend, c: '#dc2626' }, { label: 'Andamento', v: and,
-                c: '#d97706' }, { label: 'Resolvidos', v: res, c: '#16a34a' }];
-            const maxV = Math.max(...data.map(d => d.v), 1);
-            const barW = (w - 70) / data.length - 10;
-            data.forEach((d, i) => {
-                const x = 55 + i * (barW + 10);
-                const barH = Math.max((d.v / maxV) * (h - 50), 3);
-                const y = 30 + (h - 50) - barH;
-                ctx.fillStyle = d.c;
-                ctx.beginPath();
-                if (ctx.roundRect) {
-                    ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
-                } else {
-                    ctx.rect(x, y, barW, barH);
-                }
-                ctx.fill();
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a202c';
-                ctx.font = 'bold 10px Segoe UI';
-                ctx.textAlign = 'center';
-                ctx.fillText(d.v, x + barW / 2, y - 5);
-                ctx.font = '9px Segoe UI';
-                ctx.fillText(d.label, x + barW / 2, h - 8);
-            });
-            window.chartRejeicoesInstance = { destroy: function() {} };
-        }
-
-        function drawFechamentoChart() {
-            if (window.chartFechamentoInstance) {
-                window.chartFechamentoInstance.destroy = function() {};
-                window.chartFechamentoInstance = null;
-            }
-            const canvas = document.getElementById('chartFechamento');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.parentElement.getBoundingClientRect();
-            const w = rect.width || 400;
-            const h = 180;
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            canvas.style.width = w + 'px';
-            canvas.style.height = h + 'px';
-            ctx.scale(dpr, dpr);
-            ctx.clearRect(0, 0, w, h);
-            const statuses = state.fechamentoStatus;
-            const eventos = Object.keys(statuses);
-            if (eventos.length === 0) return;
-            const barW = Math.max((w - 60) / eventos.length - 6, 24);
-            const okColor = '#16a34a';
-            const pendColor = '#d97706';
-            const critColor = '#dc2626';
-            eventos.forEach((ev, i) => {
-                const s = statuses[ev]?.status || 'pendente';
-                const color = s === 'ok' ? okColor : s === 'pendente' ? pendColor : critColor;
-                const val = s === 'ok' ? 100 : s === 'pendente' ? 50 : 20;
-                const barH = (val / 100) * (h - 50);
-                const x = 40 + i * (barW + 6);
-                const y = 25 + (h - 50) - barH;
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                if (ctx.roundRect) {
-                    ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
-                } else {
-                    ctx.rect(x, y, barW, barH);
-                }
-                ctx.fill();
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a202c';
-                ctx.font = 'bold 9px Segoe UI';
-                ctx.textAlign = 'center';
-                ctx.fillText(ev, x + barW / 2, h - 6);
-            });
-            window.chartFechamentoInstance = { destroy: function() {} };
-        }
-
-        function drawHistoricoChart() {
-            if (window.chartHistoricoInstance) {
-                window.chartHistoricoInstance.destroy = function() {};
-                window.chartHistoricoInstance = null;
-            }
-            const canvas = document.getElementById('chartHistorico');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.parentElement.getBoundingClientRect();
-            const w = rect.width || 400;
-            const h = 200;
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
-            canvas.style.width = w + 'px';
-            canvas.style.height = h + 'px';
-            ctx.scale(dpr, dpr);
-            ctx.clearRect(0, 0, w, h);
-            const compKeys = Object.keys(allCompetencias).sort();
-            if (compKeys.length === 0) return;
-            const maxVal = Math.max(1, ...compKeys.map(k => allCompetencias[k]?.historicoEntry?.rejeicoes || 0));
-            const barW = Math.max((w - 60) / compKeys.length - 6, 16);
-            compKeys.forEach((k, i) => {
-                const v = allCompetencias[k]?.historicoEntry?.rejeicoes || 0;
-                const barH = (v / maxVal) * (h - 50);
-                const x = 40 + i * (barW + 6);
-                const y = 25 + (h - 50) - barH;
-                ctx.fillStyle = '#2563eb';
-                ctx.beginPath();
-                if (ctx.roundRect) {
-                    ctx.roundRect(x, y, barW, Math.max(barH, 2), [4, 4, 0, 0]);
-                } else {
-                    ctx.rect(x, y, barW, Math.max(barH, 2));
-                }
-                ctx.fill();
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a202c';
-                ctx.font = 'bold 8px Segoe UI';
-                ctx.textAlign = 'center';
-                ctx.fillText(v, x + barW / 2, y - 4);
-                ctx.fillText(formatCompKey(k).substring(0, 5), x + barW / 2, h - 6);
-            });
-            window.chartHistoricoInstance = { destroy: function() {} };
-        }
 
         // ==================== EXPORT ====================
         window.exportPDF = function() { window.print(); };
@@ -5355,9 +4830,6 @@
                     scheduleSave();
                     setTimeout(() => {
                         drawProgressChart();
-                        drawRejeicoesChart();
-                        drawFechamentoChart();
-                        drawHistoricoChart();
                     }, 150);
                 };
                 darkToggle.removeEventListener('click', darkHandler);
@@ -5369,23 +4841,8 @@
                 printBtn.removeEventListener('click', printHandler);
                 printBtn.addEventListener('click', printHandler);
             }
-            const searchRej = document.getElementById('searchRejeicoes');
-            if (searchRej) {
-                const rejHandler = () => { renderRejeicoes(); };
-                searchRej.removeEventListener('input', rejHandler);
-                searchRej.addEventListener('input', rejHandler);
-            }
-            const searchRet = document.getElementById('searchRetidos');
-            if (searchRet) {
-                const retHandler = () => { renderRetidos(); };
-                searchRet.removeEventListener('input', retHandler);
-                searchRet.addEventListener('input', retHandler);
-            }
             const resizeHandler = () => {
                 drawProgressChart();
-                drawRejeicoesChart();
-                drawFechamentoChart();
-                drawHistoricoChart();
             };
             window.removeEventListener('resize', resizeHandler);
             window.addEventListener('resize', resizeHandler);
@@ -5456,7 +4913,7 @@
                 return;
             }
             person.ativo = !person.ativo;
-            scheduleSave(); renderServidores(); renderCentralEsocial(); renderPolareReport(); renderDashboardDailyWork();
+            scheduleSave(); renderServidores(); renderCentralEsocial(); renderPolareReport(); renderDashboardDailyWork(); renderDashboardTeam(); updateKPIs(); renderAlerts();
             showToast(person.ativo ? 'Servidor reativado.' : 'Servidor inativado.');
         };
 
@@ -6212,7 +5669,7 @@
             updateSortIcons();
         }
 
-        async function loadLepismaData() {
+        async function loadLepismaData(options = {}) {
             if (lepismaIsLoading) return;
             lepismaIsLoading = true;
             document.getElementById('lepismaLoading').style.display = 'flex';
@@ -6240,8 +5697,12 @@
                 document.getElementById('lepismaLoading').style.display = 'none';
                 document.getElementById('lepismaContent').style.display = 'block';
                 renderPolareReport();
-                
-                showToast('✅ Dados do Lepisma carregados: ' + lepismaAllData.length + ' processos');
+                updateKPIs();
+                renderDashboardDailyWork();
+                renderDashboardTeam();
+                renderAlerts();
+
+                if (!options.silent) showToast('✅ Dados do Lepisma carregados: ' + lepismaAllData.length + ' processos');
             } catch (err) {
                 console.error('[Lepisma DEBUG] Erro ao carregar:', err);
                 document.getElementById('lepismaLoading').style.display = 'none';
@@ -6277,7 +5738,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v3.8 ativos.');
+            console.log('📁 Visão Operacional integrada · Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v3.9 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
