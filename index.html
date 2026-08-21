@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v3.6.1</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v3.7</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -1948,7 +1948,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v3.6 ========== */
+        /* ========== CENTRAL eSOCIAL / v3.7 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2010,8 +2010,42 @@
         .situation-stack input { width:100%; }
         .central-observation { min-width:270px; min-height:52px; resize:vertical; }
         .central-empty { padding:28px; text-align:center; color:var(--text3); border:1px dashed var(--border); border-radius:9px; background:var(--surface2); }
+        .polare-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+        .polare-filter { display:grid; gap:5px; min-width:190px; }
+        .polare-filter label { color:var(--text3); font-size:9px; font-weight:800; letter-spacing:.55px; text-transform:uppercase; }
+        .polare-filter input,.polare-filter select { min-height:36px; padding:7px 10px; border:1px solid var(--border); border-radius:7px; background:var(--surface2); color:var(--text); }
+        .polare-kpis { display:grid; grid-template-columns:repeat(4,minmax(145px,1fr)); gap:10px; margin:14px 0; }
+        .polare-kpi { padding:15px; border:1px solid var(--border); border-left:4px solid #1769aa; border-radius:9px; background:var(--surface); }
+        .polare-kpi:nth-child(2) { border-left-color:#7c3aed; }
+        .polare-kpi:nth-child(3) { border-left-color:#159669; }
+        .polare-kpi:nth-child(4) { border-left-color:#d97706; }
+        .polare-kpi span,.polare-kpi strong,.polare-kpi small { display:block; }
+        .polare-kpi span { color:var(--text3); font-size:9px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; }
+        .polare-kpi strong { margin:4px 0 2px; font-size:25px; }
+        .polare-kpi small { color:var(--text3); font-size:9px; }
+        .polare-layout { display:grid; grid-template-columns:minmax(260px,.75fr) minmax(0,2.25fr); gap:12px; align-items:start; }
+        .polare-bars { display:grid; gap:12px; margin-top:8px; }
+        .polare-bar-head { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; font-size:10px; }
+        .polare-bar-track { height:9px; overflow:hidden; border-radius:999px; background:var(--surface3); }
+        .polare-bar-fill { display:block; height:100%; min-width:2px; border-radius:999px; background:linear-gradient(90deg,#1769aa,#58a1d8); }
+        .activity-kind { display:inline-flex; padding:3px 7px; border-radius:5px; font-size:8px; font-weight:800; text-transform:uppercase; white-space:nowrap; }
+        .activity-kind.lepisma { background:#f1ecff; color:#6741b5; }
+        .activity-kind.aceito { background:#eaf8f0; color:#147448; }
+        .activity-kind.dispensado { background:#fff5e5; color:#975a08; }
+        .staff-form { display:grid; grid-template-columns:minmax(220px,1fr) auto; gap:9px; margin-top:12px; }
+        .staff-form input { min-height:38px; padding:8px 11px; border:1px solid var(--border); border-radius:7px; background:var(--surface2); color:var(--text); }
+        .staff-list { display:grid; gap:8px; margin-top:14px; }
+        .staff-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 13px; border:1px solid var(--border); border-radius:8px; background:var(--surface2); }
+        .staff-row-main { display:flex; align-items:center; gap:10px; min-width:0; }
+        .staff-avatar { width:34px; height:34px; display:grid; place-items:center; flex:0 0 34px; border-radius:50%; background:#dceefe; color:#12517d; font-weight:900; font-size:11px; }
+        .staff-row strong,.staff-row small { display:block; }
+        .staff-row small { margin-top:2px; color:var(--text3); font-size:9px; }
+        .staff-status { display:inline-flex; padding:3px 7px; border-radius:999px; background:var(--success-bg); color:var(--success); font-size:8px; font-weight:900; text-transform:uppercase; }
+        .staff-status.inactive { background:var(--surface3); color:var(--text3); }
+        .staff-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
         @media (max-width:1200px) { .central-kpis { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
-        @media (max-width:700px) { .central-kpis,.daily-work-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } }
+        @media (max-width:900px) { .polare-layout { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row { align-items:flex-start; flex-direction:column; } }
 
     </style>
 </head>
@@ -2040,13 +2074,15 @@
             <div class="nav-item" data-page="lepisma"><span class="nav-icon">▰</span> Controle Lepisma</div>
 
             <div class="nav-section">Gestão</div>
+            <div class="nav-item" data-page="polare"><span class="nav-icon">▤</span> Relatório PolarE</div>
+            <div class="nav-item" data-page="servidores"><span class="nav-icon">＋</span> Cadastro de Servidores</div>
             <div class="nav-item" data-page="gerencial"><span class="nav-icon">↗</span> Modo Gerencial</div>
             <div class="nav-item" data-page="historico"><span class="nav-icon">◫</span> Histórico</div>
             <div class="nav-item" data-page="acoes"><span class="nav-icon">▲</span> Ações Urgentes</div>
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v3.6.1 · 2026<br>
+            UFES · v3.7 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2181,13 +2217,13 @@
                 </div>
                 <div class="central-kpis" id="centralKpis"></div>
                 <div class="card">
-                    <div class="central-import-note"><span>ℹ️</span><div><strong>Leitura automática do relatório do eSocial.</strong> O sistema considera somente eventos S-1210 rejeitados ou retidos, separa os quadros pelo mês da Data/Hora de Criação e distribui os novos registros de forma aleatória e equilibrada entre Fabianne, Rafael e Roni.</div></div>
+                    <div class="central-import-note"><span>ℹ️</span><div><strong>Leitura automática do relatório do eSocial.</strong> O sistema considera somente eventos S-1210 rejeitados ou retidos, separa os quadros pelo mês da Data/Hora de Criação e distribui os novos registros de forma aleatória e equilibrada entre os servidores ativos no cadastro.</div></div>
                     <div class="central-toolbar">
                         <div class="central-filters">
                             <input type="text" class="search-box" id="centralSearch" placeholder="Buscar ID, CPF, nome ou observação" oninput="renderCentralEsocial()" style="width:260px;">
                             <select id="centralMonth" onchange="renderCentralEsocial()"><option value="">Todos os meses</option></select>
                             <select id="centralSituation" onchange="renderCentralEsocial()"><option value="">Todas as situações</option><option>Reenviado</option><option>Aceito</option><option>Dispensado Automaticamente</option><option>Rejeitado</option><option>Outro</option><option value="__SEM__">Sem situação</option></select>
-                            <select id="centralResp" onchange="renderCentralEsocial()"><option value="">Todos responsáveis</option><option value="__SEM__">Sem responsável</option><option>Roni</option><option>Rafael</option><option>Fabianne</option></select>
+                            <select id="centralResp" onchange="renderCentralEsocial()"><option value="">Todos responsáveis</option><option value="__SEM__">Sem responsável</option></select>
                             <button class="btn btn-sm btn-outline" onclick="resetCentralFilters()">Limpar filtros</button>
                         </div>
                         <span class="competence-lock" id="centralCompetenceStatus">Quadros separados por mês</span>
@@ -2343,6 +2379,60 @@
                 <div class="card">
                     <div class="card-header"><h3>🚨 Ações Urgentes</h3><button class="btn btn-sm btn-primary" onclick="addUrgentAction()">+ Nova</button></div>
                     <div id="acoesUrgentesList"></div>
+                </div>
+            </div>
+
+            <!-- PAGE: RELATÓRIO POLARE -->
+            <div class="page" id="page-polare">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">ATIVIDADES DO MÊS</span>
+                        <h2>Relatório PolarE</h2>
+                        <p>Consolidação dos processos despachados no Lepisma e dos eventos eSocial aceitos ou dispensados automaticamente.</p>
+                    </div>
+                    <div class="page-heading-actions">
+                        <button class="btn btn-primary" onclick="copyPolareSummary()">Copiar resumo</button>
+                        <button class="btn btn-outline" onclick="printPolareReport()">Imprimir relatório</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="polare-filters">
+                        <div class="polare-filter"><label for="polareMonth">Mês da atividade</label><input type="month" id="polareMonth" onchange="renderPolareReport()"></div>
+                        <div class="polare-filter"><label for="polareServer">Servidor responsável</label><select id="polareServer" onchange="renderPolareReport()"><option value="">Todos os servidores</option></select></div>
+                        <button class="btn btn-sm btn-outline" onclick="resetPolareFilters()">Mês atual e todos</button>
+                    </div>
+                    <div class="central-import-note" style="margin-top:12px;margin-bottom:0;"><span>ℹ️</span><div>O mês considera a <strong>Data de Saída</strong> do Lepisma e a data em que a situação do evento foi alterada para <strong>Aceito</strong> ou <strong>Dispensado Automaticamente</strong>. Registros antigos sem data de conclusão usam a melhor data disponível.</div></div>
+                </div>
+                <div class="polare-kpis" id="polareKpis"></div>
+                <div class="polare-layout">
+                    <div class="card">
+                        <div class="card-header"><div><span class="eyebrow">DISTRIBUIÇÃO</span><h3>Atividades por servidor</h3></div></div>
+                        <div class="polare-bars" id="polareServerBars"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><div><span class="eyebrow">DETALHAMENTO</span><h3 id="polareDetailTitle">Atividades realizadas</h3></div><span class="badge badge-blue" id="polareActivityCount">0 atividades</span></div>
+                        <div class="table-wrap"><table id="polareTable"><thead><tr><th>Data</th><th>Servidor</th><th>Atividade</th><th>Identificação</th><th>Interessado / Servidor</th><th>Resultado / Detalhe</th></tr></thead><tbody></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: CADASTRO DE SERVIDORES -->
+            <div class="page" id="page-servidores">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">EQUIPE RESPONSÁVEL</span>
+                        <h2>Cadastro de Servidores</h2>
+                        <p>Os servidores ativos aparecem na Central eSocial, na distribuição automática e nos filtros do Relatório PolarE.</p>
+                    </div>
+                    <span class="competence-lock" id="staffActiveCount">0 ativos</span>
+                </div>
+                <div class="card">
+                    <div class="central-import-note"><span>ℹ️</span><div>Ao inativar alguém, os registros históricos permanecem intactos, mas o nome deixa de receber novos eventos na distribuição automática.</div></div>
+                    <div class="staff-form">
+                        <input id="staffNameInput" type="text" maxlength="80" placeholder="Nome do novo servidor" onkeydown="if(event.key==='Enter')addServidor()">
+                        <button class="btn btn-primary" onclick="addServidor()">Adicionar servidor</button>
+                    </div>
+                    <div class="staff-list" id="staffList"></div>
                 </div>
             </div>
 
@@ -2604,6 +2694,13 @@
             darkMode: false,
             historico: {},
             lepismaObservations: {},
+            lepismaHistorico: [],
+            esocialHistorico: [],
+            servidores: [
+                { id: 'roni', nome: 'Roni', ativo: true },
+                { id: 'rafael', nome: 'Rafael', ativo: true },
+                { id: 'fabianne', nome: 'Fabianne', ativo: true }
+            ],
             closedCompetencias: {},
         };
 
@@ -2625,6 +2722,69 @@
                 }
             }
             return result;
+        }
+
+        function normalizePersonKey(value) {
+            return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        }
+
+        function makePersonId(name) {
+            const base = normalizePersonKey(name).replace(/\s+/g, '_') || 'servidor';
+            return base + '_' + Math.random().toString(36).slice(2, 7);
+        }
+
+        function ensureServidoresState() {
+            if (!Array.isArray(state.servidores) || !state.servidores.length) {
+                state.servidores = JSON.parse(JSON.stringify(DEFAULT_STATE.servidores || []));
+            }
+            const seen = new Set();
+            state.servidores = state.servidores.filter(item => {
+                if (!item || !String(item.nome || '').trim()) return false;
+                item.nome = String(item.nome).trim();
+                if (!item.id) item.id = makePersonId(item.nome);
+                if (typeof item.ativo !== 'boolean') item.ativo = true;
+                const key = normalizePersonKey(item.nome);
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            return state.servidores;
+        }
+
+        function getServerNames(includeInactive = false) {
+            return ensureServidoresState()
+                .filter(item => includeInactive || item.ativo)
+                .map(item => item.nome);
+        }
+
+        function resolveServerName(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            const key = normalizePersonKey(raw);
+            const match = ensureServidoresState().find(item => {
+                const itemKey = normalizePersonKey(item.nome);
+                return itemKey === key || (key.length >= 3 && itemKey.startsWith(key)) || (itemKey.length >= 3 && key.startsWith(itemKey));
+            });
+            return match?.nome || raw;
+        }
+
+        function responsibleOptions(selected, includeUnassigned = true) {
+            const current = String(selected || '').trim();
+            const names = getServerNames(false);
+            if (current && !names.includes(current)) names.push(current);
+            return (includeUnassigned ? `<option value="" ${!current ? 'selected' : ''}>Não atribuído</option>` : '') +
+                names.map(name => `<option value="${escHtml(name)}" ${current === name ? 'selected' : ''}>${escHtml(name)}</option>`).join('');
+        }
+
+        function populateCentralResponsibleFilter(all) {
+            const select = document.getElementById('centralResp');
+            if (!select) return;
+            const selected = select.value;
+            const names = new Set(getServerNames(true));
+            (all || []).forEach(item => { if (String(item.responsavel || '').trim()) names.add(item.responsavel); });
+            select.innerHTML = '<option value="">Todos responsáveis</option><option value="__SEM__">Sem responsável</option>' +
+                [...names].sort((a,b) => a.localeCompare(b, 'pt-BR')).map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join('');
+            if (selected === '__SEM__' || names.has(selected)) select.value = selected;
         }
 
         function formatDateBR(dateStr) {
@@ -3057,6 +3217,12 @@
                 case 'lepisma':
                     renderLepismaPage();
                     break;
+                case 'polare':
+                    renderPolarePage();
+                    break;
+                case 'servidores':
+                    renderServidores();
+                    break;
                 default:
                     break;
             }
@@ -3066,7 +3232,8 @@
             const labels = {
                 dashboard: 'Visão Operacional', calendario: 'Calendário', timeline: 'Linha do Tempo',
                 equipe: 'Equipe', central: 'Central eSocial', rejeicoes: 'Rejeições', retidos: 'Retidos',
-                fechamento: 'Fechamento', lepisma: 'Lepisma', gerencial: 'Modo Gerencial',
+                fechamento: 'Fechamento', lepisma: 'Lepisma', polare: 'Relatório PolarE',
+                servidores: 'Cadastro de Servidores', gerencial: 'Modo Gerencial',
                 historico: 'Histórico', acoes: 'Ações Urgentes'
             };
             return labels[pageName] || pageName || 'Plataforma';
@@ -3247,7 +3414,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v3.6.1 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v3.7 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3323,6 +3490,8 @@
             renderGerencial();
             renderHistorico();
             renderUrgentActions();
+            renderPolareReport();
+            renderServidores();
             updatePhaseIndicator();
             updateKPIs();
         }
@@ -3454,6 +3623,7 @@
             if (!boards || !kpis) return;
             const all = getCentralCasesAllMonths();
             populateCentralMonthFilter(all);
+            populateCentralResponsibleFilter(all);
 
             const withoutSituation = all.filter(x => !getCentralSituation(x)).length;
             const resent = all.filter(x => getCentralSituation(x) === 'Reenviado').length;
@@ -3515,7 +3685,7 @@
                         <td><span class="event-id">${escHtml(item.idEvento || 'ID não informado')}</span><span class="event-origin ${item._type}">${item._type === 'rejeicao' ? 'Rejeitado' : 'Retido'}</span></td>
                         <td><span class="server-data">${escHtml(item.cpf || '—')}</span></td>
                         <td><span class="server-data"><strong>${escHtml(item.nome || '—')}</strong></span></td>
-                        <td><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'responsavel',this.value)"><option value="" ${!item.responsavel ? 'selected' : ''}>Não atribuído</option><option ${item.responsavel === 'Fabianne' ? 'selected' : ''}>Fabianne</option><option ${item.responsavel === 'Rafael' ? 'selected' : ''}>Rafael</option><option ${item.responsavel === 'Roni' ? 'selected' : ''}>Roni</option></select></td>
+                        <td><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'responsavel',this.value)">${responsibleOptions(item.responsavel)}</select></td>
                         <td><div class="situation-stack"><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'situacao',this.value)">${situationOptions}</select>${otherInput}</div></td>
                         <td><textarea class="central-observation" onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'obs',this.value)" placeholder="Escreva uma observação sobre o evento">${escHtml(item.obs || '')}</textarea></td>
                     </tr>`;
@@ -3546,6 +3716,42 @@
             return comp[arrName] || (comp[arrName] = []);
         }
 
+        function centralActivityIdentity(item, compKey = '') {
+            return normalizePersonKey(item?.idEvento || [item?.cpf, item?.dataCriacao, compKey || item?.competencia].join('|'));
+        }
+
+        function recordEsocialActivity(item, compKey) {
+            const situation = getCentralSituation(item);
+            if (!['Aceito','Dispensado Automaticamente'].includes(situation)) return;
+            if (!Array.isArray(state.esocialHistorico)) state.esocialHistorico = [];
+            const date = getLocalDateKey();
+            const identity = centralActivityIdentity(item, compKey);
+            const key = `${identity}|${normalizePersonKey(situation)}|${date}`;
+            const record = state.esocialHistorico.find(entry => entry.chave === key);
+            const snapshot = {
+                chave: key,
+                identidade: identity,
+                data: date,
+                responsavel: item.responsavel || '',
+                situacao: situation,
+                idEvento: item.idEvento || '',
+                cpf: item.cpf || '',
+                nome: item.nome || '',
+                competenciaOrigem: compKey,
+                registradoEm: new Date().toISOString()
+            };
+            if (record) Object.assign(record, snapshot);
+            else state.esocialHistorico.push(snapshot);
+        }
+
+        function updateLatestEsocialActivityResponsible(item, compKey, responsavel) {
+            if (!Array.isArray(state.esocialHistorico)) return;
+            const identity = centralActivityIdentity(item, compKey);
+            const situation = getCentralSituation(item);
+            const record = [...state.esocialHistorico].reverse().find(entry => entry.identidade === identity && entry.situacao === situation);
+            if (record) record.responsavel = responsavel;
+        }
+
         window.updateCentralCase = function(compKey, arrName, idx, field, value) {
             if (!ensureCompetenciaWritable(compKey)) { renderCentralEsocial(); return; }
             const arr = getCentralCaseArray(compKey, arrName);
@@ -3554,8 +3760,15 @@
             if (field === 'situacao') {
                 if (value !== 'Outro') arr[idx].situacaoOutro = '';
                 arr[idx].status = situationToLegacyStatus(value);
+                arr[idx].situacaoAtualizadaEm = new Date().toISOString();
+                arr[idx].situacaoAtualizadaPor = arr[idx].responsavel || '';
+                recordEsocialActivity(arr[idx], compKey);
             }
-            scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork();
+            if (field === 'responsavel' && ['Aceito','Dispensado Automaticamente'].includes(getCentralSituation(arr[idx]))) {
+                arr[idx].situacaoAtualizadaPor = value;
+                updateLatestEsocialActivityResponsible(arr[idx], compKey, value);
+            }
+            scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork(); renderPolareReport();
         };
 
         window.updateCentralOther = function(compKey, arrName, idx, value) {
@@ -3570,7 +3783,7 @@
             if (!ensureCompetenciaWritable(compKey)) return;
             if (!confirm('Remover este evento da competência?')) return;
             getCentralCaseArray(compKey, arrName)?.splice(idx, 1);
-            scheduleSave(); renderCentralEsocial(); renderRejeicoes(); renderRetidos(); updateKPIs(); renderDashboardDailyWork();
+            scheduleSave(); renderCentralEsocial(); renderRejeicoes(); renderRetidos(); updateKPIs(); renderDashboardDailyWork(); renderPolareReport();
         };
 
         function renderDashboardDailyWork() {
@@ -3579,12 +3792,11 @@
             const open = getCentralCases().filter(x => x.status !== 'resolvido');
             const countFor = name => open.filter(x => x.responsavel === name).length;
             const unassigned = open.filter(x => !String(x.responsavel || '').trim()).length;
+            const staffCards = getServerNames(false).map(name => `<div class="daily-work-person"><strong>${countFor(name)}</strong><span>${escHtml(name)}</span></div>`).join('');
             container.innerHTML = `<div class="card-header"><div><span class="eyebrow">EXECUÇÃO DO DIA</span><h3>O que ainda precisa de atenção</h3></div><button class="btn btn-sm btn-outline" onclick="navigatePublic('central')">Abrir Central eSocial</button></div>
                 <div class="daily-work-grid">
                     <div class="daily-work-main"><strong>${open.length} pendência${open.length===1?'':'s'} em aberto</strong><span>${unassigned ? `${unassigned} ainda sem responsável. ` : ''}${isCompetenciaClosed() ? 'Competência encerrada para edição.' : 'Distribua e trate os eventos até o fechamento.'}</span></div>
-                    <div class="daily-work-person"><strong>${countFor('Roni')}</strong><span>Roni</span></div>
-                    <div class="daily-work-person"><strong>${countFor('Rafael')}</strong><span>Rafael</span></div>
-                    <div class="daily-work-person"><strong>${countFor('Fabianne')}</strong><span>Fabianne</span></div>
+                    ${staffCards}
                     <div class="daily-work-person"><strong>${unassigned}</strong><span>Sem responsável</span></div>
                 </div>`;
         }
@@ -3691,7 +3903,8 @@
         function getBalancedRandomAssignee(compKey, countsByMonth) {
             if (!countsByMonth[compKey]) {
                 const data = ensureCompetenciaData(compKey);
-                countsByMonth[compKey] = { Fabianne: 0, Rafael: 0, Roni: 0 };
+                const activeNames = getServerNames(false);
+                countsByMonth[compKey] = Object.fromEntries(activeNames.map(name => [name, 0]));
                 [...(data.rejeicoes || []), ...(data.retidos || [])].forEach(item => {
                     if (Object.prototype.hasOwnProperty.call(countsByMonth[compKey], item.responsavel)) {
                         countsByMonth[compKey][item.responsavel]++;
@@ -3699,6 +3912,7 @@
                 });
             }
             const counts = countsByMonth[compKey];
+            if (!Object.keys(counts).length) return '';
             const minimum = Math.min(...Object.values(counts));
             const candidates = Object.keys(counts).filter(name => counts[name] === minimum);
             const chosen = candidates[Math.floor(Math.random() * candidates.length)];
@@ -4002,10 +4216,7 @@
                   <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Resolvido</option>
                 </select></td>
                 <td><select onchange="updateRejeicao(${realIdx},'responsavel',this.value)">
-                  <option value="" ${!r.responsavel?'selected':''}>Não atribuído</option>
-                  <option ${r.responsavel==='Roni'?'selected':''}>Roni</option>
-                  <option ${r.responsavel==='Rafael'?'selected':''}>Rafael</option>
-                  <option ${r.responsavel==='Fabianne'?'selected':''}>Fabianne</option>
+                  ${responsibleOptions(r.responsavel)}
                 </select></td>
                 <td><input value="${escHtml(r.competencia||'')}" onchange="updateRejeicao(${realIdx},'competencia',this.value)"></td>
                 <td><input value="${escHtml(r.obs||'')}" onchange="updateRejeicao(${realIdx},'obs',this.value)"></td>
@@ -4022,6 +4233,7 @@
                 updateKPIs();
                 renderCentralEsocial();
                 renderDashboardDailyWork();
+                renderPolareReport();
             }
         };
         window.deleteRejeicao = function(idx) {
@@ -4032,17 +4244,19 @@
                 renderRejeicoes();
                 renderCentralEsocial();
                 renderDashboardDailyWork();
+                renderPolareReport();
                 updateKPIs();
             }
         };
         window.addRejeicao = function() {
             if (!ensureCompetenciaWritable()) return;
             state.rejeicoes.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
-                responsavel: 'Roni', competencia: state.currentCompetencia, obs: '' });
+                responsavel: getServerNames(false)[0] || '', competencia: state.currentCompetencia, obs: '' });
             scheduleSave();
             renderRejeicoes();
             renderCentralEsocial();
             renderDashboardDailyWork();
+            renderPolareReport();
             updateKPIs();
         };
 
@@ -4070,10 +4284,7 @@
                   <option value="resolvido" ${r.status==='resolvido'?'selected':''}>🟢 Liberado</option>
                 </select></td>
                 <td><select onchange="updateRetido(${realIdx},'responsavel',this.value)">
-                  <option value="" ${!r.responsavel?'selected':''}>Não atribuído</option>
-                  <option ${r.responsavel==='Roni'?'selected':''}>Roni</option>
-                  <option ${r.responsavel==='Rafael'?'selected':''}>Rafael</option>
-                  <option ${r.responsavel==='Fabianne'?'selected':''}>Fabianne</option>
+                  ${responsibleOptions(r.responsavel)}
                 </select></td>
                 <td><input value="${escHtml(r.competencia||'')}" onchange="updateRetido(${realIdx},'competencia',this.value)"></td>
                 <td><input value="${escHtml(r.obs||'')}" onchange="updateRetido(${realIdx},'obs',this.value)"></td>
@@ -4090,6 +4301,7 @@
                 updateKPIs();
                 renderCentralEsocial();
                 renderDashboardDailyWork();
+                renderPolareReport();
             }
         };
         window.deleteRetido = function(idx) {
@@ -4100,17 +4312,19 @@
                 renderRetidos();
                 renderCentralEsocial();
                 renderDashboardDailyWork();
+                renderPolareReport();
                 updateKPIs();
             }
         };
         window.addRetido = function() {
             if (!ensureCompetenciaWritable()) return;
             state.retidos.push({ cpf: '', nome: '', evento: 'S-1210', codErro: '', status: 'pendente',
-                responsavel: 'Roni', competencia: state.currentCompetencia, obs: '' });
+                responsavel: getServerNames(false)[0] || '', competencia: state.currentCompetencia, obs: '' });
             scheduleSave();
             renderRetidos();
             renderCentralEsocial();
             renderDashboardDailyWork();
+            renderPolareReport();
             updateKPIs();
         };
 
@@ -4639,7 +4853,7 @@
             const all=getCentralCases().filter(isS1210Case);
             const resolved=all.filter(x=>x.status==='resolvido').length;
             const open=all.length-resolved;
-            const byResp=['Roni','Rafael','Fabianne'].map(name=>({name,total:all.filter(x=>x.responsavel===name).length,resolved:all.filter(x=>x.responsavel===name&&x.status==='resolvido').length}));
+            const byResp=getServerNames(true).map(name=>({name,total:all.filter(x=>x.responsavel===name).length,resolved:all.filter(x=>x.responsavel===name&&x.status==='resolvido').length}));
             const situations={}; all.forEach(x=>{ const k=getCentralSituation(x)||'Sem situação'; situations[k]=(situations[k]||0)+1; });
             return {all,resolved,open,byResp,situations:Object.entries(situations).sort((a,b)=>b[1]-a[1])};
         }
@@ -5047,6 +5261,285 @@
             window.removeEventListener('keydown', keyHandler);
             window.addEventListener('keydown', keyHandler);
         }
+
+        // ==================== CADASTRO DE SERVIDORES ====================
+        function renderServidores() {
+            const list = document.getElementById('staffList');
+            if (!list) return;
+            const people = ensureServidoresState();
+            const activeCount = people.filter(item => item.ativo).length;
+            const badge = document.getElementById('staffActiveCount');
+            if (badge) badge.textContent = `${activeCount} ativo${activeCount === 1 ? '' : 's'}`;
+            list.innerHTML = people.map(item => {
+                const initials = item.nome.split(/\s+/).slice(0,2).map(part => part[0] || '').join('').toUpperCase();
+                return `<div class="staff-row">
+                    <div class="staff-row-main">
+                        <span class="staff-avatar">${escHtml(initials)}</span>
+                        <div><strong>${escHtml(item.nome)}</strong><small>${item.ativo ? 'Disponível para receber novos eventos' : 'Mantido apenas no histórico'}</small></div>
+                        <span class="staff-status${item.ativo ? '' : ' inactive'}">${item.ativo ? 'Ativo' : 'Inativo'}</span>
+                    </div>
+                    <div class="staff-actions">
+                        <button class="btn btn-sm btn-outline" onclick="renameServidor('${item.id}')">Editar nome</button>
+                        <button class="btn btn-sm ${item.ativo ? 'btn-outline' : 'btn-success'}" onclick="toggleServidor('${item.id}')">${item.ativo ? 'Inativar' : 'Reativar'}</button>
+                    </div>
+                </div>`;
+            }).join('') || '<div class="central-empty">Nenhum servidor cadastrado.</div>';
+        }
+
+        window.addServidor = function() {
+            const input = document.getElementById('staffNameInput');
+            const name = String(input?.value || '').replace(/\s+/g, ' ').trim();
+            if (!name) { alert('Informe o nome do servidor.'); return; }
+            const existing = ensureServidoresState().find(item => normalizePersonKey(item.nome) === normalizePersonKey(name));
+            if (existing) {
+                if (!existing.ativo) {
+                    existing.ativo = true;
+                    if (input) input.value = '';
+                    scheduleSave(); renderServidores(); renderCentralEsocial(); renderPolareReport();
+                    showToast('Servidor reativado.');
+                    return;
+                }
+                alert('Esse servidor já está cadastrado.');
+                return;
+            }
+            state.servidores.push({ id: makePersonId(name), nome: name, ativo: true, criadoEm: new Date().toISOString() });
+            if (input) input.value = '';
+            scheduleSave(); renderServidores(); renderCentralEsocial(); renderPolareReport();
+            showToast('Servidor adicionado ao cadastro.');
+        };
+
+        window.toggleServidor = function(id) {
+            const person = ensureServidoresState().find(item => item.id === id);
+            if (!person) return;
+            if (person.ativo && getServerNames(false).length === 1) {
+                alert('Mantenha pelo menos um servidor ativo para a distribuição automática.');
+                return;
+            }
+            person.ativo = !person.ativo;
+            scheduleSave(); renderServidores(); renderCentralEsocial(); renderPolareReport(); renderDashboardDailyWork();
+            showToast(person.ativo ? 'Servidor reativado.' : 'Servidor inativado.');
+        };
+
+        window.renameServidor = function(id) {
+            const person = ensureServidoresState().find(item => item.id === id);
+            if (!person) return;
+            const nextName = prompt('Novo nome do servidor:', person.nome);
+            if (nextName === null) return;
+            const cleanName = nextName.replace(/\s+/g, ' ').trim();
+            if (!cleanName) { alert('O nome não pode ficar vazio.'); return; }
+            const duplicate = state.servidores.some(item => item.id !== id && normalizePersonKey(item.nome) === normalizePersonKey(cleanName));
+            if (duplicate) { alert('Já existe um servidor com esse nome.'); return; }
+            const previousName = person.nome;
+            person.nome = cleanName;
+            Object.values(allCompetencias || {}).forEach(comp => {
+                [...(comp.rejeicoes || []), ...(comp.retidos || [])].forEach(item => {
+                    if (item.responsavel === previousName) item.responsavel = cleanName;
+                    if (item.situacaoAtualizadaPor === previousName) item.situacaoAtualizadaPor = cleanName;
+                });
+            });
+            (state.lepismaHistorico || []).forEach(item => { if (item.responsavel === previousName) item.responsavel = cleanName; });
+            (state.esocialHistorico || []).forEach(item => { if (item.responsavel === previousName) item.responsavel = cleanName; });
+            scheduleSave(); renderAll();
+            showToast('Nome atualizado em todo o histórico.');
+        };
+
+        // ==================== RELATÓRIO POLARE ====================
+        function activityDateKey(value, fallbackMonth = '') {
+            const text = String(value || '').trim();
+            let match = text.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/);
+            if (match) return `${match[3]}-${String(Number(match[2])).padStart(2,'0')}-${String(Number(match[1])).padStart(2,'0')}`;
+            match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (match) return `${match[1]}-${String(Number(match[2])).padStart(2,'0')}-${String(Number(match[3])).padStart(2,'0')}`;
+            const parsed = text ? new Date(text) : null;
+            if (parsed && !isNaN(parsed)) return getLocalDateKey(parsed);
+            return /^\d{4}-\d{2}$/.test(fallbackMonth) ? `${fallbackMonth}-01` : '';
+        }
+
+        function formatActivityDate(dateKey) {
+            const match = String(dateKey || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            return match ? `${match[3]}/${match[2]}/${match[1]}` : (dateKey || '—');
+        }
+
+        function syncLepismaDispatchHistory(items) {
+            if (!Array.isArray(state.lepismaHistorico)) state.lepismaHistorico = [];
+            const byKey = new Map(state.lepismaHistorico.map(item => [item.chave || `${normalizePersonKey(item.numero)}|${item.data}`, item]));
+            let changed = false;
+            (items || []).forEach(item => {
+                if (normalizeStatusOperacional(item.statusOperacional) !== 'Despachado') return;
+                const dateKey = activityDateKey(item.dataSaida);
+                const responsavel = resolveServerName(item.responsavel);
+                if (!dateKey || !responsavel || !String(item.numero || '').trim()) return;
+                const key = `${normalizePersonKey(item.numero)}|${dateKey}`;
+                const record = {
+                    chave: key,
+                    numero: String(item.numero || '').trim(),
+                    resumo: String(item.resumo || '').trim(),
+                    interessado: String(item.interessado || '').trim(),
+                    responsavel,
+                    data: dateKey,
+                    observacao: String(item.observacao || '').trim(),
+                    capturadoEm: new Date().toISOString()
+                };
+                const existing = byKey.get(key);
+                if (!existing) {
+                    state.lepismaHistorico.push(record);
+                    byKey.set(key, record);
+                    changed = true;
+                } else {
+                    ['numero','resumo','interessado','responsavel','data','observacao'].forEach(field => {
+                        if (record[field] && existing[field] !== record[field]) { existing[field] = record[field]; changed = true; }
+                    });
+                }
+            });
+            if (changed) scheduleSave();
+            return changed;
+        }
+
+        function getPolareActivities() {
+            const lepisma = (Array.isArray(state.lepismaHistorico) ? state.lepismaHistorico : []).map(item => ({
+                data: activityDateKey(item.data),
+                mes: activityDateKey(item.data).slice(0,7),
+                responsavel: resolveServerName(item.responsavel),
+                tipo: 'Lepisma',
+                identificacao: item.numero || '',
+                pessoa: item.interessado || '',
+                detalhe: item.resumo || item.observacao || 'Processo despachado no Lepisma'
+            }));
+            const esocialHistory = (Array.isArray(state.esocialHistorico) ? state.esocialHistorico : []).map(item => {
+                const dateKey = activityDateKey(item.data || item.registradoEm, item.competenciaOrigem);
+                return {
+                    data: dateKey,
+                    mes: dateKey.slice(0,7),
+                    responsavel: resolveServerName(item.responsavel),
+                    tipo: item.situacao,
+                    identificacao: item.idEvento || 'S-1210',
+                    pessoa: item.nome || item.cpf || '',
+                    detalhe: item.situacao === 'Aceito' ? 'Evento S-1210 aceito' : 'Evento S-1210 dispensado automaticamente'
+                };
+            });
+            const historicalOutcomes = new Set((state.esocialHistorico || []).map(item => `${item.identidade}|${item.situacao}`));
+            const esocialLegacy = getCentralCasesAllMonths().filter(item => {
+                const situation = getCentralSituation(item);
+                if (!['Aceito','Dispensado Automaticamente'].includes(situation)) return false;
+                return !historicalOutcomes.has(`${centralActivityIdentity(item, item._competencia)}|${situation}`);
+            }).map(item => {
+                const dateKey = activityDateKey(item.situacaoAtualizadaEm || item.importedAt || item.dataCriacao, item._competencia);
+                const situation = getCentralSituation(item);
+                return {
+                    data: dateKey,
+                    mes: dateKey.slice(0,7),
+                    responsavel: resolveServerName(item.situacaoAtualizadaPor || item.responsavel),
+                    tipo: situation,
+                    identificacao: item.idEvento || 'S-1210',
+                    pessoa: item.nome || item.cpf || '',
+                    detalhe: situation === 'Aceito' ? 'Evento S-1210 aceito' : 'Evento S-1210 dispensado automaticamente'
+                };
+            });
+            return [...lepisma, ...esocialHistory, ...esocialLegacy].filter(item => item.data && item.responsavel);
+        }
+
+        function populatePolareFilters(activities) {
+            const monthInput = document.getElementById('polareMonth');
+            const serverSelect = document.getElementById('polareServer');
+            if (!monthInput || !serverSelect) return;
+            if (!monthInput.value) monthInput.value = getLocalDateKey().slice(0,7);
+            const selected = serverSelect.value;
+            const names = new Set(getServerNames(true));
+            activities.forEach(item => { if (item.responsavel) names.add(item.responsavel); });
+            serverSelect.innerHTML = '<option value="">Todos os servidores</option>' + [...names]
+                .sort((a,b) => a.localeCompare(b,'pt-BR'))
+                .map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join('');
+            if (names.has(selected)) serverSelect.value = selected;
+        }
+
+        function getFilteredPolareData() {
+            const activities = getPolareActivities();
+            populatePolareFilters(activities);
+            const month = document.getElementById('polareMonth')?.value || getLocalDateKey().slice(0,7);
+            const server = document.getElementById('polareServer')?.value || '';
+            const monthActivities = activities.filter(item => item.mes === month);
+            const filtered = monthActivities.filter(item => !server || item.responsavel === server).sort((a,b) => b.data.localeCompare(a.data) || a.tipo.localeCompare(b.tipo));
+            return { activities, month, server, monthActivities, filtered };
+        }
+
+        function renderPolareReport() {
+            const kpis = document.getElementById('polareKpis');
+            const tbody = document.querySelector('#polareTable tbody');
+            const bars = document.getElementById('polareServerBars');
+            if (!kpis || !tbody || !bars) return;
+            const data = getFilteredPolareData();
+            const total = data.filtered.length;
+            const lepismaCount = data.filtered.filter(item => item.tipo === 'Lepisma').length;
+            const acceptedCount = data.filtered.filter(item => item.tipo === 'Aceito').length;
+            const dismissedCount = data.filtered.filter(item => item.tipo === 'Dispensado Automaticamente').length;
+            kpis.innerHTML = `<div class="polare-kpi"><span>Total realizado</span><strong>${total}</strong><small>${data.server ? escHtml(data.server) : 'Todos os servidores'}</small></div>
+                <div class="polare-kpi"><span>Lepisma</span><strong>${lepismaCount}</strong><small>Processos despachados</small></div>
+                <div class="polare-kpi"><span>eSocial aceitos</span><strong>${acceptedCount}</strong><small>Eventos processados</small></div>
+                <div class="polare-kpi"><span>Dispensados</span><strong>${dismissedCount}</strong><small>Dispensa automática</small></div>`;
+
+            const counts = new Map();
+            data.monthActivities.forEach(item => counts.set(item.responsavel, (counts.get(item.responsavel) || 0) + 1));
+            const max = Math.max(1, ...counts.values());
+            bars.innerHTML = [...counts.entries()].sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0],'pt-BR')).map(([name, count]) => `
+                <div><div class="polare-bar-head"><strong>${escHtml(name)}</strong><span>${count}</span></div><div class="polare-bar-track"><span class="polare-bar-fill" style="width:${Math.round((count/max)*100)}%"></span></div></div>`).join('') || '<div class="central-empty">Nenhuma atividade registrada neste mês.</div>';
+
+            tbody.innerHTML = data.filtered.map(item => {
+                const className = item.tipo === 'Lepisma' ? 'lepisma' : item.tipo === 'Aceito' ? 'aceito' : 'dispensado';
+                const label = item.tipo === 'Lepisma' ? 'Despacho Lepisma' : item.tipo;
+                return `<tr><td>${formatActivityDate(item.data)}</td><td><strong>${escHtml(item.responsavel)}</strong></td><td><span class="activity-kind ${className}">${escHtml(label)}</span></td><td><span class="event-id">${escHtml(item.identificacao)}</span></td><td>${escHtml(item.pessoa || '—')}</td><td>${escHtml(item.detalhe || '—')}</td></tr>`;
+            }).join('') || '<tr><td colspan="6"><div class="central-empty">Nenhuma atividade encontrada para o mês e servidor selecionados.</div></td></tr>';
+            const countBadge = document.getElementById('polareActivityCount');
+            if (countBadge) countBadge.textContent = `${total} atividade${total === 1 ? '' : 's'}`;
+            const title = document.getElementById('polareDetailTitle');
+            if (title) title.textContent = data.server ? `Atividades de ${data.server}` : 'Atividades realizadas';
+        }
+        window.renderPolareReport = renderPolareReport;
+
+        function renderPolarePage() {
+            renderPolareReport();
+            if (!lepismaAllData.length && !lepismaIsLoading) loadLepismaData().then(() => renderPolareReport());
+        }
+
+        window.resetPolareFilters = function() {
+            const month = document.getElementById('polareMonth');
+            const server = document.getElementById('polareServer');
+            if (month) month.value = getLocalDateKey().slice(0,7);
+            if (server) server.value = '';
+            renderPolareReport();
+        };
+
+        function buildPolareText(data) {
+            const title = formatMonthBoardTitle(data.month);
+            const scope = data.server || 'Todos os servidores';
+            const counts = {
+                lepisma: data.filtered.filter(item => item.tipo === 'Lepisma').length,
+                aceitos: data.filtered.filter(item => item.tipo === 'Aceito').length,
+                dispensados: data.filtered.filter(item => item.tipo === 'Dispensado Automaticamente').length
+            };
+            const lines = data.filtered.map(item => `- ${formatActivityDate(item.data)} | ${item.responsavel} | ${item.tipo === 'Lepisma' ? 'Processo despachado no Lepisma' : item.tipo} | ${item.identificacao} | ${item.pessoa || 'Sem interessado'}`);
+            return [`RELATÓRIO POLARE — ${title}`, `Servidor: ${scope}`, `Total: ${data.filtered.length} | Lepisma: ${counts.lepisma} | Aceitos: ${counts.aceitos} | Dispensados automaticamente: ${counts.dispensados}`, '', ...lines].join('\n');
+        }
+
+        window.copyPolareSummary = async function() {
+            const text = buildPolareText(getFilteredPolareData());
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (error) {
+                const area = document.createElement('textarea');
+                area.value = text; document.body.appendChild(area); area.select(); document.execCommand('copy'); area.remove();
+            }
+            showToast('Resumo do PolarE copiado.');
+        };
+
+        window.printPolareReport = function() {
+            const data = getFilteredPolareData();
+            const win = window.open('', '_blank');
+            if (!win) { alert('Permita a abertura de janelas para imprimir o relatório.'); return; }
+            const rows = data.filtered.map(item => `<tr><td>${formatActivityDate(item.data)}</td><td>${escHtml(item.responsavel)}</td><td>${escHtml(item.tipo === 'Lepisma' ? 'Processo despachado no Lepisma' : item.tipo)}</td><td>${escHtml(item.identificacao)}</td><td>${escHtml(item.pessoa || '')}</td><td>${escHtml(item.detalhe || '')}</td></tr>`).join('');
+            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>PolarE - ${escHtml(data.month)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:24px}h1{color:#123b5d;margin-bottom:4px}p{color:#5c6875}.k{display:flex;gap:10px;margin:16px 0}.k div{border:1px solid #ccd6df;padding:9px 13px}.k strong{display:block;font-size:21px}table{width:100%;border-collapse:collapse;font-size:9px}th,td{border:1px solid #d7dee5;padding:6px;text-align:left;vertical-align:top}th{background:#123b5d;color:#fff}@page{size:A4 landscape;margin:10mm}</style></head><body><h1>Relatório de Atividades PolarE</h1><p>UFES · ${escHtml(formatMonthBoardTitle(data.month))} · ${escHtml(data.server || 'Todos os servidores')}</p><div class="k"><div>Total<strong>${data.filtered.length}</strong></div><div>Lepisma<strong>${data.filtered.filter(x=>x.tipo==='Lepisma').length}</strong></div><div>Aceitos<strong>${data.filtered.filter(x=>x.tipo==='Aceito').length}</strong></div><div>Dispensados<strong>${data.filtered.filter(x=>x.tipo==='Dispensado Automaticamente').length}</strong></div></div><table><thead><tr><th>Data</th><th>Servidor</th><th>Atividade</th><th>Identificação</th><th>Interessado / Servidor</th><th>Resultado / Detalhe</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Nenhuma atividade registrada.</td></tr>'}</tbody></table></body></html>`);
+            win.document.close();
+            setTimeout(() => win.print(), 250);
+        };
 
         // ==================== LEPISMA MODULE ====================
         const LEPISMA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1DFOLb0fFSz78vvuKJzPn7YuPj8TkFZRhj_fZL9rS9RkUJaG5PKOBpLYbAOVbkvUQdSnPuPMf-PRC/pub?gid=715000686&single=true&output=csv';
@@ -5478,16 +5971,10 @@
         }
 
         function parseDateBR(str) {
-            if (!str) return null;
-            const parts = str.split('/');
-            if (parts.length === 3) {
-                return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-            }
-            const parts2 = str.split('-');
-            if (parts2.length === 3) {
-                return new Date(parseInt(parts2[0]), parseInt(parts2[1]) - 1, parseInt(parts2[2]));
-            }
-            return null;
+            const key = activityDateKey(str);
+            if (!key) return null;
+            const [year, month, day] = key.split('-').map(Number);
+            return new Date(year, month - 1, day);
         }
 
         window.sortLepisma = function(column) {
@@ -5564,6 +6051,7 @@
             try {
                 const csvText = await fetchLepismaCSV();
                 lepismaAllData = parseLepismaCSV(csvText);
+                syncLepismaDispatchHistory(lepismaAllData);
                 
                 lepismaFilteredData = [...lepismaAllData];
                 lepismaSortColumn = null;
@@ -5580,6 +6068,7 @@
                 if (updatedEl) updatedEl.textContent = 'Atualizado em ' + lepismaLastUpdated.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
                 document.getElementById('lepismaLoading').style.display = 'none';
                 document.getElementById('lepismaContent').style.display = 'block';
+                renderPolareReport();
                 
                 showToast('✅ Dados do Lepisma carregados: ' + lepismaAllData.length + ' processos');
             } catch (err) {
@@ -5617,7 +6106,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Módulo Controle Lepisma ativo · Central eSocial S-1210 v3.6.1 ativa · Presença online v3.6.1.');
+            console.log('📁 Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores v3.7 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
