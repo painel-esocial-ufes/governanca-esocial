@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.3</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.4</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -1433,6 +1433,28 @@
         .dashboard-source-card.calendar { border-top-color:#d97706; }
         .dashboard-source-card.sheet { border-top-color:#0f766e; }
         .empty-state { padding:18px; color:var(--text3); text-align:center; border:1px dashed var(--border); border-radius:8px; }
+        .dashboard-work-grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr); gap:16px; margin-bottom:16px; }
+        .my-work-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+        .my-work-stat { padding:10px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface2); }
+        .my-work-stat span,.my-work-stat strong { display:block; }
+        .my-work-stat span { color:var(--text3); font-size:8px; font-weight:900; letter-spacing:.5px; text-transform:uppercase; }
+        .my-work-stat strong { margin-top:3px; font-size:20px; }
+        .my-work-list,.audit-list,.closure-list { display:grid; gap:7px; }
+        .my-work-row,.audit-row,.closure-row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:9px 10px; border:1px solid var(--border-light); border-radius:7px; background:var(--surface2); }
+        .my-work-row-main,.audit-row-main,.closure-row-main { min-width:0; }
+        .my-work-row strong,.my-work-row small,.audit-row strong,.audit-row small,.closure-row strong,.closure-row small { display:block; }
+        .my-work-row strong,.audit-row strong,.closure-row strong { overflow-wrap:anywhere; font-size:10px; }
+        .my-work-row small,.audit-row small,.closure-row small { margin-top:2px; color:var(--text3); font-size:9px; line-height:1.35; }
+        .work-origin { flex:0 0 auto; padding:3px 6px; border-radius:5px; background:#e8f2fa; color:#155b87; font-size:8px; font-weight:900; text-transform:uppercase; }
+        .work-origin.lepisma { background:#f1ecff; color:#6741b5; }
+        .audit-change { color:var(--text2); }
+        .audit-change del { color:#a51d1d; }
+        .audit-change ins { color:#116b42; font-weight:800; text-decoration:none; }
+        .audit-history-table { min-width:720px; }
+        .audit-history-table th:nth-child(1) { width:145px; }
+        .audit-history-table th:nth-child(2) { width:150px; }
+        .audit-history-table th:nth-child(3) { width:130px; }
+        .audit-history-table td { vertical-align:top; }
 
         .timeline-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; }
         .timeline-period { min-width:0; color:var(--text); text-align:left; padding:15px; border:1px solid var(--border); border-left:5px solid; background:var(--surface2)!important; box-shadow:none; }
@@ -2007,7 +2029,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.3 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.4 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2105,6 +2127,10 @@
         .polare-simple-table th:first-child,.polare-simple-table td:first-child { width:42%; }
         .polare-simple-table th:last-child,.polare-simple-table td:last-child { width:58%; }
         .polare-simple-table td { padding-top:8px; padding-bottom:8px; }
+        .polare-closures { margin-top:14px; }
+        .closure-row { align-items:center; }
+        .closure-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+        .closure-version { display:inline-flex; margin-top:4px; padding:2px 6px; border-radius:999px; background:#eaf3fb; color:#155b87; font-size:8px; font-weight:900; }
         .activity-kind { display:inline-flex; padding:3px 7px; border-radius:5px; font-size:8px; font-weight:800; text-transform:uppercase; white-space:nowrap; }
         .activity-kind.lepisma { background:#f1ecff; color:#6741b5; }
         .activity-kind.aceito { background:#eaf8f0; color:#147448; }
@@ -2211,8 +2237,8 @@
         body.dark-mode .team-sheet-cell.is-range { background:#17364c; }
         body.dark-mode .team-sheet-tabsbar { background:#172b3b; }
         @media (max-width:1200px) { .central-kpis,.dashboard-source-grid { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
-        @media (max-width:900px) { .polare-layout { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } }
-        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } .team-sheet-toolbar { align-items:flex-start; flex-direction:column; } .team-sheet-toolbar-actions { width:100%; } .team-sheet-toolbar-actions .btn { flex:1; } }
+        @media (max-width:900px) { .polare-layout,.dashboard-work-grid { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid,.my-work-summary { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row,.closure-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } .team-sheet-toolbar { align-items:flex-start; flex-direction:column; } .team-sheet-toolbar-actions { width:100%; } .team-sheet-toolbar-actions .btn { flex:1; } }
 
     </style>
 </head>
@@ -2270,7 +2296,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.3 · 2026<br>
+            UFES · v4.4 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2310,6 +2336,11 @@
                 <div class="kpi-grid ops-kpi-grid" id="kpiGrid"></div>
 
                 <div class="card" id="dashboardDailyWork"></div>
+
+                <div class="dashboard-work-grid">
+                    <div class="card ops-panel" id="dashboardMyQueue"></div>
+                    <div class="card ops-panel" id="dashboardAudit"></div>
+                </div>
 
                 <div class="dashboard-layout">
                     <div class="card ops-panel">
@@ -2485,6 +2516,7 @@
                     <div class="page-heading-actions">
                         <button class="btn btn-primary" onclick="copyPolareSummary()">Copiar resumo</button>
                         <button class="btn btn-outline" onclick="printPolareReport()">Imprimir relatório</button>
+                        <button class="btn btn-outline" onclick="closePolareReport()">Fechar mês</button>
                     </div>
                 </div>
                 <div class="card">
@@ -2505,6 +2537,10 @@
                         <div class="card-header"><div><span class="eyebrow">DETALHAMENTO</span><h3>Atividades realizadas</h3></div><span class="badge badge-blue" id="polareActivityCount">0 atividades</span></div>
                         <div class="polare-details" id="polareDetails"></div>
                     </div>
+                </div>
+                <div class="card polare-closures">
+                    <div class="card-header"><div><span class="eyebrow">HISTÓRICO IMUTÁVEL</span><h3>Fechamentos mensais</h3></div><span class="badge badge-blue" id="polareClosureCount">0 versões</span></div>
+                    <div class="closure-list" id="polareClosures"></div>
                 </div>
             </div>
 
@@ -2814,7 +2850,10 @@
             updateDoc,
             getDoc,
             deleteDoc,
-            onSnapshot
+            onSnapshot,
+            query,
+            orderBy,
+            limit
         } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         // ==================== FIREBASE CONFIG ====================
@@ -2830,6 +2869,8 @@
         const app = initializeApp(firebaseConfig);
         const firestore = getFirestore(app);
         const STATE_DOC = doc(firestore, "governanca", "estadoPrincipal");
+        const AUDIT_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "historicoAlteracoes");
+        const POLARE_CLOSURES_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "polareFechamentos");
 
         // ==================== PRESENÇA ONLINE ====================
         const PRESENCE_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "presencaOnline");
@@ -2980,6 +3021,10 @@
         let saveTimeout = null;
         let currentActivePage = 'dashboard';
         let unsubscribeFirestore = null;
+        let unsubscribeAudit = null;
+        let unsubscribePolareClosures = null;
+        let auditEntries = [];
+        let polareClosures = [];
 
         // ==================== LEPISMA STATE ====================
         let lepismaAllData = [];
@@ -3511,6 +3556,61 @@
             }, 500);
         }
 
+        // ==================== HISTÓRICO AUDITÁVEL ====================
+        function auditDisplayValue(value) {
+            const text = String(value ?? '').trim();
+            return text || 'Não informado';
+        }
+
+        function formatAuditTimestamp(value) {
+            const date = new Date(value || '');
+            return Number.isNaN(date.getTime()) ? 'Data não informada' : date.toLocaleString('pt-BR');
+        }
+
+        async function recordAuditChange({ source, recordId = '', competencia = '', field = '', oldValue = '', newValue = '', detail = '' }) {
+            if (String(oldValue ?? '') === String(newValue ?? '') && !detail) return;
+            const entry = {
+                source: String(source || 'Sistema'),
+                recordId: String(recordId || ''),
+                competencia: String(competencia || ''),
+                field: String(field || 'Alteração'),
+                oldValue: String(oldValue ?? ''),
+                newValue: String(newValue ?? ''),
+                detail: String(detail || ''),
+                actorName: String(currentAccessIdentity?.name || 'Pessoa não identificada'),
+                actorKey: String(currentAccessIdentity?.personKey || ''),
+                actorCpfMasked: String(currentAccessIdentity?.cpfMasked || ''),
+                timestamp: new Date().toISOString()
+            };
+            try {
+                await setDoc(doc(AUDIT_COLLECTION), entry);
+            } catch (error) {
+                console.error('Não foi possível registrar o histórico:', error);
+                showToast('⚠️ Alteração salva, mas o histórico não pôde ser registrado.');
+            }
+        }
+
+        function setupAuditListener() {
+            if (unsubscribeAudit) unsubscribeAudit();
+            unsubscribeAudit = onSnapshot(query(AUDIT_COLLECTION, orderBy('timestamp', 'desc'), limit(500)), snapshot => {
+                auditEntries = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                renderDashboardAudit();
+            }, error => {
+                console.error('Erro ao carregar histórico de alterações:', error);
+            });
+        }
+
+        function setupPolareClosuresListener() {
+            if (unsubscribePolareClosures) unsubscribePolareClosures();
+            unsubscribePolareClosures = onSnapshot(query(POLARE_CLOSURES_COLLECTION, orderBy('closedAt', 'desc'), limit(250)), snapshot => {
+                polareClosures = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                renderPolareClosures();
+                renderDashboardMyQueue();
+            }, error => {
+                console.error('Erro ao carregar fechamentos do PolarE:', error);
+            });
+        }
+
         // ==================== FIREBASE SYNC ====================
         function syncStateFromFirebase(data) {
             if (!data) return;
@@ -3812,10 +3912,12 @@
                 const requestedPage = new URLSearchParams(window.location.search).get('page');
                 if (requestedPage && document.getElementById(`page-${requestedPage}`)) navigateTo(requestedPage);
                 setupRealtimeListener();
+                setupAuditListener();
+                setupPolareClosuresListener();
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.3 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.4 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3898,6 +4000,8 @@
             renderDashboardToday();
             renderDashboardTeam();
             renderDashboardDailyWork();
+            renderDashboardMyQueue();
+            renderDashboardAudit();
             renderMilestoneList('dashboardMilestones');
             renderAlerts();
             drawProgressChart();
@@ -3906,6 +4010,7 @@
                     updateKPIs();
                     renderDashboardTeam();
                     renderDashboardDailyWork();
+                    renderDashboardMyQueue();
                     renderAlerts();
                 });
             }
@@ -3957,6 +4062,81 @@
                 </div>`;
             }).join('') || '<div class="empty-state">Nenhum servidor ativo cadastrado.</div>';
         }
+
+        function getCurrentRegisteredServer() {
+            const identityName = String(currentAccessIdentity?.name || '').trim();
+            if (!identityName) return '';
+            const identityKey = normalizePersonKey(identityName);
+            return ensureServidoresState().filter(item => item.ativo).find(item => {
+                const serverKey = normalizePersonKey(item.nome);
+                return serverKey === identityKey || (serverKey.length >= 3 && identityKey.startsWith(serverKey)) || (identityKey.length >= 3 && serverKey.startsWith(identityKey));
+            })?.nome || '';
+        }
+
+        function renderDashboardMyQueue() {
+            const container = document.getElementById('dashboardMyQueue');
+            if (!container) return;
+            const server = getCurrentRegisteredServer();
+            if (!server) {
+                container.innerHTML = `<div class="card-header"><div><span class="eyebrow">MINHA FILA</span><h3>Trabalho atribuído a você</h3></div></div><div class="empty-state">O nome usado na entrada não está vinculado a um servidor ativo no Cadastro de Servidores.</div>`;
+                return;
+            }
+            const centralPending = getCentralCasesAllMonths().filter(item => {
+                const situation = getCentralSituation(item);
+                return resolveServerName(item.responsavel) === server && !['Aceito','Dispensado Automaticamente'].includes(situation);
+            });
+            const resent = centralPending.filter(item => getCentralSituation(item) === 'Reenviado');
+            const lepismaPending = lepismaAllData.filter(item => resolveServerName(item.responsavel) === server && normalizeStatusOperacional(item.statusOperacional) === 'Caixa');
+            const completed = getPolareActivities().filter(item => item.mes === state.currentCompetencia && item.responsavel === server);
+            const previews = [
+                ...centralPending.slice(0, 4).map(item => ({ origin: 'eSocial', id: item.idEvento || 'S-1210', name: item.nome || item.cpf || 'Sem nome', css: '' })),
+                ...lepismaPending.slice(0, 4).map(item => ({ origin: 'Lepisma', id: item.numero || 'Processo sem número', name: item.interessado || item.resumo || 'Sem interessado', css: 'lepisma' }))
+            ].slice(0, 6);
+            container.innerHTML = `<div class="card-header"><div><span class="eyebrow">MINHA FILA</span><h3>${escHtml(server)}</h3></div><div style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-sm btn-outline" onclick="openMyCentralQueue()">Central</button><button class="btn btn-sm btn-outline" onclick="openMyLepismaQueue()">Lepisma</button></div></div>
+                <div class="my-work-summary">
+                    <div class="my-work-stat"><span>eSocial pendentes</span><strong>${centralPending.length}</strong></div>
+                    <div class="my-work-stat"><span>Reenviados</span><strong>${resent.length}</strong></div>
+                    <div class="my-work-stat"><span>Lepisma na caixa</span><strong>${lepismaPending.length}</strong></div>
+                    <div class="my-work-stat"><span>Concluídos no mês</span><strong>${completed.length}</strong></div>
+                </div>
+                <div class="my-work-list">${previews.map(item => `<div class="my-work-row"><div class="my-work-row-main"><strong>${escHtml(item.id)}</strong><small>${escHtml(item.name)}</small></div><span class="work-origin ${item.css}">${item.origin}</span></div>`).join('') || '<div class="empty-state">Nenhuma pendência atribuída a você.</div>'}</div>`;
+        }
+
+        function renderDashboardAudit() {
+            const container = document.getElementById('dashboardAudit');
+            if (!container) return;
+            const recent = auditEntries.slice(0, 6);
+            container.innerHTML = `<div class="card-header"><div><span class="eyebrow">HISTÓRICO</span><h3>Últimas alterações</h3></div><span class="badge badge-blue">${auditEntries.length}</span></div>
+                <div class="audit-list">${recent.map(entry => `<div class="audit-row"><div class="audit-row-main"><strong>${escHtml(entry.source || 'Sistema')} · ${escHtml(entry.field || 'Alteração')}</strong><small>${escHtml(entry.actorName || 'Pessoa não identificada')} · ${formatAuditTimestamp(entry.timestamp)}</small><small class="audit-change">${entry.detail ? escHtml(entry.detail) : `<del>${escHtml(auditDisplayValue(entry.oldValue))}</del> → <ins>${escHtml(auditDisplayValue(entry.newValue))}</ins>`}</small></div></div>`).join('') || '<div class="empty-state">Nenhuma alteração auditada até o momento.</div>'}</div>`;
+        }
+
+        window.openMyCentralQueue = function() {
+            const server = getCurrentRegisteredServer();
+            navigateTo('central');
+            const resp = document.getElementById('centralResp');
+            if (resp && server) resp.value = server;
+            renderCentralEsocial();
+        };
+
+        window.openMyLepismaQueue = function() {
+            const server = getCurrentRegisteredServer();
+            navigateTo('lepisma');
+            const applyQueueFilters = (attempt = 0) => {
+                if (!lepismaAllData.length && lepismaIsLoading && attempt < 30) {
+                    setTimeout(() => applyQueueFilters(attempt + 1), 250);
+                    return;
+                }
+                const status = document.getElementById('lepismaFilterStatus');
+                const resp = document.getElementById('lepismaFilterResp');
+                if (status) status.value = 'Caixa';
+                if (resp && server) {
+                    const option = [...resp.options].find(item => resolveServerName(item.value) === server);
+                    if (option) resp.value = option.value;
+                }
+                applyLepismaFilters();
+            };
+            applyQueueFilters();
+        };
 
 
         function getCentralCases() {
@@ -4107,6 +4287,7 @@
                         <td><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'responsavel',this.value)">${responsibleOptions(item.responsavel)}</select></td>
                         <td><div class="situation-stack"><select class="situation-select ${centralSituationClass(currentSituation)}" onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'situacao',this.value)">${situationOptions}</select>${otherInput}</div></td>
                         <td><textarea class="central-observation" onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'obs',this.value)" placeholder="Escreva uma observação sobre o evento">${escHtml(item.obs || '')}</textarea></td>
+                        <td><button class="btn btn-sm btn-outline" onclick="openCentralHistory('${encodeURIComponent(item.idEvento || centralActivityIdentity(item, compKey))}','${compKey}')">Ver histórico</button></td>
                     </tr>`;
                 }).join('');
                 return `<section class="monthly-board">
@@ -4114,7 +4295,7 @@
                         <div class="monthly-board-title"><strong>${formatMonthBoardTitle(compKey)}</strong><span>${rows.length} evento${rows.length === 1 ? '' : 's'} S-1210</span></div>
                         <span class="competence-lock${closed ? ' closed' : ''}">${closed ? '🔒 Mês encerrado' : '🔓 Mês aberto'}</span>
                     </div>
-                    <div class="table-wrap"><table><thead><tr><th>ID Evento</th><th>CPF Servidor</th><th>Nome do Servidor</th><th>Servidor Responsável</th><th>Situação</th><th>Observação</th></tr></thead><tbody>${body}</tbody></table></div>
+                    <div class="table-wrap"><table><thead><tr><th>ID Evento</th><th>CPF Servidor</th><th>Nome do Servidor</th><th>Servidor Responsável</th><th>Situação</th><th>Observação</th><th>Histórico</th></tr></thead><tbody>${body}</tbody></table></div>
                 </section>`;
             }).join('') || '<div class="central-empty">Nenhum evento S-1210 encontrado com os filtros atuais. Importe a planilha gerada pelo eSocial para iniciar o tratamento.</div>';
         }
@@ -4175,6 +4356,7 @@
             if (!ensureCompetenciaWritable(compKey)) { renderCentralEsocial(); return; }
             const arr = getCentralCaseArray(compKey, arrName);
             if (!arr?.[idx]) return;
+            const oldValue = arr[idx][field] || '';
             arr[idx][field] = value;
             if (field === 'situacao') {
                 if (value !== 'Outro') arr[idx].situacaoOutro = '';
@@ -4187,22 +4369,43 @@
                 arr[idx].situacaoAtualizadaPor = value;
                 updateLatestEsocialActivityResponsible(arr[idx], compKey, value);
             }
-            scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork(); renderDashboardTeam(); renderAlerts(); renderPolareReport();
+            const fieldLabels = { responsavel: 'Servidor responsável', situacao: 'Situação', obs: 'Observação' };
+            recordAuditChange({
+                source: 'Central eSocial',
+                recordId: arr[idx].idEvento || centralActivityIdentity(arr[idx], compKey),
+                competencia: compKey,
+                field: fieldLabels[field] || field,
+                oldValue,
+                newValue: value
+            });
+            scheduleSave(); updateKPIs(); renderCentralEsocial(); renderDashboardDailyWork(); renderDashboardTeam(); renderDashboardMyQueue(); renderAlerts(); renderPolareReport();
         };
 
         window.updateCentralOther = function(compKey, arrName, idx, value) {
             if (!ensureCompetenciaWritable(compKey)) { renderCentralEsocial(); return; }
             const arr = getCentralCaseArray(compKey, arrName);
             if (!arr?.[idx]) return;
+            const oldValue = arr[idx].situacaoOutro || '';
             arr[idx].situacaoOutro = value;
+            recordAuditChange({ source: 'Central eSocial', recordId: arr[idx].idEvento || centralActivityIdentity(arr[idx], compKey), competencia: compKey, field: 'Descrição de Outro', oldValue, newValue: value });
             scheduleSave();
+        };
+
+        window.openCentralHistory = function(recordId, compKey) {
+            recordId = decodeURIComponent(recordId || '');
+            const entries = auditEntries.filter(entry => entry.source === 'Central eSocial' && entry.recordId === recordId && (!compKey || entry.competencia === compKey));
+            const overlay = document.getElementById('modalOverlay');
+            const content = document.getElementById('modalContent');
+            const rows = entries.map(entry => `<tr><td>${formatAuditTimestamp(entry.timestamp)}</td><td><strong>${escHtml(entry.actorName || 'Pessoa não identificada')}</strong><small style="display:block;color:var(--text3);margin-top:2px;">${escHtml(entry.actorCpfMasked || 'CPF não armazenado')}</small></td><td>${escHtml(entry.field || 'Alteração')}</td><td><del>${escHtml(auditDisplayValue(entry.oldValue))}</del></td><td><strong style="color:var(--success);">${escHtml(auditDisplayValue(entry.newValue))}</strong></td></tr>`).join('');
+            content.innerHTML = `<span class="eyebrow">HISTÓRICO AUDITÁVEL</span><h3>Alterações do evento</h3><p class="modal-intro"><span class="event-id">${escHtml(recordId)}</span> · ${escHtml(formatMonthBoardTitle(compKey))}</p><div class="table-wrap"><table class="audit-history-table"><thead><tr><th>Data e hora</th><th>Responsável pela alteração</th><th>Campo</th><th>Antes</th><th>Depois</th></tr></thead><tbody>${rows}</tbody></table></div>${rows ? '' : '<div class="empty-state">Ainda não há alterações registradas para este evento.</div>'}<div class="modal-actions"><button class="btn btn-primary" onclick="closeModalDirect()">Fechar</button></div>`;
+            overlay.style.display = 'flex';
         };
 
         window.deleteCentralCase = function(compKey, arrName, idx) {
             if (!ensureCompetenciaWritable(compKey)) return;
             if (!confirm('Remover este evento da competência?')) return;
             getCentralCaseArray(compKey, arrName)?.splice(idx, 1);
-            scheduleSave(); renderCentralEsocial(); updateKPIs(); renderDashboardDailyWork(); renderDashboardTeam(); renderAlerts(); renderPolareReport();
+            scheduleSave(); renderCentralEsocial(); updateKPIs(); renderDashboardDailyWork(); renderDashboardTeam(); renderDashboardMyQueue(); renderAlerts(); renderPolareReport();
         };
 
         function renderDashboardDailyWork() {
@@ -4424,6 +4627,7 @@
             closeModalDirect();
             populateCompetenciaSelect();
             scheduleSave();
+            recordAuditChange({ source: 'Central eSocial', recordId: payload.filename || 'Importação S-1210', field: 'Importação de planilha', detail: `${added} eventos novos e ${updated} atualizados em ${new Set(payload.parsed.map(item => item.competencia)).size} mês(es).` });
             renderAll();
             showToast(`Importação concluída: ${added} novos · ${updated} atualizados`);
         };
@@ -6160,8 +6364,114 @@
             details.innerHTML = buildPolareDetailHtml(data.filtered);
             const countBadge = document.getElementById('polareActivityCount');
             if (countBadge) countBadge.textContent = `${total} atividade${total === 1 ? '' : 's'}`;
+            renderPolareClosures(data.month, data.server);
         }
         window.renderPolareReport = renderPolareReport;
+
+        function getPolareClosureById(id) {
+            return polareClosures.find(item => item.id === decodeURIComponent(id || ''));
+        }
+
+        function renderPolareClosures(month, server) {
+            const container = document.getElementById('polareClosures');
+            const badge = document.getElementById('polareClosureCount');
+            if (!container || !badge) return;
+            const selectedMonth = month || document.getElementById('polareMonth')?.value || '';
+            const selectedServer = server ?? document.getElementById('polareServer')?.value ?? '';
+            const filtered = polareClosures.filter(item => (!selectedMonth || item.month === selectedMonth) && (!selectedServer || item.server === selectedServer));
+            badge.textContent = `${filtered.length} vers${filtered.length === 1 ? 'ão' : 'ões'}`;
+            container.innerHTML = filtered.map(item => {
+                const totals = item.totals || {};
+                return `<div class="closure-row"><div class="closure-row-main"><strong>${escHtml(formatMonthBoardTitle(item.month))} · ${escHtml(item.server || 'Servidor não informado')}</strong><span class="closure-version">Versão ${Number(item.version || 1)}</span><small>Fechado por ${escHtml(item.closedBy?.name || 'Pessoa não identificada')} em ${formatAuditTimestamp(item.closedAt)}</small><small>${Number(totals.total || item.activities?.length || 0)} atividades · ${Number(totals.lepisma || 0)} Lepisma · ${Number(totals.accepted || 0)} aceitos · ${Number(totals.dismissed || 0)} dispensados</small></div><div class="closure-actions"><button class="btn btn-sm btn-outline" onclick="printPolareClosure('${encodeURIComponent(item.id)}')">Imprimir / PDF</button><button class="btn btn-sm btn-outline" onclick="exportPolareClosureExcel('${encodeURIComponent(item.id)}')">Excel</button></div></div>`;
+            }).join('') || '<div class="empty-state">Nenhum fechamento encontrado para o mês e servidor selecionados.</div>';
+        }
+
+        window.closePolareReport = async function() {
+            const data = getFilteredPolareData();
+            if (!data.server) {
+                alert('Selecione um servidor responsável antes de fechar o relatório mensal.');
+                document.getElementById('polareServer')?.focus();
+                return;
+            }
+            if (!data.filtered.length) {
+                alert('Não há atividades para fechar no mês e servidor selecionados.');
+                return;
+            }
+            const existing = polareClosures.filter(item => item.month === data.month && item.server === data.server);
+            const version = Math.max(0, ...existing.map(item => Number(item.version || 1))) + 1;
+            const question = existing.length
+                ? `Já existe um fechamento para ${formatMonthBoardTitle(data.month)} e ${data.server}. Deseja criar a versão ${version}, preservando as anteriores?`
+                : `Fechar o relatório de ${formatMonthBoardTitle(data.month)} para ${data.server}? Esta versão ficará preservada no histórico.`;
+            if (!confirm(question)) return;
+            const activities = data.filtered.map(item => ({
+                data: String(item.data || ''), mes: String(item.mes || data.month), responsavel: String(item.responsavel || data.server),
+                tipo: String(item.tipo || ''), identificacao: String(item.identificacao || ''), pessoa: String(item.pessoa || ''), detalhe: String(item.detalhe || '')
+            }));
+            const closure = {
+                month: data.month,
+                server: data.server,
+                version,
+                closedAt: new Date().toISOString(),
+                closedBy: {
+                    name: String(currentAccessIdentity?.name || 'Pessoa não identificada'),
+                    personKey: String(currentAccessIdentity?.personKey || ''),
+                    cpfMasked: String(currentAccessIdentity?.cpfMasked || '')
+                },
+                totals: {
+                    total: activities.length,
+                    lepisma: activities.filter(item => item.tipo === 'Lepisma').length,
+                    accepted: activities.filter(item => item.tipo === 'Aceito').length,
+                    dismissed: activities.filter(item => item.tipo === 'Dispensado Automaticamente').length
+                },
+                activities
+            };
+            try {
+                await setDoc(doc(POLARE_CLOSURES_COLLECTION), closure);
+                await recordAuditChange({ source: 'Relatório PolarE', recordId: `${data.month}|${data.server}`, competencia: data.month, field: 'Fechamento mensal', newValue: `Versão ${version}`, detail: `${activities.length} atividades preservadas para ${data.server}.` });
+                showToast(`Relatório fechado: ${formatMonthBoardTitle(data.month)} · ${data.server} · versão ${version}.`);
+            } catch (error) {
+                console.error('Erro ao fechar relatório PolarE:', error);
+                alert('Não foi possível fechar o relatório. Tente novamente.');
+            }
+        };
+
+        function closureToPolareData(closure) {
+            return { month: closure.month, server: closure.server, filtered: Array.isArray(closure.activities) ? closure.activities : [], monthActivities: Array.isArray(closure.activities) ? closure.activities : [] };
+        }
+
+        function openPolarePrint(data, closure = null) {
+            const win = window.open('', '_blank');
+            if (!win) { alert('Permita a abertura de janelas para imprimir o relatório.'); return; }
+            const groups = groupPolareActivitiesByServer(data.filtered).map(([serverName, activities]) => `<section><h2>${escHtml(serverName)}</h2><table><thead><tr><th>Processo / ID do Evento</th><th>Nome</th></tr></thead><tbody>${activities.map(item => `<tr><td class="id">${escHtml(item.identificacao || '—')}</td><td>${escHtml(item.pessoa || '—')}</td></tr>`).join('')}</tbody></table></section>`).join('');
+            const closureInfo = closure ? `<p>Fechamento preservado · versão ${Number(closure.version || 1)} · fechado por ${escHtml(closure.closedBy?.name || 'Pessoa não identificada')} em ${formatAuditTimestamp(closure.closedAt)}</p>` : '';
+            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>PolarE - ${escHtml(data.month)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:24px}h1{color:#123b5d;margin-bottom:4px}h2{margin:22px 0 7px;color:#172033;font-size:16px}p{color:#5c6875}.k{display:flex;gap:10px;margin:16px 0}.k div{border:1px solid #ccd6df;padding:9px 13px}.k strong{display:block;font-size:21px}section{break-inside:avoid;margin-top:18px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7dee5;padding:7px;text-align:left;vertical-align:top}th{background:#123b5d;color:#fff}.id{width:42%;font-family:Consolas,monospace}@page{size:A4 portrait;margin:12mm}</style></head><body><h1>Relatório de Atividades PolarE</h1><p>UFES · ${escHtml(formatMonthBoardTitle(data.month))} · ${escHtml(data.server || 'Todos os servidores')}</p>${closureInfo}<div class="k"><div>Total<strong>${data.filtered.length}</strong></div><div>Lepisma<strong>${data.filtered.filter(x=>x.tipo==='Lepisma').length}</strong></div><div>Aceitos<strong>${data.filtered.filter(x=>x.tipo==='Aceito').length}</strong></div><div>Dispensados<strong>${data.filtered.filter(x=>x.tipo==='Dispensado Automaticamente').length}</strong></div></div>${groups || '<p>Nenhuma atividade registrada.</p>'}</body></html>`);
+            win.document.close();
+            setTimeout(() => win.print(), 250);
+        }
+
+        window.printPolareClosure = function(id) {
+            const closure = getPolareClosureById(id);
+            if (!closure) { alert('Fechamento não encontrado.'); return; }
+            openPolarePrint(closureToPolareData(closure), closure);
+        };
+
+        window.exportPolareClosureExcel = function(id) {
+            const closure = getPolareClosureById(id);
+            if (!closure) { alert('Fechamento não encontrado.'); return; }
+            const XLSXLib = window.XLSX;
+            if (!XLSXLib) { alert('A exportação para Excel não está disponível no momento.'); return; }
+            const rows = (closure.activities || []).map(item => ({
+                'Processo / ID do Evento': item.identificacao || '',
+                'Nome': item.pessoa || '',
+                'Origem / Situação': item.tipo || '',
+                'Servidor Responsável': item.responsavel || closure.server || '',
+                'Mês': closure.month || ''
+            }));
+            const workbook = XLSXLib.utils.book_new();
+            XLSXLib.utils.book_append_sheet(workbook, XLSXLib.utils.json_to_sheet(rows), 'Atividades');
+            const safeServer = String(closure.server || 'servidor').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '_');
+            XLSXLib.writeFile(workbook, `Polare_${closure.month}_${safeServer}_v${Number(closure.version || 1)}.xlsx`);
+        };
 
         function renderPolarePage() {
             renderPolareReport();
@@ -6205,12 +6515,7 @@
 
         window.printPolareReport = function() {
             const data = getFilteredPolareData();
-            const win = window.open('', '_blank');
-            if (!win) { alert('Permita a abertura de janelas para imprimir o relatório.'); return; }
-            const groups = groupPolareActivitiesByServer(data.filtered).map(([serverName, activities]) => `<section><h2>${escHtml(serverName)}</h2><table><thead><tr><th>Processo / ID do Evento</th><th>Nome</th></tr></thead><tbody>${activities.map(item => `<tr><td class="id">${escHtml(item.identificacao || '—')}</td><td>${escHtml(item.pessoa || '—')}</td></tr>`).join('')}</tbody></table></section>`).join('');
-            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>PolarE - ${escHtml(data.month)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:24px}h1{color:#123b5d;margin-bottom:4px}h2{margin:22px 0 7px;color:#172033;font-size:16px}p{color:#5c6875}.k{display:flex;gap:10px;margin:16px 0}.k div{border:1px solid #ccd6df;padding:9px 13px}.k strong{display:block;font-size:21px}section{break-inside:avoid;margin-top:18px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7dee5;padding:7px;text-align:left;vertical-align:top}th{background:#123b5d;color:#fff}.id{width:42%;font-family:Consolas,monospace}@page{size:A4 portrait;margin:12mm}</style></head><body><h1>Relatório de Atividades PolarE</h1><p>UFES · ${escHtml(formatMonthBoardTitle(data.month))} · ${escHtml(data.server || 'Todos os servidores')}</p><div class="k"><div>Total<strong>${data.filtered.length}</strong></div><div>Lepisma<strong>${data.filtered.filter(x=>x.tipo==='Lepisma').length}</strong></div><div>Aceitos<strong>${data.filtered.filter(x=>x.tipo==='Aceito').length}</strong></div><div>Dispensados<strong>${data.filtered.filter(x=>x.tipo==='Dispensado Automaticamente').length}</strong></div></div>${groups || '<p>Nenhuma atividade registrada.</p>'}</body></html>`);
-            win.document.close();
-            setTimeout(() => win.print(), 250);
+            openPolarePrint(data);
         };
 
         // ==================== LEPISMA MODULE ====================
@@ -6744,6 +7049,7 @@
                 updateKPIs();
                 renderDashboardDailyWork();
                 renderDashboardTeam();
+                renderDashboardMyQueue();
                 renderAlerts();
 
                 if (!options.silent) showToast('✅ Dados do Lepisma carregados: ' + lepismaAllData.length + ' processos');
@@ -6782,7 +7088,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Identificação de acesso · Presença por pessoa · Planilha da Equipe com abas e formatação · Controle Lepisma · Central eSocial S-1210 · Relatório PolarE · Cadastro de Servidores · Rubricas · Links Úteis v4.3 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.4 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
