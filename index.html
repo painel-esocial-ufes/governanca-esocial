@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.4</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.5</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -2029,7 +2029,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.4 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.5 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2135,6 +2135,58 @@
         .activity-kind.lepisma { background:#f1ecff; color:#6741b5; }
         .activity-kind.aceito { background:#eaf8f0; color:#147448; }
         .activity-kind.dispensado { background:#fff5e5; color:#975a08; }
+        .nav-item[data-page="chat"] { position:relative; }
+        .nav-chat-badge { display:none; min-width:18px; height:18px; padding:0 5px; margin-left:auto; align-items:center; justify-content:center; border-radius:999px; background:#dc2626; color:#fff; font-size:9px; font-weight:900; }
+        .nav-chat-badge.visible { display:inline-flex; }
+        .chat-page-heading-status { display:flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid var(--border); border-radius:999px; background:var(--surface2); color:var(--text2); font-size:9px; font-weight:800; }
+        .chat-online-dot { width:8px; height:8px; flex:0 0 8px; border-radius:50%; background:#16a34a; box-shadow:0 0 0 3px rgba(22,163,74,.12); }
+        .chat-online-dot.offline { background:#94a3b8; box-shadow:none; }
+        .chat-shell { display:grid; grid-template-columns:280px minmax(0,1fr); min-height:610px; padding:0; overflow:hidden; }
+        .chat-sidebar { display:flex; flex-direction:column; min-width:0; border-right:1px solid var(--border); background:var(--surface2); }
+        .chat-sidebar-head { padding:16px; border-bottom:1px solid var(--border); }
+        .chat-sidebar-head strong,.chat-sidebar-head small { display:block; }
+        .chat-sidebar-head strong { font-size:13px; }
+        .chat-sidebar-head small { margin-top:3px; color:var(--text3); font-size:9px; }
+        .chat-contact-list { display:grid; gap:5px; padding:10px; overflow-y:auto; }
+        .chat-contact-section { padding:8px 7px 3px; color:var(--text3); font-size:8px; font-weight:900; letter-spacing:.65px; text-transform:uppercase; }
+        .chat-contact { width:100%; display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:9px; padding:9px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--text); text-align:left; cursor:pointer; }
+        .chat-contact:hover { background:var(--surface); border-color:var(--border); }
+        .chat-contact.active { background:#e8f3fb; border-color:#a9cde6; }
+        body.dark-mode .chat-contact.active { background:#17364c; border-color:#315b78; }
+        .chat-avatar { position:relative; width:34px; height:34px; display:grid; place-items:center; border-radius:9px; background:#dceefe; color:#155b87; font-size:10px; font-weight:900; }
+        body.dark-mode .chat-avatar { background:#25465e; color:#a8d4f0; }
+        .chat-avatar .chat-online-dot { position:absolute; right:-2px; bottom:-2px; width:7px; height:7px; border:2px solid var(--surface2); box-shadow:none; }
+        .chat-contact-main { min-width:0; }
+        .chat-contact-main strong,.chat-contact-main small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .chat-contact-main strong { font-size:10px; }
+        .chat-contact-main small { margin-top:2px; color:var(--text3); font-size:8px; }
+        .chat-unread { min-width:19px; height:19px; display:grid; place-items:center; padding:0 5px; border-radius:999px; background:#1769aa; color:#fff; font-size:8px; font-weight:900; }
+        .chat-main { min-width:0; display:grid; grid-template-rows:auto minmax(0,1fr) auto; background:var(--surface); }
+        .chat-room-header { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:70px; padding:13px 17px; border-bottom:1px solid var(--border); }
+        .chat-room-person { display:flex; align-items:center; gap:10px; min-width:0; }
+        .chat-room-person strong,.chat-room-person small { display:block; }
+        .chat-room-person strong { font-size:13px; }
+        .chat-room-person small { margin-top:2px; color:var(--text3); font-size:9px; }
+        .chat-room-note { color:var(--text3); font-size:8px; text-align:right; }
+        .chat-messages { display:flex; flex-direction:column; gap:9px; min-height:360px; max-height:55vh; padding:18px; overflow-y:auto; background:linear-gradient(180deg,var(--surface2),var(--surface)); }
+        .chat-message { display:flex; align-items:flex-end; gap:7px; max-width:min(76%,720px); }
+        .chat-message.mine { align-self:flex-end; flex-direction:row-reverse; }
+        .chat-message-bubble { min-width:110px; padding:9px 11px 7px; border:1px solid var(--border); border-radius:11px 11px 11px 3px; background:var(--surface); box-shadow:0 1px 2px rgba(15,35,60,.05); }
+        .chat-message.mine .chat-message-bubble { border-color:#8fc0df; border-radius:11px 11px 3px 11px; background:#e7f3fb; }
+        body.dark-mode .chat-message.mine .chat-message-bubble { border-color:#315b78; background:#17364c; }
+        .chat-message-author { display:block; margin-bottom:3px; color:#1769aa; font-size:8px; font-weight:900; }
+        .chat-message-text { color:var(--text); font-size:11px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere; }
+        .chat-message-meta { display:flex; align-items:center; justify-content:flex-end; gap:7px; margin-top:4px; color:var(--text3); font-size:8px; }
+        .chat-message-delete { padding:0; border:0; background:none; color:var(--text3); font-size:8px; cursor:pointer; text-decoration:underline; }
+        .chat-message.deleted .chat-message-text { color:var(--text3); font-style:italic; }
+        .chat-empty { margin:auto; max-width:420px; padding:28px; color:var(--text3); text-align:center; }
+        .chat-empty strong { display:block; margin-bottom:5px; color:var(--text2); font-size:13px; }
+        .chat-composer-wrap { padding:10px 14px 13px; border-top:1px solid var(--border); background:var(--surface); }
+        .chat-typing { min-height:17px; padding:0 3px 4px; color:var(--text3); font-size:8px; font-style:italic; }
+        .chat-composer { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:8px; }
+        .chat-composer textarea { width:100%; min-height:42px; max-height:120px; padding:10px 11px; resize:vertical; border:1px solid var(--border); border-radius:9px; background:var(--surface2); color:var(--text); font:inherit; font-size:11px; line-height:1.35; }
+        .chat-composer .btn { min-height:42px; }
+        .chat-privacy-note { margin-top:6px; color:var(--text3); font-size:8px; }
         .staff-form { display:grid; grid-template-columns:minmax(220px,1fr) auto; gap:9px; margin-top:12px; }
         .staff-form input { min-height:38px; padding:8px 11px; border:1px solid var(--border); border-radius:7px; background:var(--surface2); color:var(--text); }
         .staff-list { display:grid; gap:8px; margin-top:14px; }
@@ -2237,8 +2289,8 @@
         body.dark-mode .team-sheet-cell.is-range { background:#17364c; }
         body.dark-mode .team-sheet-tabsbar { background:#172b3b; }
         @media (max-width:1200px) { .central-kpis,.dashboard-source-grid { grid-template-columns:repeat(3,1fr); } .daily-work-grid { grid-template-columns:repeat(2,1fr); } .daily-work-main { grid-column:1/-1; } }
-        @media (max-width:900px) { .polare-layout,.dashboard-work-grid { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } }
-        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid,.my-work-summary { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row,.closure-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } .team-sheet-toolbar { align-items:flex-start; flex-direction:column; } .team-sheet-toolbar-actions { width:100%; } .team-sheet-toolbar-actions .btn { flex:1; } }
+        @media (max-width:900px) { .polare-layout,.dashboard-work-grid { grid-template-columns:1fr; } .polare-kpis { grid-template-columns:repeat(2,1fr); } .chat-shell { grid-template-columns:220px minmax(0,1fr); } }
+        @media (max-width:700px) { .central-kpis,.daily-work-grid,.polare-kpis,.useful-links-grid,.my-work-summary { grid-template-columns:1fr; } .import-preview-item { grid-template-columns:1fr; } .monthly-board-header { align-items:flex-start; flex-direction:column; } .staff-form { grid-template-columns:1fr; } .staff-row,.closure-row { align-items:flex-start; flex-direction:column; } .course-row { grid-template-columns:52px minmax(0,1fr); } .course-row .reference-link-btn { grid-column:1/-1; width:100%; } .reference-intro { align-items:flex-start; } .team-sheet-toolbar { align-items:flex-start; flex-direction:column; } .team-sheet-toolbar-actions { width:100%; } .team-sheet-toolbar-actions .btn { flex:1; } .chat-shell { grid-template-columns:1fr; } .chat-sidebar { max-height:230px; border-right:0; border-bottom:1px solid var(--border); } .chat-contact-list { grid-template-columns:repeat(2,minmax(0,1fr)); } .chat-contact-section { grid-column:1/-1; } .chat-messages { max-height:48vh; } .chat-message { max-width:88%; } }
 
     </style>
 </head>
@@ -2290,13 +2342,16 @@
             <div class="nav-item" data-page="servidores"><span class="nav-icon">＋</span> Cadastro de Servidores</div>
             <div class="nav-item" data-page="planilha"><span class="nav-icon">▦</span> Planilha da Equipe</div>
 
+            <div class="nav-section">Comunicação</div>
+            <div class="nav-item" data-page="chat"><span class="nav-icon">✉</span> Conversa da Equipe <span class="nav-chat-badge" id="chatNavBadge">0</span></div>
+
             <div class="nav-section">Referências</div>
             <div class="nav-item" data-page="rubricas"><span class="nav-icon">≡</span> Rubricas</div>
             <div class="nav-item" data-page="linksuteis"><span class="nav-icon">↗</span> Links Úteis</div>
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.4 · 2026<br>
+            UFES · v4.5 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2626,6 +2681,36 @@
                 </div>
             </div>
 
+            <!-- PAGE: CONVERSA DA EQUIPE -->
+            <div class="page" id="page-chat">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">COMUNICAÇÃO EM TEMPO REAL</span>
+                        <h2>Conversa da Equipe</h2>
+                        <p>Sala geral e conversas individuais entre as pessoas identificadas no sistema.</p>
+                    </div>
+                    <span class="chat-page-heading-status"><i class="chat-online-dot"></i><span id="chatOnlineCount">0 pessoas online</span></span>
+                </div>
+                <div class="card chat-shell">
+                    <aside class="chat-sidebar">
+                        <div class="chat-sidebar-head"><strong>Conversas</strong><small>Selecione uma sala ou uma pessoa</small></div>
+                        <div class="chat-contact-list" id="chatContactList"></div>
+                    </aside>
+                    <section class="chat-main">
+                        <header class="chat-room-header" id="chatRoomHeader"></header>
+                        <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+                        <div class="chat-composer-wrap">
+                            <div class="chat-typing" id="chatTypingStatus"></div>
+                            <form class="chat-composer" onsubmit="sendChatMessage(event)">
+                                <textarea id="chatMessageInput" maxlength="1500" placeholder="Escreva uma mensagem..." aria-label="Mensagem" oninput="announceChatTyping()" onkeydown="handleChatComposerKey(event)"></textarea>
+                                <button class="btn btn-primary" id="chatSendButton" type="submit">Enviar</button>
+                            </form>
+                            <div class="chat-privacy-note">O CPF não é incluído nas mensagens. Evite compartilhar dados pessoais ou informações sigilosas.</div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
             <!-- PAGE: RUBRICAS -->
             <div class="page" id="page-rubricas">
                 <div class="page-heading">
@@ -2853,7 +2938,8 @@
             onSnapshot,
             query,
             orderBy,
-            limit
+            limit,
+            where
         } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         // ==================== FIREBASE CONFIG ====================
@@ -2871,6 +2957,9 @@
         const STATE_DOC = doc(firestore, "governanca", "estadoPrincipal");
         const AUDIT_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "historicoAlteracoes");
         const POLARE_CLOSURES_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "polareFechamentos");
+        const CHAT_MESSAGES_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "mensagensEquipe");
+        const CHAT_TYPING_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "digitandoEquipe");
+        const CHAT_READS_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "leiturasEquipe");
 
         // ==================== PRESENÇA ONLINE ====================
         const PRESENCE_COLLECTION = collection(firestore, "governanca", "estadoPrincipal", "presencaOnline");
@@ -3025,6 +3114,23 @@
         let unsubscribePolareClosures = null;
         let auditEntries = [];
         let polareClosures = [];
+        let unsubscribeChatMessages = null;
+        let unsubscribeChatDirectMessages = null;
+        let unsubscribeChatTyping = null;
+        let unsubscribeChatReads = null;
+        let chatMessages = [];
+        let chatGeneralMessages = [];
+        let chatDirectMessages = [];
+        let chatTypingEntries = [];
+        let chatReadMap = new Map();
+        let chatKnownMessageIds = new Set();
+        let chatInitialLoadDone = false;
+        let chatGeneralReady = false;
+        let chatDirectReady = false;
+        let chatTypingTimer = null;
+        let chatTypingUiTimer = null;
+        let chatLastTypingWrite = 0;
+        let activeChatRoomId = sessionStorage.getItem('governancaActiveChatRoom') || 'geral';
 
         // ==================== LEPISMA STATE ====================
         let lepismaAllData = [];
@@ -3678,6 +3784,9 @@
                 case 'planilha':
                     renderTeamSheet();
                     break;
+                case 'chat':
+                    renderChatPage();
+                    break;
                 case 'rubricas':
                 case 'linksuteis':
                     break;
@@ -3690,7 +3799,7 @@
             const labels = {
                 dashboard: 'Visão Operacional', calendario: 'Calendário', timeline: 'Linha do Tempo',
                 central: 'Central eSocial', lepisma: 'Lepisma', polare: 'Relatório PolarE',
-                servidores: 'Cadastro de Servidores', planilha: 'Planilha da Equipe', rubricas: 'Rubricas',
+                servidores: 'Cadastro de Servidores', planilha: 'Planilha da Equipe', chat: 'Conversa da Equipe', rubricas: 'Rubricas',
                 linksuteis: 'Links Úteis'
             };
             return labels[pageName] || pageName || 'Plataforma';
@@ -3792,6 +3901,7 @@
             unsubscribePresence = onSnapshot(PRESENCE_COLLECTION, snapshot => {
                 onlinePresenceSessions = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
                 renderOnlineIndicator();
+                renderChatPage();
                 cleanupOldPresenceDocs(snapshot).catch(() => {});
             }, error => {
                 console.warn('Não foi possível acompanhar presença online:', error);
@@ -3838,6 +3948,7 @@
                     <span class="access-person-avatar">${escHtml(initials || 'US')}</span>
                     <div><strong>${escHtml(label)}</strong><small>${escHtml(item.cpfMasked)} · ${escHtml(getPageLabel(item.page))} · ${escHtml(comp)}</small></div>
                     <span class="access-person-meta">${tabs > 1 ? `${tabs} abas · ` : ''}${formatPresenceAgo(item.lastSeen)}</span>
+                    ${isCurrent ? '' : `<button class="btn btn-sm btn-outline" onclick="openDirectChat('${encodeURIComponent(item.personKey)}')">Conversar</button>`}
                 </div>`;
             }).join('');
             content.innerHTML = `
@@ -3849,11 +3960,312 @@
             overlay.style.display = 'flex';
         };
 
+        // ==================== CONVERSA DA EQUIPE ====================
+        function chatInitials(name) {
+            return String(name || 'Equipe').trim().split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase() || 'EQ';
+        }
+
+        function directChatRoomId(personKey) {
+            const keys = [String(currentAccessIdentity?.personKey || ''), String(personKey || '')].filter(Boolean).sort();
+            return keys.length === 2 ? `direta|${keys[0]}|${keys[1]}` : 'geral';
+        }
+
+        function getChatPartnerKey(roomId) {
+            if (!String(roomId || '').startsWith('direta|')) return '';
+            const keys = String(roomId).split('|').slice(1);
+            if (!keys.includes(currentAccessIdentity?.personKey)) return '';
+            return keys.find(key => key !== currentAccessIdentity?.personKey) || '';
+        }
+
+        function getChatPeopleDirectory() {
+            const people = new Map();
+            getActivePresencePeople().forEach(person => people.set(person.personKey, {
+                personKey: person.personKey,
+                displayName: person.displayName,
+                online: true,
+                lastSeen: person.lastSeen
+            }));
+            chatMessages.forEach(message => {
+                if (message.senderKey && !people.has(message.senderKey)) people.set(message.senderKey, { personKey: message.senderKey, displayName: message.senderName || 'Pessoa da equipe', online: false, lastSeen: 0 });
+                if (message.recipientKey && !people.has(message.recipientKey)) people.set(message.recipientKey, { personKey: message.recipientKey, displayName: message.recipientName || 'Pessoa da equipe', online: false, lastSeen: 0 });
+            });
+            if (currentAccessIdentity?.personKey && !people.has(currentAccessIdentity.personKey)) people.set(currentAccessIdentity.personKey, { personKey: currentAccessIdentity.personKey, displayName: currentAccessIdentity.name, online: true, lastSeen: Date.now() });
+            return people;
+        }
+
+        function getChatRoomMeta(roomId = activeChatRoomId) {
+            if (roomId === 'geral') return { title: 'Sala geral', subtitle: 'Conversa com toda a equipe', initials: 'EQ', online: true, partnerKey: '' };
+            const partnerKey = getChatPartnerKey(roomId);
+            const person = getChatPeopleDirectory().get(partnerKey);
+            return {
+                title: person?.displayName || 'Conversa individual',
+                subtitle: person?.online ? 'Online agora' : 'Offline · a mensagem ficará salva',
+                initials: chatInitials(person?.displayName),
+                online: Boolean(person?.online),
+                partnerKey
+            };
+        }
+
+        function formatChatTimestamp(value) {
+            const date = new Date(value || '');
+            if (Number.isNaN(date.getTime())) return '';
+            const today = new Date();
+            const sameDay = date.toDateString() === today.toDateString();
+            return sameDay ? date.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : date.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+        }
+
+        function chatReadDocumentId(roomId) {
+            return `${currentAccessIdentity?.personKey || 'pessoa'}__${roomId}`;
+        }
+
+        function getChatUnreadCount(roomId) {
+            const lastRead = Date.parse(chatReadMap.get(roomId) || '') || 0;
+            return chatMessages.filter(message => message.roomId === roomId && message.senderKey !== currentAccessIdentity?.personKey && !message.deleted && (Date.parse(message.createdAt || '') || 0) > lastRead).length;
+        }
+
+        function getChatRoomIds() {
+            const rooms = new Set(['geral']);
+            chatMessages.forEach(message => {
+                if (message.roomId === 'geral' || getChatPartnerKey(message.roomId)) rooms.add(message.roomId);
+            });
+            getActivePresencePeople().forEach(person => {
+                if (person.personKey !== currentAccessIdentity?.personKey) rooms.add(directChatRoomId(person.personKey));
+            });
+            return [...rooms];
+        }
+
+        function updateChatNavBadge() {
+            const badge = document.getElementById('chatNavBadge');
+            if (!badge) return;
+            const total = getChatRoomIds().reduce((sum, roomId) => sum + getChatUnreadCount(roomId), 0);
+            badge.textContent = total > 99 ? '99+' : String(total);
+            badge.classList.toggle('visible', total > 0);
+        }
+
+        async function markChatRoomRead(roomId = activeChatRoomId) {
+            if (!currentAccessIdentity?.personKey || !roomId) return;
+            const latest = [...chatMessages].reverse().find(message => message.roomId === roomId)?.createdAt || new Date().toISOString();
+            if ((Date.parse(chatReadMap.get(roomId) || '') || 0) >= (Date.parse(latest) || 0)) return;
+            chatReadMap.set(roomId, latest);
+            updateChatNavBadge();
+            renderChatContacts();
+            try {
+                await setDoc(doc(CHAT_READS_COLLECTION, chatReadDocumentId(roomId)), { personKey: currentAccessIdentity.personKey, roomId, lastReadAt: latest, updatedAt: new Date().toISOString() }, { merge: true });
+            } catch (error) {
+                console.warn('Não foi possível salvar a leitura da conversa:', error);
+            }
+        }
+
+        function renderChatContacts() {
+            const container = document.getElementById('chatContactList');
+            const countLabel = document.getElementById('chatOnlineCount');
+            if (!container) return;
+            const activePeople = getActivePresencePeople();
+            if (countLabel) countLabel.textContent = activePeople.length === 1 ? '1 pessoa online' : `${activePeople.length} pessoas online`;
+            const directory = getChatPeopleDirectory();
+            const partnerKeys = new Set();
+            getChatRoomIds().filter(roomId => roomId !== 'geral').forEach(roomId => {
+                const partnerKey = getChatPartnerKey(roomId);
+                if (partnerKey) partnerKeys.add(partnerKey);
+            });
+            const people = [...partnerKeys].map(key => directory.get(key)).filter(person => person && person.personKey !== currentAccessIdentity?.personKey).sort((a,b) => Number(b.online) - Number(a.online) || a.displayName.localeCompare(b.displayName, 'pt-BR'));
+            const generalUnread = getChatUnreadCount('geral');
+            const general = `<button class="chat-contact ${activeChatRoomId === 'geral' ? 'active' : ''}" onclick="selectChatRoom('geral')"><span class="chat-avatar">EQ<span class="chat-online-dot"></span></span><span class="chat-contact-main"><strong>Sala geral</strong><small>${activePeople.length} online · toda a equipe</small></span>${generalUnread ? `<span class="chat-unread">${generalUnread}</span>` : ''}</button>`;
+            const directRows = people.map(person => {
+                const roomId = directChatRoomId(person.personKey);
+                const unread = getChatUnreadCount(roomId);
+                return `<button class="chat-contact ${activeChatRoomId === roomId ? 'active' : ''}" onclick="selectChatRoom('${encodeURIComponent(roomId)}')"><span class="chat-avatar">${escHtml(chatInitials(person.displayName))}<span class="chat-online-dot ${person.online ? '' : 'offline'}"></span></span><span class="chat-contact-main"><strong>${escHtml(person.displayName)}</strong><small>${person.online ? 'Online agora' : 'Offline'}</small></span>${unread ? `<span class="chat-unread">${unread}</span>` : ''}</button>`;
+            }).join('');
+            container.innerHTML = `<div class="chat-contact-section">Equipe</div>${general}<div class="chat-contact-section">Conversas individuais</div>${directRows || '<div class="empty-state" style="padding:12px;font-size:9px;">Nenhuma outra pessoa online ou conversa recente.</div>'}`;
+        }
+
+        function renderChatRoomHeader() {
+            const header = document.getElementById('chatRoomHeader');
+            if (!header) return;
+            const meta = getChatRoomMeta();
+            header.innerHTML = `<div class="chat-room-person"><span class="chat-avatar">${escHtml(meta.initials)}<span class="chat-online-dot ${meta.online ? '' : 'offline'}"></span></span><div><strong>${escHtml(meta.title)}</strong><small>${escHtml(meta.subtitle)}</small></div></div><span class="chat-room-note">Mensagens em tempo real<br>sem CPF armazenado</span>`;
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            const shouldStick = !container.dataset.room || container.dataset.room !== activeChatRoomId || container.scrollHeight - container.scrollTop - container.clientHeight < 90;
+            const roomMessages = chatMessages.filter(message => message.roomId === activeChatRoomId).slice(-250);
+            container.dataset.room = activeChatRoomId;
+            container.innerHTML = roomMessages.map(message => {
+                const mine = message.senderKey === currentAccessIdentity?.personKey;
+                const deleted = Boolean(message.deleted);
+                return `<article class="chat-message ${mine ? 'mine' : ''} ${deleted ? 'deleted' : ''}"><span class="chat-avatar">${escHtml(chatInitials(message.senderName))}</span><div class="chat-message-bubble"><span class="chat-message-author">${escHtml(mine ? 'Você' : message.senderName || 'Pessoa da equipe')}</span><div class="chat-message-text">${deleted ? 'Mensagem excluída' : escHtml(message.text || '')}</div><div class="chat-message-meta"><span>${formatChatTimestamp(message.createdAt)}</span>${mine && !deleted ? `<button class="chat-message-delete" onclick="deleteChatMessage('${encodeURIComponent(message.id)}')">Excluir</button>` : ''}</div></div></article>`;
+            }).join('') || `<div class="chat-empty"><strong>Comece a conversa</strong><span>${activeChatRoomId === 'geral' ? 'Envie uma mensagem para toda a equipe.' : 'Esta conversa individual ainda não possui mensagens.'}</span></div>`;
+            if (shouldStick) requestAnimationFrame(() => { container.scrollTop = container.scrollHeight; });
+            if (currentActivePage === 'chat') markChatRoomRead(activeChatRoomId).catch(() => {});
+        }
+
+        function renderChatTyping() {
+            const element = document.getElementById('chatTypingStatus');
+            if (!element) return;
+            const now = Date.now();
+            const names = [...new Set(chatTypingEntries.filter(item => item.roomId === activeChatRoomId && item.personKey !== currentAccessIdentity?.personKey && Number(item.expiresAt || 0) > now).map(item => item.displayName).filter(Boolean))];
+            element.textContent = names.length === 1 ? `${names[0]} está digitando…` : names.length > 1 ? `${names.slice(0,2).join(' e ')} estão digitando…` : '';
+        }
+
+        function renderChatPage() {
+            if (!document.getElementById('page-chat')) return;
+            renderChatContacts();
+            renderChatRoomHeader();
+            renderChatMessages();
+            renderChatTyping();
+            updateChatNavBadge();
+        }
+
+        window.selectChatRoom = function(encodedRoomId) {
+            const roomId = encodedRoomId === 'geral' ? 'geral' : decodeURIComponent(encodedRoomId || 'geral');
+            activeChatRoomId = roomId;
+            sessionStorage.setItem('governancaActiveChatRoom', roomId);
+            renderChatPage();
+            document.getElementById('chatMessageInput')?.focus();
+        };
+
+        window.openDirectChat = function(encodedPersonKey) {
+            const personKey = decodeURIComponent(encodedPersonKey || '');
+            if (!personKey || personKey === currentAccessIdentity?.personKey) return;
+            closeModalDirect();
+            navigateTo('chat');
+            window.selectChatRoom(encodeURIComponent(directChatRoomId(personKey)));
+        };
+
+        function redactCpfFromChat(text) {
+            return String(text || '').replace(/\b\d{3}[.\s-]?\d{3}[.\s-]?\d{3}[-.\s]?\d{2}\b/g, '[CPF removido]');
+        }
+
+        async function stopChatTyping() {
+            clearTimeout(chatTypingTimer);
+            try { await deleteDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId)); } catch (_) {}
+        }
+
+        window.announceChatTyping = function() {
+            if (!currentAccessIdentity) return;
+            const input = document.getElementById('chatMessageInput');
+            if (!String(input?.value || '').trim()) { stopChatTyping(); return; }
+            const now = Date.now();
+            if (now - chatLastTypingWrite > 700) {
+                chatLastTypingWrite = now;
+                setDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId), { roomId: activeChatRoomId, personKey: currentAccessIdentity.personKey, displayName: currentAccessIdentity.name, expiresAt: now + 3200 }, { merge: true }).catch(() => {});
+            }
+            clearTimeout(chatTypingTimer);
+            chatTypingTimer = setTimeout(() => stopChatTyping(), 2600);
+        };
+
+        window.handleChatComposerKey = function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                window.sendChatMessage(event);
+            }
+        };
+
+        window.sendChatMessage = async function(event) {
+            event?.preventDefault?.();
+            const input = document.getElementById('chatMessageInput');
+            const button = document.getElementById('chatSendButton');
+            const raw = String(input?.value || '').trim();
+            if (!raw || !currentAccessIdentity) return;
+            const text = redactCpfFromChat(raw).slice(0, 1500);
+            const meta = getChatRoomMeta();
+            if (button) { button.disabled = true; button.textContent = 'Enviando…'; }
+            try {
+                await setDoc(doc(CHAT_MESSAGES_COLLECTION), {
+                    roomId: activeChatRoomId,
+                    senderKey: currentAccessIdentity.personKey,
+                    senderName: currentAccessIdentity.name,
+                    recipientKey: meta.partnerKey || '',
+                    recipientName: meta.partnerKey ? meta.title : '',
+                    participantKeys: meta.partnerKey ? [currentAccessIdentity.personKey, meta.partnerKey].sort() : [],
+                    text,
+                    createdAt: new Date().toISOString(),
+                    deleted: false
+                });
+                if (input) input.value = '';
+                if (text !== raw) showToast('Por privacidade, um CPF identificado na mensagem foi removido.');
+                await stopChatTyping();
+            } catch (error) {
+                console.error('Erro ao enviar mensagem:', error);
+                alert('Não foi possível enviar a mensagem. Tente novamente.');
+            } finally {
+                if (button) { button.disabled = false; button.textContent = 'Enviar'; }
+                input?.focus();
+            }
+        };
+
+        window.deleteChatMessage = async function(encodedId) {
+            const id = decodeURIComponent(encodedId || '');
+            const message = chatMessages.find(item => item.id === id);
+            if (!message || message.senderKey !== currentAccessIdentity?.personKey || message.deleted) return;
+            if (!confirm('Excluir esta mensagem? O histórico indicará que ela foi excluída.')) return;
+            try {
+                await updateDoc(doc(CHAT_MESSAGES_COLLECTION, id), { text: '', deleted: true, deletedAt: new Date().toISOString(), deletedBy: currentAccessIdentity.personKey });
+            } catch (error) {
+                console.error('Erro ao excluir mensagem:', error);
+                alert('Não foi possível excluir a mensagem.');
+            }
+        };
+
+        function setupChat() {
+            if (!currentAccessIdentity?.personKey) return;
+            if (activeChatRoomId !== 'geral' && !getChatPartnerKey(activeChatRoomId)) {
+                activeChatRoomId = 'geral';
+                sessionStorage.setItem('governancaActiveChatRoom', 'geral');
+            }
+            const refreshMessages = () => {
+                const combined = [...chatGeneralMessages, ...chatDirectMessages].sort((a,b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')));
+                const incomingIds = new Set(combined.map(item => item.id));
+                const newIncoming = chatInitialLoadDone ? combined.filter(message => !chatKnownMessageIds.has(message.id) && message.senderKey !== currentAccessIdentity.personKey && !message.deleted) : [];
+                chatKnownMessageIds = incomingIds;
+                chatMessages = combined.slice(-600);
+                if (chatGeneralReady && chatDirectReady) chatInitialLoadDone = true;
+                renderChatPage();
+                if (newIncoming.length) {
+                    const newest = newIncoming[newIncoming.length - 1];
+                    if (currentActivePage !== 'chat' || activeChatRoomId !== newest.roomId) showToast(`💬 ${newest.senderName || 'Equipe'}: ${String(newest.text || '').slice(0, 70)}`);
+                }
+            };
+            if (unsubscribeChatMessages) unsubscribeChatMessages();
+            unsubscribeChatMessages = onSnapshot(query(CHAT_MESSAGES_COLLECTION, where('roomId', '==', 'geral'), limit(300)), snapshot => {
+                chatGeneralMessages = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                chatGeneralReady = true;
+                refreshMessages();
+            }, error => console.error('Erro ao carregar mensagens da equipe:', error));
+
+            if (unsubscribeChatDirectMessages) unsubscribeChatDirectMessages();
+            unsubscribeChatDirectMessages = onSnapshot(query(CHAT_MESSAGES_COLLECTION, where('participantKeys', 'array-contains', currentAccessIdentity.personKey), limit(300)), snapshot => {
+                chatDirectMessages = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                chatDirectReady = true;
+                refreshMessages();
+            }, error => console.error('Erro ao carregar conversas individuais:', error));
+
+            if (unsubscribeChatTyping) unsubscribeChatTyping();
+            unsubscribeChatTyping = onSnapshot(CHAT_TYPING_COLLECTION, snapshot => {
+                chatTypingEntries = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                renderChatTyping();
+            }, error => console.warn('Indicador de digitação indisponível:', error));
+
+            if (unsubscribeChatReads) unsubscribeChatReads();
+            unsubscribeChatReads = onSnapshot(query(CHAT_READS_COLLECTION, where('personKey', '==', currentAccessIdentity.personKey), limit(200)), snapshot => {
+                chatReadMap = new Map(snapshot.docs.map(item => [item.data().roomId, item.data().lastReadAt]));
+                renderChatPage();
+            }, error => console.warn('Leitura de mensagens indisponível:', error));
+
+            clearInterval(chatTypingUiTimer);
+            chatTypingUiTimer = setInterval(renderChatTyping, 1000);
+            window.addEventListener('pagehide', () => { deleteDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId)).catch(() => {}); });
+        }
+
         window.resetAccessIdentity = async function() {
             try { await deleteDoc(PRESENCE_DOC); } catch (_) {}
+            try { await deleteDoc(doc(CHAT_TYPING_COLLECTION, presenceSessionId)); } catch (_) {}
             sessionStorage.removeItem(ACCESS_IDENTITY_KEY);
             sessionStorage.removeItem('governancaPresenceSessionId');
             sessionStorage.removeItem('governancaPresenceStartedAt');
+            sessionStorage.removeItem('governancaActiveChatRoom');
             window.location.reload();
         };
 
@@ -3917,7 +4329,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.4 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.5 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -3991,6 +4403,7 @@
             renderPolareReport();
             renderServidores();
             renderTeamSheet();
+            renderChatPage();
             updatePhaseIndicator();
             updateKPIs();
         }
@@ -5316,6 +5729,7 @@
             const navItem = document.querySelector(`.nav-item[data-page="${pageName}"]`);
             if (navItem) navItem.classList.add('active');
             renderPageContent(pageName);
+            if (pageName === 'chat') markChatRoomRead(activeChatRoomId).catch(() => {});
             updateKPIs();
             if (window.innerWidth <= 950) document.getElementById('sidebar').classList.remove('open');
         }
@@ -7084,11 +7498,12 @@
         // ==================== START ====================
         beginAccessIdentification().then(() => initApp()).then(() => {
             setupPresenceTracking();
+            setupChat();
             console.log('🚀 Plataforma pronta.');
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Identificação de acesso · Presença por pessoa · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.4 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.5 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
