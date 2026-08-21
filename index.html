@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.8</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.9</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -2029,7 +2029,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.8 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.9 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2389,7 +2389,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.8 · 2026<br>
+            UFES · v4.9 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -4479,7 +4479,7 @@
         async function firestoreChatRequest(method, body = {}) {
             if (method === 'GET') {
                 const snapshot = await getDoc(STATE_DOC);
-                return { messages: normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]) };
+                return { messages: normalizeSharedChatMessages(snapshot.data()?.state?.[CHAT_FIRESTORE_FIELD]) };
             }
             if (method === 'POST') {
                 const message = {
@@ -4491,11 +4491,11 @@
                 };
                 await runTransaction(firestore, async transaction => {
                     const snapshot = await transaction.get(STATE_DOC);
-                    const messages = normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]);
-                    transaction.set(STATE_DOC, {
-                        [CHAT_FIRESTORE_FIELD]: [...messages, message].slice(-CHAT_FIRESTORE_LIMIT),
+                    const messages = normalizeSharedChatMessages(snapshot.data()?.state?.[CHAT_FIRESTORE_FIELD]);
+                    transaction.update(STATE_DOC, {
+                        [`state.${CHAT_FIRESTORE_FIELD}`]: [...messages, message].slice(-CHAT_FIRESTORE_LIMIT),
                         updatedAt: new Date().toISOString()
-                    }, { merge:true });
+                    });
                 });
                 return { message };
             }
@@ -4503,7 +4503,7 @@
                 let updatedMessage = null;
                 await runTransaction(firestore, async transaction => {
                     const snapshot = await transaction.get(STATE_DOC);
-                    const messages = normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]);
+                    const messages = normalizeSharedChatMessages(snapshot.data()?.state?.[CHAT_FIRESTORE_FIELD]);
                     const index = messages.findIndex(item => item.id === body.id);
                     if (index < 0) throw new Error('Mensagem não encontrada.');
                     const current = messages[index];
@@ -4519,7 +4519,7 @@
                         throw new Error('Ação inválida.');
                     }
                     messages[index] = updatedMessage;
-                    transaction.set(STATE_DOC, { [CHAT_FIRESTORE_FIELD]:messages, updatedAt:new Date().toISOString() }, { merge:true });
+                    transaction.update(STATE_DOC, { [`state.${CHAT_FIRESTORE_FIELD}`]:messages, updatedAt:new Date().toISOString() });
                 });
                 return { ok:true, message:updatedMessage };
             }
@@ -4529,8 +4529,8 @@
                 let deletedCount = 0;
                 await runTransaction(firestore, async transaction => {
                     const snapshot = await transaction.get(STATE_DOC);
-                    deletedCount = normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]).length;
-                    transaction.set(STATE_DOC, { [CHAT_FIRESTORE_FIELD]:[], updatedAt:new Date().toISOString() }, { merge:true });
+                    deletedCount = normalizeSharedChatMessages(snapshot.data()?.state?.[CHAT_FIRESTORE_FIELD]).length;
+                    transaction.update(STATE_DOC, { [`state.${CHAT_FIRESTORE_FIELD}`]:[], updatedAt:new Date().toISOString() });
                 });
                 return { ok:true, deletedCount };
             }
@@ -4664,7 +4664,9 @@
         };
 
         function applyChatMessages(combinedValue) {
-            const visibleMessages = normalizeSharedChatMessages(combinedValue).filter(message => message.roomId === 'geral' || (Array.isArray(message.participantKeys) && message.participantKeys.includes(currentAccessIdentity?.personKey)));
+            const sharedMessages = normalizeSharedChatMessages(combinedValue);
+            state[CHAT_FIRESTORE_FIELD] = sharedMessages;
+            const visibleMessages = sharedMessages.filter(message => message.roomId === 'geral' || (Array.isArray(message.participantKeys) && message.participantKeys.includes(currentAccessIdentity?.personKey)));
             const incomingIds = new Set(visibleMessages.map(item => item.id));
             const newIncoming = chatInitialLoadDone ? visibleMessages.filter(message => !chatKnownMessageIds.has(message.id) && message.senderKey !== currentAccessIdentity.personKey && !message.deleted) : [];
             chatKnownMessageIds = incomingIds;
@@ -4702,7 +4704,7 @@
                 refreshChatMessagesFromApi();
             } else {
                 unsubscribeChatMessages = onSnapshot(STATE_DOC, snapshot => {
-                    applyChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]);
+                    applyChatMessages(snapshot.data()?.state?.[CHAT_FIRESTORE_FIELD]);
                 }, error => {
                     console.warn('Atualização das conversas no GitHub indisponível:', error);
                     refreshChatMessagesFromApi();
@@ -4805,7 +4807,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.8 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.9 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -7979,7 +7981,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe compatível com GitHub · Emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.8 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe compatível com GitHub · Emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.9 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
