@@ -2008,6 +2008,14 @@
         .server-data { display:block; line-height:1.35; color:var(--text); }
         .situation-stack { display:grid; gap:6px; min-width:205px; }
         .situation-stack input { width:100%; }
+        .situation-select { font-weight:800; transition:background .15s ease,color .15s ease,border-color .15s ease; }
+        .situation-select.situation-success { background:#eaf8f0; border-color:#86d3aa; color:#116b42; }
+        .situation-select.situation-resent { background:#fff4e5; border-color:#f1bd72; color:#9a5200; }
+        .situation-select.situation-rejected { background:#fff0f0; border-color:#efa0a0; color:#a51d1d; }
+        .situation-select option { background:var(--surface); color:var(--text); font-weight:700; }
+        .situation-select option.situation-success { color:#116b42; }
+        .situation-select option.situation-resent { color:#9a5200; }
+        .situation-select option.situation-rejected { color:#a51d1d; }
         .central-observation { min-width:270px; min-height:52px; resize:vertical; }
         .central-empty { padding:28px; text-align:center; color:var(--text3); border:1px dashed var(--border); border-radius:9px; background:var(--surface2); }
         .polare-filters { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
@@ -2028,6 +2036,16 @@
         .polare-bar-head { display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; font-size:10px; }
         .polare-bar-track { height:9px; overflow:hidden; border-radius:999px; background:var(--surface3); }
         .polare-bar-fill { display:block; height:100%; min-width:2px; border-radius:999px; background:linear-gradient(90deg,#1769aa,#58a1d8); }
+        .polare-details { display:grid; gap:18px; }
+        .polare-person-group { overflow:hidden; border:1px solid var(--border); border-radius:9px; background:var(--surface); }
+        .polare-person-name { padding:11px 14px; border-bottom:1px solid var(--border); background:var(--surface2); }
+        .polare-person-name span,.polare-person-name strong { display:block; }
+        .polare-person-name span { color:var(--text3); font-size:8px; font-weight:800; letter-spacing:.55px; text-transform:uppercase; }
+        .polare-person-name strong { margin-top:2px; color:var(--text); font-size:15px; }
+        .polare-simple-table { min-width:520px; }
+        .polare-simple-table th:first-child,.polare-simple-table td:first-child { width:42%; }
+        .polare-simple-table th:last-child,.polare-simple-table td:last-child { width:58%; }
+        .polare-simple-table td { padding-top:8px; padding-bottom:8px; }
         .activity-kind { display:inline-flex; padding:3px 7px; border-radius:5px; font-size:8px; font-weight:800; text-transform:uppercase; white-space:nowrap; }
         .activity-kind.lepisma { background:#f1ecff; color:#6741b5; }
         .activity-kind.aceito { background:#eaf8f0; color:#147448; }
@@ -2401,7 +2419,7 @@
                         <div class="polare-filter"><label for="polareServer">Servidor responsável</label><select id="polareServer" onchange="renderPolareReport()"><option value="">Todos os servidores</option></select></div>
                         <button class="btn btn-sm btn-outline" onclick="resetPolareFilters()">Mês atual e todos</button>
                     </div>
-                    <div class="central-import-note" style="margin-top:12px;margin-bottom:0;"><span>ℹ️</span><div>O mês considera a <strong>Data de Saída</strong> do Lepisma e a data em que a situação do evento foi alterada para <strong>Aceito</strong> ou <strong>Dispensado Automaticamente</strong>. Registros antigos sem data de conclusão usam a melhor data disponível.</div></div>
+                    <div class="central-import-note" style="margin-top:12px;margin-bottom:0;"><span>ℹ️</span><div>O mês considera a <strong>Data de Saída</strong> do Lepisma e a data em que a situação do evento foi alterada para <strong>Aceito</strong> ou <strong>Dispensado Automaticamente</strong>. No detalhamento, o Lepisma mostra o número do processo e a Central eSocial mostra o ID do evento.</div></div>
                 </div>
                 <div class="polare-kpis" id="polareKpis"></div>
                 <div class="polare-layout">
@@ -2410,8 +2428,8 @@
                         <div class="polare-bars" id="polareServerBars"></div>
                     </div>
                     <div class="card">
-                        <div class="card-header"><div><span class="eyebrow">DETALHAMENTO</span><h3 id="polareDetailTitle">Atividades realizadas</h3></div><span class="badge badge-blue" id="polareActivityCount">0 atividades</span></div>
-                        <div class="table-wrap"><table id="polareTable"><thead><tr><th>Data</th><th>Servidor</th><th>Atividade</th><th>Identificação</th><th>Interessado / Servidor</th><th>Resultado / Detalhe</th></tr></thead><tbody></tbody></table></div>
+                        <div class="card-header"><div><span class="eyebrow">DETALHAMENTO</span><h3>Atividades realizadas</h3></div><span class="badge badge-blue" id="polareActivityCount">0 atividades</span></div>
+                        <div class="polare-details" id="polareDetails"></div>
                     </div>
                 </div>
             </div>
@@ -3593,6 +3611,13 @@
             return CENTRAL_SITUATIONS.includes(item?.situacao) ? item.situacao : '';
         }
 
+        function centralSituationClass(value) {
+            if (value === 'Aceito' || value === 'Dispensado Automaticamente') return 'situation-success';
+            if (value === 'Reenviado') return 'situation-resent';
+            if (value === 'Rejeitado') return 'situation-rejected';
+            return '';
+        }
+
         function situationToLegacyStatus(situacao) {
             if (situacao === 'Aceito' || situacao === 'Dispensado Automaticamente') return 'resolvido';
             if (situacao) return 'andamento';
@@ -3676,7 +3701,7 @@
                 const body = rows.map(item => {
                     const currentSituation = getCentralSituation(item);
                     const situationOptions = '<option value="">Selecionar...</option>' + CENTRAL_SITUATIONS.map(option =>
-                        `<option value="${option}" ${currentSituation === option ? 'selected' : ''}>${option}</option>`
+                        `<option class="${centralSituationClass(option)}" value="${option}" ${currentSituation === option ? 'selected' : ''}>${option}</option>`
                     ).join('');
                     const otherInput = currentSituation === 'Outro'
                         ? `<input value="${escHtml(item.situacaoOutro || '')}" placeholder="Descreva a situação" onchange="updateCentralOther('${compKey}','${item._arrName}',${item._idx},this.value)">`
@@ -3686,7 +3711,7 @@
                         <td><span class="server-data">${escHtml(item.cpf || '—')}</span></td>
                         <td><span class="server-data"><strong>${escHtml(item.nome || '—')}</strong></span></td>
                         <td><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'responsavel',this.value)">${responsibleOptions(item.responsavel)}</select></td>
-                        <td><div class="situation-stack"><select onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'situacao',this.value)">${situationOptions}</select>${otherInput}</div></td>
+                        <td><div class="situation-stack"><select class="situation-select ${centralSituationClass(currentSituation)}" onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'situacao',this.value)">${situationOptions}</select>${otherInput}</div></td>
                         <td><textarea class="central-observation" onchange="updateCentralCase('${compKey}','${item._arrName}',${item._idx},'obs',this.value)" placeholder="Escreva uma observação sobre o evento">${escHtml(item.obs || '')}</textarea></td>
                     </tr>`;
                 }).join('');
@@ -5462,11 +5487,33 @@
             return { activities, month, server, monthActivities, filtered };
         }
 
+        function groupPolareActivitiesByServer(items) {
+            const groups = new Map();
+            (items || []).forEach(item => {
+                if (!groups.has(item.responsavel)) groups.set(item.responsavel, []);
+                groups.get(item.responsavel).push(item);
+            });
+            return [...groups.entries()].sort((a,b) => a[0].localeCompare(b[0], 'pt-BR'));
+        }
+
+        function buildPolareDetailHtml(items) {
+            const groups = groupPolareActivitiesByServer(items);
+            if (!groups.length) return '<div class="central-empty">Nenhuma atividade encontrada para o mês e servidor selecionados.</div>';
+            return groups.map(([serverName, activities]) => `
+                <section class="polare-person-group">
+                    <div class="polare-person-name"><span>Servidor responsável</span><strong>${escHtml(serverName)}</strong></div>
+                    <div class="table-wrap"><table class="polare-simple-table">
+                        <thead><tr><th>Processo / ID do Evento</th><th>Nome</th></tr></thead>
+                        <tbody>${activities.map(item => `<tr><td><span class="event-id">${escHtml(item.identificacao || '—')}</span></td><td>${escHtml(item.pessoa || '—')}</td></tr>`).join('')}</tbody>
+                    </table></div>
+                </section>`).join('');
+        }
+
         function renderPolareReport() {
             const kpis = document.getElementById('polareKpis');
-            const tbody = document.querySelector('#polareTable tbody');
+            const details = document.getElementById('polareDetails');
             const bars = document.getElementById('polareServerBars');
-            if (!kpis || !tbody || !bars) return;
+            if (!kpis || !details || !bars) return;
             const data = getFilteredPolareData();
             const total = data.filtered.length;
             const lepismaCount = data.filtered.filter(item => item.tipo === 'Lepisma').length;
@@ -5483,15 +5530,9 @@
             bars.innerHTML = [...counts.entries()].sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0],'pt-BR')).map(([name, count]) => `
                 <div><div class="polare-bar-head"><strong>${escHtml(name)}</strong><span>${count}</span></div><div class="polare-bar-track"><span class="polare-bar-fill" style="width:${Math.round((count/max)*100)}%"></span></div></div>`).join('') || '<div class="central-empty">Nenhuma atividade registrada neste mês.</div>';
 
-            tbody.innerHTML = data.filtered.map(item => {
-                const className = item.tipo === 'Lepisma' ? 'lepisma' : item.tipo === 'Aceito' ? 'aceito' : 'dispensado';
-                const label = item.tipo === 'Lepisma' ? 'Despacho Lepisma' : item.tipo;
-                return `<tr><td>${formatActivityDate(item.data)}</td><td><strong>${escHtml(item.responsavel)}</strong></td><td><span class="activity-kind ${className}">${escHtml(label)}</span></td><td><span class="event-id">${escHtml(item.identificacao)}</span></td><td>${escHtml(item.pessoa || '—')}</td><td>${escHtml(item.detalhe || '—')}</td></tr>`;
-            }).join('') || '<tr><td colspan="6"><div class="central-empty">Nenhuma atividade encontrada para o mês e servidor selecionados.</div></td></tr>';
+            details.innerHTML = buildPolareDetailHtml(data.filtered);
             const countBadge = document.getElementById('polareActivityCount');
             if (countBadge) countBadge.textContent = `${total} atividade${total === 1 ? '' : 's'}`;
-            const title = document.getElementById('polareDetailTitle');
-            if (title) title.textContent = data.server ? `Atividades de ${data.server}` : 'Atividades realizadas';
         }
         window.renderPolareReport = renderPolareReport;
 
@@ -5516,8 +5557,12 @@
                 aceitos: data.filtered.filter(item => item.tipo === 'Aceito').length,
                 dispensados: data.filtered.filter(item => item.tipo === 'Dispensado Automaticamente').length
             };
-            const lines = data.filtered.map(item => `- ${formatActivityDate(item.data)} | ${item.responsavel} | ${item.tipo === 'Lepisma' ? 'Processo despachado no Lepisma' : item.tipo} | ${item.identificacao} | ${item.pessoa || 'Sem interessado'}`);
-            return [`RELATÓRIO POLARE — ${title}`, `Servidor: ${scope}`, `Total: ${data.filtered.length} | Lepisma: ${counts.lepisma} | Aceitos: ${counts.aceitos} | Dispensados automaticamente: ${counts.dispensados}`, '', ...lines].join('\n');
+            const groups = groupPolareActivitiesByServer(data.filtered).flatMap(([serverName, activities]) => [
+                serverName.toUpperCase(),
+                ...activities.map(item => `- ${item.identificacao} | ${item.pessoa || 'Sem nome'}`),
+                ''
+            ]);
+            return [`RELATÓRIO POLARE — ${title}`, `Servidor: ${scope}`, `Total: ${data.filtered.length} | Lepisma: ${counts.lepisma} | Aceitos: ${counts.aceitos} | Dispensados automaticamente: ${counts.dispensados}`, '', ...groups].join('\n');
         }
 
         window.copyPolareSummary = async function() {
@@ -5535,8 +5580,8 @@
             const data = getFilteredPolareData();
             const win = window.open('', '_blank');
             if (!win) { alert('Permita a abertura de janelas para imprimir o relatório.'); return; }
-            const rows = data.filtered.map(item => `<tr><td>${formatActivityDate(item.data)}</td><td>${escHtml(item.responsavel)}</td><td>${escHtml(item.tipo === 'Lepisma' ? 'Processo despachado no Lepisma' : item.tipo)}</td><td>${escHtml(item.identificacao)}</td><td>${escHtml(item.pessoa || '')}</td><td>${escHtml(item.detalhe || '')}</td></tr>`).join('');
-            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>PolarE - ${escHtml(data.month)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:24px}h1{color:#123b5d;margin-bottom:4px}p{color:#5c6875}.k{display:flex;gap:10px;margin:16px 0}.k div{border:1px solid #ccd6df;padding:9px 13px}.k strong{display:block;font-size:21px}table{width:100%;border-collapse:collapse;font-size:9px}th,td{border:1px solid #d7dee5;padding:6px;text-align:left;vertical-align:top}th{background:#123b5d;color:#fff}@page{size:A4 landscape;margin:10mm}</style></head><body><h1>Relatório de Atividades PolarE</h1><p>UFES · ${escHtml(formatMonthBoardTitle(data.month))} · ${escHtml(data.server || 'Todos os servidores')}</p><div class="k"><div>Total<strong>${data.filtered.length}</strong></div><div>Lepisma<strong>${data.filtered.filter(x=>x.tipo==='Lepisma').length}</strong></div><div>Aceitos<strong>${data.filtered.filter(x=>x.tipo==='Aceito').length}</strong></div><div>Dispensados<strong>${data.filtered.filter(x=>x.tipo==='Dispensado Automaticamente').length}</strong></div></div><table><thead><tr><th>Data</th><th>Servidor</th><th>Atividade</th><th>Identificação</th><th>Interessado / Servidor</th><th>Resultado / Detalhe</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Nenhuma atividade registrada.</td></tr>'}</tbody></table></body></html>`);
+            const groups = groupPolareActivitiesByServer(data.filtered).map(([serverName, activities]) => `<section><h2>${escHtml(serverName)}</h2><table><thead><tr><th>Processo / ID do Evento</th><th>Nome</th></tr></thead><tbody>${activities.map(item => `<tr><td class="id">${escHtml(item.identificacao || '—')}</td><td>${escHtml(item.pessoa || '—')}</td></tr>`).join('')}</tbody></table></section>`).join('');
+            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>PolarE - ${escHtml(data.month)}</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:24px}h1{color:#123b5d;margin-bottom:4px}h2{margin:22px 0 7px;color:#172033;font-size:16px}p{color:#5c6875}.k{display:flex;gap:10px;margin:16px 0}.k div{border:1px solid #ccd6df;padding:9px 13px}.k strong{display:block;font-size:21px}section{break-inside:avoid;margin-top:18px}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #d7dee5;padding:7px;text-align:left;vertical-align:top}th{background:#123b5d;color:#fff}.id{width:42%;font-family:Consolas,monospace}@page{size:A4 portrait;margin:12mm}</style></head><body><h1>Relatório de Atividades PolarE</h1><p>UFES · ${escHtml(formatMonthBoardTitle(data.month))} · ${escHtml(data.server || 'Todos os servidores')}</p><div class="k"><div>Total<strong>${data.filtered.length}</strong></div><div>Lepisma<strong>${data.filtered.filter(x=>x.tipo==='Lepisma').length}</strong></div><div>Aceitos<strong>${data.filtered.filter(x=>x.tipo==='Aceito').length}</strong></div><div>Dispensados<strong>${data.filtered.filter(x=>x.tipo==='Dispensado Automaticamente').length}</strong></div></div>${groups || '<p>Nenhuma atividade registrada.</p>'}</body></html>`);
             win.document.close();
             setTimeout(() => win.print(), 250);
         };
