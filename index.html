@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Governança Operacional SIAPE + eSocial | UFES v4.7</title>
+    <title>Governança Operacional SIAPE + eSocial | UFES v4.8</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -2029,7 +2029,7 @@
         }
 
 
-        /* ========== CENTRAL eSOCIAL / v4.7 ========== */
+        /* ========== CENTRAL eSOCIAL / v4.8 ========== */
         .central-toolbar { display:flex; justify-content:space-between; gap:14px; align-items:center; flex-wrap:wrap; }
         .central-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         .central-filters select { padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:11px; }
@@ -2389,7 +2389,7 @@
 
         </nav>
         <div class="sidebar-footer">
-            UFES · v4.7 · 2026<br>
+            UFES · v4.8 · 2026<br>
             <span class="version-badge">☁️ Firebase</span>
         </div>
     </aside>
@@ -2984,6 +2984,7 @@
             setDoc,
             updateDoc,
             getDoc,
+            runTransaction,
             deleteDoc,
             onSnapshot,
             query,
@@ -3183,6 +3184,10 @@
         let chatTitleResetTimer = null;
         const CHAT_ORIGINAL_TITLE = document.title;
         const CHAT_SOUND_KEY = 'governancaChatSoundEnabled';
+        // Um único canal compartilhado mantém o mesmo chat no GitHub Pages e no endereço do sistema.
+        const CHAT_SITE_API_AVAILABLE = false;
+        const CHAT_FIRESTORE_FIELD = 'chatMessagesEquipe';
+        const CHAT_FIRESTORE_LIMIT = 150;
         let chatSoundEnabled = (() => { try { return localStorage.getItem(CHAT_SOUND_KEY) !== 'false'; } catch (_) { return true; } })();
         const CHAT_REACTIONS = ['👍','❤️','😂','😮','✅'];
         const CHAT_EMOJI_CATEGORIES = {
@@ -3710,7 +3715,7 @@
                     allCompetencias: JSON.parse(JSON.stringify(allCompetencias)),
                     updatedAt: new Date().toISOString()
                 };
-                await setDoc(STATE_DOC, dataToSave);
+                await setDoc(STATE_DOC, dataToSave, { merge: true });
                 updateSyncIndicator('saved');
                 console.log('☁️ Dados sincronizados com Firebase');
             } catch (e) {
@@ -4467,14 +4472,81 @@
             };
         }
 
+        function normalizeSharedChatMessages(value) {
+            return (Array.isArray(value) ? value : []).filter(item => item && typeof item === 'object' && item.id && item.roomId);
+        }
+
+        async function firestoreChatRequest(method, body = {}) {
+            if (method === 'GET') {
+                const snapshot = await getDoc(STATE_DOC);
+                return { messages: normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]) };
+            }
+            if (method === 'POST') {
+                const message = {
+                    ...body,
+                    id: window.crypto?.randomUUID?.() || `msg_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+                    createdAt: new Date().toISOString(),
+                    reactions: {},
+                    deleted: false
+                };
+                await runTransaction(firestore, async transaction => {
+                    const snapshot = await transaction.get(STATE_DOC);
+                    const messages = normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]);
+                    transaction.set(STATE_DOC, {
+                        [CHAT_FIRESTORE_FIELD]: [...messages, message].slice(-CHAT_FIRESTORE_LIMIT),
+                        updatedAt: new Date().toISOString()
+                    }, { merge:true });
+                });
+                return { message };
+            }
+            if (method === 'PATCH') {
+                let updatedMessage = null;
+                await runTransaction(firestore, async transaction => {
+                    const snapshot = await transaction.get(STATE_DOC);
+                    const messages = normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]);
+                    const index = messages.findIndex(item => item.id === body.id);
+                    if (index < 0) throw new Error('Mensagem não encontrada.');
+                    const current = messages[index];
+                    if (body.action === 'delete') {
+                        if (current.senderKey !== body.actorKey) throw new Error('Sem permissão para excluir esta mensagem.');
+                        updatedMessage = { ...current, text:'', deleted:true, deletedAt:new Date().toISOString(), deletedBy:body.actorKey };
+                    } else if (body.action === 'reaction' && CHAT_REACTIONS.includes(body.emoji)) {
+                        const reactions = { ...(current.reactions || {}) };
+                        const people = Array.isArray(reactions[body.emoji]) ? reactions[body.emoji] : [];
+                        reactions[body.emoji] = people.includes(body.actorKey) ? people.filter(key => key !== body.actorKey) : [...people, body.actorKey];
+                        updatedMessage = { ...current, reactions };
+                    } else {
+                        throw new Error('Ação inválida.');
+                    }
+                    messages[index] = updatedMessage;
+                    transaction.set(STATE_DOC, { [CHAT_FIRESTORE_FIELD]:messages, updatedAt:new Date().toISOString() }, { merge:true });
+                });
+                return { ok:true, message:updatedMessage };
+            }
+            if (method === 'DELETE') {
+                const requester = normalizePersonKey(body.requesterName || '');
+                if (requester !== 'roni' && !requester.startsWith('ronielson ')) throw new Error('Acesso não autorizado.');
+                let deletedCount = 0;
+                await runTransaction(firestore, async transaction => {
+                    const snapshot = await transaction.get(STATE_DOC);
+                    deletedCount = normalizeSharedChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]).length;
+                    transaction.set(STATE_DOC, { [CHAT_FIRESTORE_FIELD]:[], updatedAt:new Date().toISOString() }, { merge:true });
+                });
+                return { ok:true, deletedCount };
+            }
+            throw new Error('Operação de conversa inválida.');
+        }
+
         async function chatApiRequest(method, body) {
+            if (!CHAT_SITE_API_AVAILABLE) return firestoreChatRequest(method, body);
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 12000);
             try {
-                const response = await fetch('/api/chat', {
+                const endpoint = method === 'GET' ? `/api/chat?personKey=${encodeURIComponent(currentAccessIdentity?.personKey || '')}&_=${Date.now()}` : '/api/chat';
+                const response = await fetch(endpoint, {
                     method,
                     headers: { 'Content-Type':'application/json' },
-                    body: body === undefined ? undefined : JSON.stringify(body),
+                    body: method === 'GET' || body === undefined ? undefined : JSON.stringify(body),
                     cache: 'no-store',
                     signal: controller.signal
                 });
@@ -4591,27 +4663,26 @@
             }
         };
 
+        function applyChatMessages(combinedValue) {
+            const visibleMessages = normalizeSharedChatMessages(combinedValue).filter(message => message.roomId === 'geral' || (Array.isArray(message.participantKeys) && message.participantKeys.includes(currentAccessIdentity?.personKey)));
+            const incomingIds = new Set(visibleMessages.map(item => item.id));
+            const newIncoming = chatInitialLoadDone ? visibleMessages.filter(message => !chatKnownMessageIds.has(message.id) && message.senderKey !== currentAccessIdentity.personKey && !message.deleted) : [];
+            chatKnownMessageIds = incomingIds;
+            chatMessages = visibleMessages.slice(-600);
+            chatInitialLoadDone = true;
+            renderChatPage();
+            if (newIncoming.length) notifyIncomingChatMessage(newIncoming[newIncoming.length - 1]);
+        }
+
         async function refreshChatMessagesFromApi() {
             if (!currentAccessIdentity?.personKey || chatPollInFlight) return;
             chatPollInFlight = true;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
             try {
-                const response = await fetch(`/api/chat?personKey=${encodeURIComponent(currentAccessIdentity.personKey)}&_=${Date.now()}`, { cache:'no-store', signal:controller.signal });
-                const data = await response.json().catch(() => ({}));
-                if (!response.ok) throw new Error(data.error || 'Falha ao atualizar conversas.');
-                const combined = Array.isArray(data.messages) ? data.messages : [];
-                const incomingIds = new Set(combined.map(item => item.id));
-                const newIncoming = chatInitialLoadDone ? combined.filter(message => !chatKnownMessageIds.has(message.id) && message.senderKey !== currentAccessIdentity.personKey && !message.deleted) : [];
-                chatKnownMessageIds = incomingIds;
-                chatMessages = combined.slice(-600);
-                chatInitialLoadDone = true;
-                renderChatPage();
-                if (newIncoming.length) notifyIncomingChatMessage(newIncoming[newIncoming.length - 1]);
+                const data = await chatApiRequest('GET');
+                applyChatMessages(data.messages);
             } catch (error) {
                 console.warn('Atualização do chat temporariamente indisponível:', error);
             } finally {
-                clearTimeout(timeoutId);
                 chatPollInFlight = false;
             }
         }
@@ -4625,9 +4696,18 @@
             chatInitialLoadDone = false;
             chatKnownMessageIds.clear();
             if (unsubscribeChatMessages) unsubscribeChatMessages();
-            const chatPollingTimer = setInterval(refreshChatMessagesFromApi, 1500);
-            unsubscribeChatMessages = () => clearInterval(chatPollingTimer);
-            refreshChatMessagesFromApi();
+            if (CHAT_SITE_API_AVAILABLE) {
+                const chatPollingTimer = setInterval(refreshChatMessagesFromApi, 1500);
+                unsubscribeChatMessages = () => clearInterval(chatPollingTimer);
+                refreshChatMessagesFromApi();
+            } else {
+                unsubscribeChatMessages = onSnapshot(STATE_DOC, snapshot => {
+                    applyChatMessages(snapshot.data()?.[CHAT_FIRESTORE_FIELD]);
+                }, error => {
+                    console.warn('Atualização das conversas no GitHub indisponível:', error);
+                    refreshChatMessagesFromApi();
+                });
+            }
 
             if (unsubscribeChatTyping) unsubscribeChatTyping();
             unsubscribeChatTyping = onSnapshot(CHAT_TYPING_COLLECTION, snapshot => {
@@ -4725,7 +4805,7 @@
                 setInterval(updateClock, 1000);
                 updateClock();
                 updateSyncIndicator('connected');
-                console.log('✅ Governança Operacional SIAPE + eSocial v4.7 iniciado.');
+                console.log('✅ Governança Operacional SIAPE + eSocial v4.8 iniciado.');
                 console.log('☁️ Firebase Firestore ativo. Sincronização em tempo real.');
                 console.log('👥 Múltiplos usuários simultâneos suportados.');
             } catch (e) {
@@ -7899,7 +7979,7 @@
             console.log('☁️ Firebase Firestore · Múltiplas competências · Sincronização em tempo real');
             console.log('👥 Múltiplos usuários simultâneos suportados.');
             console.log('💡 Ctrl+S para salvar manualmente.');
-            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe com emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.7 ativos.');
+            console.log('📁 Identificação de acesso · Presença por pessoa · Conversa da Equipe compatível com GitHub · Emojis, figurinhas e notificações · Histórico auditável · Minha fila · Fechamentos PolarE · Planilha da Equipe · Controle Lepisma · Central eSocial S-1210 · Cadastro de Servidores · Rubricas · Links Úteis v4.8 ativos.');
             console.log('🔗 Coluna Link substituiu a coluna Acesso na tabela Lepisma.');
         });
     </script>
