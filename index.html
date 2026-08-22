@@ -3770,6 +3770,8 @@
         }
 
         async function recordAuditChange({ source, recordId = '', competencia = '', field = '', oldValue = '', newValue = '', detail = '' }) {
+            // A Conversa da Equipe é comunicação interna e não deve compor o histórico operacional.
+            if (String(source || '').trim().toLowerCase() === 'conversa da equipe') return;
             if (String(oldValue ?? '') === String(newValue ?? '') && !detail) return;
             const entry = {
                 source: String(source || 'Sistema'),
@@ -3795,7 +3797,10 @@
         function setupAuditListener() {
             if (unsubscribeAudit) unsubscribeAudit();
             unsubscribeAudit = onSnapshot(query(AUDIT_COLLECTION, orderBy('timestamp', 'desc'), limit(100)), snapshot => {
-                auditEntries = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                // Mantém fora da interface inclusive registros antigos já gravados pelo chat.
+                auditEntries = snapshot.docs
+                    .map(item => ({ id: item.id, ...item.data() }))
+                    .filter(entry => String(entry.source || '').trim().toLowerCase() !== 'conversa da equipe');
                 renderDashboardAudit();
             }, error => {
                 console.error('Erro ao carregar histórico de alterações:', error);
@@ -4727,7 +4732,7 @@
             const id = decodeURIComponent(encodedId || '');
             const message = chatMessages.find(item => item.id === id);
             if (!message || message.senderKey !== currentAccessIdentity?.personKey || message.deleted) return;
-            if (!confirm('Excluir esta mensagem? O histórico indicará que ela foi excluída.')) return;
+            if (!confirm('Excluir esta mensagem?')) return;
             try {
                 await chatApiRequest('PATCH', { action:'delete', id, actorKey:currentAccessIdentity.personKey });
                 await refreshChatMessagesFromApi();
@@ -4756,7 +4761,6 @@
                 chatMessages = [];
                 chatKnownMessageIds.clear();
                 renderChatPage();
-                recordAuditChange({ source:'Conversa da Equipe', recordId:'chat-geral', field:'Limpeza completa', detail:`${deletedCount} mensagem(ns) excluída(s) por ${currentAccessIdentity.name}.` });
                 showToast(`${deletedCount} mensagem${deletedCount === 1 ? '' : 'ns'} apagada${deletedCount === 1 ? '' : 's'}.`);
             } catch (error) {
                 console.error('Erro ao limpar conversas:', error);
@@ -5100,8 +5104,10 @@
         function renderDashboardAudit() {
             const container = document.getElementById('dashboardAudit');
             if (!container) return;
-            const recent = auditEntries.slice(0, 6);
-            container.innerHTML = `<div class="card-header"><div><span class="eyebrow">HISTÓRICO</span><h3>Últimas alterações</h3></div><span class="badge badge-blue">${auditEntries.length}</span></div>
+            // Salvaguarda adicional: nunca renderiza itens da Conversa da Equipe no histórico.
+            const visibleAuditEntries = auditEntries.filter(entry => String(entry.source || '').trim().toLowerCase() !== 'conversa da equipe');
+            const recent = visibleAuditEntries.slice(0, 6);
+            container.innerHTML = `<div class="card-header"><div><span class="eyebrow">HISTÓRICO</span><h3>Últimas alterações</h3></div><span class="badge badge-blue">${visibleAuditEntries.length}</span></div>
                 <div class="audit-list">${recent.map(entry => `<div class="audit-row"><div class="audit-row-main"><strong>${escHtml(entry.source || 'Sistema')} · ${escHtml(entry.field || 'Alteração')}</strong><small>${escHtml(entry.actorName || 'Pessoa não identificada')} · ${formatAuditTimestamp(entry.timestamp)}</small><small class="audit-change">${entry.detail ? escHtml(entry.detail) : `<del>${escHtml(auditDisplayValue(entry.oldValue))}</del> → <ins>${escHtml(auditDisplayValue(entry.newValue))}</ins>`}</small></div></div>`).join('') || '<div class="empty-state">Nenhuma alteração auditada até o momento.</div>'}</div>`;
         }
 
